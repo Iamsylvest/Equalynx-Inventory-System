@@ -11,9 +11,8 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'username' => $this->username,
-            // Don't include the email
-            // 'email' => $this->email, // This is now hidden
+            'email' => $this->email, // Include the email instead of username
+            'role' => $this->role, // Add the role to the response
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

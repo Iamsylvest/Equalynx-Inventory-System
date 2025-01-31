@@ -1,20 +1,37 @@
 import { createApp } from 'vue';
-import router from './router';  // Make sure router is correctly imported
-import App from './App.vue';    // Make sure this file exists or change it accordingly
-import store from './store';    // This assumes 'store' is in 'resources/js/store'
+import router from './router';
+import App from './App.vue';
+import store from './store';
 
 const app = createApp(App);
+
+// Listen for the popstate event (back button navigation)
+window.addEventListener('popstate', () => {
+  const currentPath = window.location.pathname;
+
+  // If user is going back to the login page and is authenticated, log them out
+  if (currentPath === '/login' && store.getters['auth/isAuthenticated']) {
+    store.dispatch('auth/logout'); // This clears the session and token
+  }
+});
 
 // Restore session before mounting the app
 store.dispatch('auth/restoreSession')
   .then(() => {
-    // Register Vue Router and Vuex store only after restoring session
+    // Check if the user is authenticated before mounting
+    if (store.getters['auth/isAuthenticated']) {
+      // User is authenticated, do not show login page
+      router.push('/'); // Redirect to home page if already logged in
+    }
+
     app.use(router);  // Register Vue Router
     app.use(store);    // Register Vuex store
-
     app.mount('#app'); // Mount the app to the div with id "app"
   })
   .catch(error => {
     console.error('Failed to restore session:', error);
-    app.mount('#app'); // Mount the app even if session restoration fails
+    // Optionally, show a login or error page if session restoration fails
+    app.use(router);  // Register Vue Router even if session restoration fails
+    app.use(store);    // Register Vuex store even if session restoration fails
+    app.mount('#app'); // Mount the app regardless
   });

@@ -8,16 +8,15 @@
           </div>
 
           <div class="flex flex-col mb-4">
-            <label for="username" class="text-sm font-medium text-gray-700">Username:</label>
+            <label for="email" class="text-sm font-medium text-gray-700">Email:</label>
             <input
-              type="text"
-              id="username"
-              v-model="username"
+              type="email"
+              id="email"
+              v-model="email"
               class="mt-1 p-3 border border-gray-300 rounded-md"
               required
             />
           </div>
-
           <div class="flex flex-col mb-6 relative">
             <label for="password" class="text-sm font-medium text-gray-700">Password:</label>
             <input
@@ -49,31 +48,52 @@
 <script>
 import { mapActions } from 'vuex';
 import backgroundImage from '@/assets/dataCenter.jpg';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
 
 export default {
   name: 'LoginPage',
+  components: {
+    LoadingSpinner,
+  },
+  beforeRouteEnter(to, from, next) {
+    next(() => {
+      if (sessionStorage.getItem('reloaded') !== 'true') {
+        sessionStorage.setItem('reloaded', 'true');
+        window.location.reload();
+      } else {
+        sessionStorage.removeItem('reloaded');
+      }
+    });
+  },
+
   data() {
     return {
       backgroundImage,
-      username: '',
+      email: '',
       password: '',
       showPassword: false,
+      isLoading: false, // Fixed variable name
     };
   },
   methods: {
     ...mapActions('auth', ['login']), // Map the login action from Vuex
+
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
-    async handleLogin() {
-      try {
-        // Call the Vuex login action
-        await this.login({ username: this.username, password: this.password });
 
-        // Redirect after successful login
+    async handleLogin() {
+      this.isLoading = true; // Show the spinner
+
+      try {
+        await this.login({ email: this.email, password: this.password });
+
+        // Redirect to dashboard after successful login
         this.$router.push('/UserManagement');
       } catch (error) {
         alert(error.message);
+      } finally {
+        this.isLoading = false; // Hide the spinner
       }
     },
   },

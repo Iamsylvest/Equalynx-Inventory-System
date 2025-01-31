@@ -15,8 +15,8 @@
                class="w-full h-32 object-contain"
                />
                </div>
-  
-               <router-link
+               
+               <router-link v-if="userRole === 'admin'"
                    to="/UserManagement"
                    class="flex items-center mb-2 lg:px-8 p-4 text-md cursor-pointer hover:text-white hover:bg-custom-blue focus:outline-none"
                    @click="activeLink = ('UserManagement')"
@@ -39,13 +39,15 @@
                        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
                      />
                    </svg>
-  
+
                    <span v-if="isSidebarWide" class="ml-2 text-[12px]">User Management</span>
                  </router-link>
   
            <!-- Repeat for other links -->
   
-           <router-link to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           <router-link 
+           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+           to="/AdminInventory" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                    @click="activeLink = ('Inventory')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Inventory',
@@ -68,7 +70,9 @@
   
            </router-link>
   
-             <router-link to="" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+             <router-link
+             v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+             to="/AdminTransaction" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
              @click="activeLink = ('Transaction')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Transaction',
@@ -83,7 +87,9 @@
   
              </router-link>
   
-             <router-link to="" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+             <router-link 
+             v-if="userRole === 'admin' || userRole === 'manager'"
+             to="" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                   @click="activeLink = ('Activity')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Activity',
@@ -106,7 +112,9 @@
   
            </router-link>
   
-           <router-link to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           <router-link
+           v-if="userRole === 'admin' || userRole === 'procurement'"
+           to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Notification')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Notification',
@@ -129,7 +137,9 @@
   
            </router-link>
   
-           <router-link to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           <router-link
+           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+           to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Settings')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Settings',
@@ -181,22 +191,40 @@
      </div>
    </div>
   </template>
-  <script>
-  export default {
+<script>
+import { mapGetters } from "vuex";
 
-   data() {
-       return {
-       isSidebarWide: false, // Sidebar is closed by default
-       activeLink: '',
-  
-       };
-   },
-       methods: {
-           wideSidebar() {
-               this.isSidebarWide = !this.isSidebarWide;
-       },  setActiveLink (link) {
-           this.activeLink = link;
-       },
-   },
-  }
-  </script>
+export default {
+  data() {
+    return {
+      isSidebarWide: false, // Sidebar is closed by default
+      activeLink: "",
+    };
+  },
+  computed: {
+    ...mapGetters("auth", ["user", "userRole"]), // Directly map userRole from Vuex getter
+  },
+  watch: {
+    user(newUser) {
+      if (newUser) {
+        console.log("User changed:", newUser);
+        this.$nextTick(() => {
+          // Ensures the DOM is updated after user data is set
+        });
+      }
+    },
+  },
+  mounted() {
+    console.log("Mounted - User Role:", this.userRole);
+  },
+
+  methods: {
+    wideSidebar() {
+      this.isSidebarWide = !this.isSidebarWide;
+    },
+    setActiveLink(link) {
+      this.activeLink = link;
+    },
+  },
+};
+</script>

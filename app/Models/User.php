@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens; // <-- Make sure HasApiTokens is included
+    use HasFactory, Notifiable, HasApiTokens; // Ensure HasApiTokens is included
 
     /**
      * The attributes that are mass assignable.
@@ -19,8 +19,9 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',
+        'email', // <-- Add email field
         'password',
+        'role', // <-- Ensure role is included if used in seeder
     ];
 
     /**
@@ -42,11 +43,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-      /**
-     * Override the method that checks for user credentials.
+    /**
+     * Override the method that checks for user credentials using email.
      */
-    public static function findForPassport($username)
+    public static function findForPassport($email)
     {
-        return static::where('username', $username)->first();
+        return static::where('email', $email)->first();
     }
 }

@@ -95,33 +95,7 @@
             </div>
         </div>
            <br>
-  
-          <!-- User Permissions -->
-          <div class="border-b pb-4 mb-4">
-    <h1 class="font-bold">User Permissions</h1>
-    <br>
-    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      <template v-for="(permission, index) in permissions" :key="index">
-        <div class="flex items-center justify-start space-x-2">
-          <!-- Permission Name -->
-          <p class="text-sm">{{ permission }}</p>
-          
-          <!-- Toggle Button -->
-          <div class="relative w-16 h-7 bg-gray-200 rounded-full">
-            <button
-              @click="togglePermission(index)"
-              :class="[
-                permissionStates[index]
-                  ? 'translate-x-8 bg-blue-500'
-                  : 'translate-x-0 bg-gray-400',
-                'absolute w-7 h-7 rounded-full shadow-md transform transition-transform duration-300 ease-in-out'
-              ]"
-            ></button>
-          </div>
-        </div>
-      </template>
-    </div>
-  </div>
+
   
           <!-- Save Button -->
           <div class="text-center">
@@ -142,16 +116,7 @@
     data () {
       return {
         showModal: false,
-        permissions: [
-          'Dashboard:',
-          'User Management:',
-          'Deliver Receipt:',
-          'Inventory:',
-          'Activity Logs:',
-          'Add Stocks in Inventory:',
-          'Return Approval:',
-        ],
-        permissionStates: [true, true, true, false, false, false, false],
+
       };
     },
     methods: {

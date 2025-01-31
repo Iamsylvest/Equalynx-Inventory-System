@@ -11,37 +11,29 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+        // Validate login credentials (using email and password)
+        $credentials = $request->only('email', 'password');
+        
+        if (Auth::attempt($credentials)) {
+            // Authentication passed, generate token
             $user = Auth::user();
-            // Generate token
             $token = $request->user()->createToken('YourAppName_Token_' . Str::random(40))->plainTextToken;
-
-
+    
+            // Return user and token
             return response()->json([
-                'message' => 'Login successful',
                 'token' => $token,
+                'user' => new UserResource($user), // Send the user data in the response
             ]);
         }
-
+        
         return response()->json(['message' => 'Unauthorized'], 401);
     }
+ 
     public function logout(Request $request)
-    {
-        // Revoke the current token
-        $request->user()->currentAccessToken()->delete();
-    
-        // Optionally, you can revoke all tokens if you prefer
-        // $request->user()->tokens->each(function ($token) {
-        //     $token->delete();
-        // });
-    
-        return response()->json(['message' => 'Logged out successfully']);
-    }
+{
+    $request->user()->tokens()->delete(); // Revoke all tokens
+    return response()->json(['message' => 'Logged out'], 200);
+}
 
     public function getUser(Request $request)
     {

@@ -1,44 +1,38 @@
 <template>
-  <div class=" flex h-screen">
-    <!-- Show Navbar only if the user is authenticated -->
-    <Navbar v-if="isAuthenticated && isAdminNavbarVisbile" />
+  <div class="flex h-screen">
+    <!-- Show Navbar only if the user is authenticated and not on login/reset-password pages -->
+    <Navbar v-if="showNavbar" />
 
     <!-- Render the rest of the application (views) -->
-   <div class="flex-1 overflow-auto"  >
-    <router-view />
-   </div> 
-  
+    <div class="flex-1 overflow-auto">
+      <router-view />
+    </div> 
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'; // To map the Vuex getter
-import Navbar from './components/Navbar.vue'; // Correct casing here
+import { computed } from "vue";
+import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+import Navbar from "./components/Navbar.vue";
 
 export default {
-  name: 'App',
-
   components: {
     Navbar,
   },
-  data() {
-      return{
-        isAdminNavbarVisbile: true,
-      }
-  },
-  methods: {
-    toggleNavbar(){
-      this.isAdminNavbarVisbile =! this.isAdminNavbarVisbile
-    },
-  },
 
-  computed: {
-    // Map the isAuthenticated getter from Vuex store
-    ...mapGetters('auth', ['isAuthenticated']),
+  setup() {
+    const store = useStore();
+    const route = useRoute();
+
+    // Hide navbar on login and reset password pages
+    const showNavbar = computed(() => {
+      return store.getters["auth/isAuthenticated"] && !["/login", "/reset-password"].includes(route.path);
+    });
+
+    
+
+    return { showNavbar };
   },
-  created() {
-    // Attempt to restore the session from localStorage
-    this.$store.dispatch('auth/restoreSession');
-  }
 };
 </script>
