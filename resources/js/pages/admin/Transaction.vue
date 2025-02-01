@@ -51,7 +51,7 @@
   </template>
   
   <script>
-  import { mapGetters } from 'vuex';
+  import { mapGetters } from 'vuex'; // Ensure this is at the top
   import TransactionNotification from '../../components/admin/Transaction/TransactionNotification.vue';
   import TransactionProfile from '../../components/admin/Transaction/TransactionProfile.vue';
   import TransactionSearch from '../../components/admin/Transaction/TransactionSearch.vue';

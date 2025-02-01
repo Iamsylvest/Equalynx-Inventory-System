@@ -24,11 +24,8 @@
  </div>
  
  
- 
- 
- 
- 
  </template>
+
 <script>
 import { mapGetters } from 'vuex';
 import InventoryFillter from '../../components/admin/Inventory/InventoryFillter.vue';

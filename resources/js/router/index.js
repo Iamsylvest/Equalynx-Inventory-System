@@ -1,30 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/auth/Login.vue';
 import ResetPassword from '@/auth/ResetPassword.vue';
-import UserManagement from '@/pages/admin/UserManagement.vue';
+import UserManagement from '@/pages/admin/UserManagement.vue'; 
 import Inventory from '@/pages/admin/Inventory.vue';
 import Transaction from '@/pages/admin/Transaction.vue';
+import ActivityLogs from '@/pages/admin/ActivityLogs.vue';
+import Notification from '@/pages/admin/Notification.vue';
+import Settings from '@/pages/admin/Settings.vue';
 import store from '@/store'; // Import the store
 
 const routes = [
   { path: '/', redirect: '/login' }, // Redirect root to login
   { path: '/login', component: Login },
   { path: '/reset-password', component: ResetPassword },
-  {
-    path: '/Usermanagement',
-    component: UserManagement,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/AdminInventory',
-    component: Inventory,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/AdminTransaction',
-    component: Transaction,
-    meta: { requiresAuth: true },
-  },
+  { path: '/Usermanagement', component: UserManagement, meta: { requiresAuth: true },},
+  { path: '/AdminInventory', component: Inventory, meta: { requiresAuth: true },},
+  { path: '/AdminTransaction',component: Transaction, meta: { requiresAuth: true },},
+  { path: '/ActivityLogs', component: ActivityLogs, meta: { requiresAuth: true }, },
+  { path: '/Notification', component: Notification, meta: { requiresAuth: true },},
+  { path: '/Settings', component: Settings, meta: { requiresAuth: true },},
   
   
 ];

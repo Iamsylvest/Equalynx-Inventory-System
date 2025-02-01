@@ -89,7 +89,7 @@
   
              <router-link 
              v-if="userRole === 'admin' || userRole === 'manager'"
-             to="" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+             to="/ActivityLogs" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                   @click="activeLink = ('Activity')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Activity',
@@ -114,7 +114,7 @@
   
            <router-link
            v-if="userRole === 'admin' || userRole === 'procurement'"
-           to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           to="/Notification" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Notification')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Notification',
@@ -139,7 +139,7 @@
   
            <router-link
            v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
-           to="" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           to="/Settings" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Settings')"
                    :class="{
                      'bg-custom-blue text-white': activeLink === 'Settings',
