@@ -11,14 +11,18 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens; // Ensure HasApiTokens is included
+    public $timestamps = true; // Make sure this line is present if timestamps are not working
 
     /**
      * The attributes that are mass assignable.
-     *
+     *  
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'is_active',
         'email', // <-- Add email field
         'password',
         'role', // <-- Ensure role is included if used in seeder

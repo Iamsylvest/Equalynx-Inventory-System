@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Resources\UserResource; // Make sure to import the UserResource
-
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,3 +29,9 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+
+
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users', [UserController::class, 'index']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::put('/users/{id}', [UserController::class, 'update']);

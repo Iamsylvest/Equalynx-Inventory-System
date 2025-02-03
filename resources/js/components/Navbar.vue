@@ -46,7 +46,7 @@
            <!-- Repeat for other links -->
   
            <router-link 
-           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff' || userRole === 'procurement'"
            to="/AdminInventory" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                    @click="activeLink = ('Inventory')"
                    :class="{
@@ -71,7 +71,7 @@
            </router-link>
   
              <router-link
-             v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+             v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff' || userRole === 'procurement'"
              to="/AdminTransaction" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
              @click="activeLink = ('Transaction')"
                    :class="{
@@ -138,7 +138,7 @@
            </router-link>
   
            <router-link
-           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehousestaff' || userRole === 'procurement'"
+           v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff' || userRole === 'procurement'"
            to="/Settings" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Settings')"
                    :class="{

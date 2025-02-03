@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User; // Make sure the User model is correctly imported
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon; // Import Carbon for working with dates
 
 
 class UserSeeder extends Seeder
@@ -16,44 +17,71 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Create the admin user and generate token
+         
+        // Create the admin user
         $admin = User::create([
-            'name' => 'Test Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password123'),
+            'first_name' => 'Sylvest',
+            'middle_name' => 'Falcutila',
+            'last_name' => 'Madelo',
             'role' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('123456'),
+            'is_active' => true,
+            'created_at' => Carbon::now(), // Manually set created_at
+            'updated_at' => Carbon::now(), // Manually set updated_at
         ]);
-      
 
-
-        // Create the manager (warehouse) user and generate token
+        // Create the manager (warehouse) user
         $manager = User::create([
-            'name' => 'Test Manager',
-            'email' => 'warehouse@example.com',
-            'password' => Hash::make('password123'),
+            'first_name' => 'Geryk',
+            'middle_name' => '',
+            'last_name' => 'Bubutan',
             'role' => 'manager',
+            'email' => 'manager@example.com',
+            'password' => Hash::make('123456'),
+            'is_active' => true,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
-
-
-        // Create the manager (procurement) user and generate token
+        // Create the manager (procurement) user
         $procurement = User::create([
-            'name' => 'Test Procurement',
-            'email' => 'procurement@example.com',
-            'password' => Hash::make('password123'),
+            'first_name' => 'Princess',
+            'middle_name' => '',
+            'last_name' => 'Mamison',
             'role' => 'procurement',
+            'email' => 'procurement@example.com',
+            'password' => Hash::make('123456'),
+            'is_active' => true,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
 
-
-
-        // Create another user (warehouse staff) and generate token
+        // Create another user (warehouse staff)
         $warehouseStaff = User::create([
-            'name' => 'Test Warehouse Staff',
-            'email' => 'warehouse_staff@example.com',
-            'password' => Hash::make('password123'),
-            'role' => 'warehousestaff',
+            'first_name' => 'Rachelle',
+            'middle_name' => '',
+            'last_name' => 'Regala',
+            'role' => 'warehouse_staff',
+            'email' => 'warehouse@example.com',
+            'password' => Hash::make('123456'),
+            'is_active' => true,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
-       
+
+        // Create another user (Johanna Maxine)
+        $maxine = User::create([
+            'first_name' => 'Johanna Maxine',
+            'middle_name' => '',
+            'last_name' => 'Dolz',
+            'role' => 'admin',
+            'email' => 'max@equalynx.com',
+            'password' => Hash::make('123456'),
+            'is_active' => true,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
      
     }
 }
