@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div  class="font-roboto">
       <!-- Profile Button -->
       <button
         @click="openModal"

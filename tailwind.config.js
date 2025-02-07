@@ -10,6 +10,9 @@ module.exports = {
       colors: {
         'custom-blue': '#365486', // Define your custom color
     },
+      fontFamily: {
+        roboto: ["Roboto", "sans-serif"], // ✅ Add Roboto Font
+    },
     },
   },
   plugins: [],

@@ -35,6 +35,7 @@
             <button
               type="submit"
               class="w-full px-4 py-3 bg-blue-600 text-white rounded-md"
+              :disabled="isLoading" 
             >
               Login
             </button>
@@ -48,13 +49,12 @@
 <script>
 import { mapActions } from 'vuex';
 import backgroundImage from '@/assets/dataCenter.jpg';
-import LoadingSpinner from '../components/LoadingSpinner.vue';
+import Swal from 'sweetalert2'; // Import SweetAlert2
+import router from '../router';
 
 export default {
   name: 'LoginPage',
-  components: {
-    LoadingSpinner,
-  },
+  components: {},
   beforeRouteEnter(to, from, next) {
     next(() => {
       if (sessionStorage.getItem('reloaded') !== 'true') {
@@ -72,30 +72,56 @@ export default {
       email: '',
       password: '',
       showPassword: false,
-      isLoading: false, // Fixed variable name
+      isLoading: false, // Variable to track loading state
     };
   },
   methods: {
     ...mapActions('auth', ['login']), // Map the login action from Vuex
 
-    togglePasswordVisibility() {
-      this.showPassword = !this.showPassword;
-    },
-
     async handleLogin() {
-      this.isLoading = true; // Show the spinner
+      this.isLoading = true; // Show the loading state
+
+      // Show the SweetAlert loading spinner
+      Swal.fire({
+        title: 'Logging in...',
+        text: 'Please wait while we process your login.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
 
       try {
-        await this.login({ email: this.email, password: this.password });
+        const userRole = await this.login({email: this.email, password: this.password});
 
-        // Redirect to dashboard after successful login
-        this.$router.push('/UserManagement');
+        if (userRole === 'admin'){
+          this.$router.push("/UserManagement");
+        } else if (userRole === 'manager'){
+          this.$router.push("/AdminTransaction");
+        } else if (userRole === 'warehouse_staff'){
+          this.$router.push("/AdminInventory");
+        } 
+        else if (userRole === 'procurement'){
+          this.$router.push("/UserManagement");
+        } 
+         else {
+            this.$router.push("/"); // Default fallback
+          }
       } catch (error) {
-        alert(error.message);
+        Swal.fire({
+          title: 'Error!',
+          text: error.message || 'Something went wrong. Please try again.',
+          icon: 'error',
+        });
       } finally {
         this.isLoading = false; // Hide the spinner
+        Swal.close(); // Close the SweetAlert spinner
       }
     },
+
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
+    }
   },
 };
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isVisible" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+    <div v-if="isVisible" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 font-roboto">
       <div class="bg-white p-8 rounded-md w-96">
         <h2 class="text-xl font-semibold mb-4">Edit User</h2>
         <form @submit.prevent="submitForm">

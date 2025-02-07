@@ -45,7 +45,6 @@
       </button>
     </div>
              <div class="flex items-center space-x-4 ml-auto">
-                <ActivityLogsSearch Class="w-full sm:w-auto"  />
                 <ActivityLogsFillter Class="w-full sm:w-auto"  />  
              </div>
      </div>
@@ -107,7 +106,7 @@ import { mapGetters } from 'vuex'; // ✅ Import mapGetters
 import ActivityLogsFillter from '../../components/admin/ActivityLogs/ActivityLogsFillter.vue';
 import ActivityLogsNotification from '../../components/admin/ActivityLogs/ActivityLogsNotification.vue';
 import ActivityLogsProfile from '../../components/admin/ActivityLogs/ActivityLogsProfile.vue';
-import ActivityLogsSearch from '../../components/admin/ActivityLogs/ActivityLogsSearch.vue';
+
 import DeliveryReceipt from '../../components/admin/ActivityLogs/DeliveryReceipt.vue';
 import Inventory from '../../components/admin/ActivityLogs/Inventory.vue';
 import ReturnReceipt from '../../components/admin/ActivityLogs/ReturnReceipt.vue';
@@ -117,7 +116,6 @@ export default {
         ActivityLogsFillter,
         ActivityLogsNotification,
         ActivityLogsProfile,
-        ActivityLogsSearch,
         DeliveryReceipt,
         Inventory,
         ReturnReceipt,

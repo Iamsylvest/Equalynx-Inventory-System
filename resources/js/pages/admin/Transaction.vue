@@ -37,7 +37,7 @@
   
         <!-- Right Section: Search and Filter (Aligned to the end) -->
         <div class="flex items-center space-x-4 ml-auto">
-          <TransactionSearch class="w-full sm:w-auto" />
+
           <TransactionFillter class="w-full sm:w-auto" />
         </div>
       </div>
@@ -54,7 +54,6 @@
   import { mapGetters } from 'vuex'; // Ensure this is at the top
   import TransactionNotification from '../../components/admin/Transaction/TransactionNotification.vue';
   import TransactionProfile from '../../components/admin/Transaction/TransactionProfile.vue';
-  import TransactionSearch from '../../components/admin/Transaction/TransactionSearch.vue';
   import TransactionFillter from '../../components/admin/Transaction/TransactionFillter.vue';
   import DeliveryReceipt from '../../components/admin/Transaction/DeliveryReceipt.vue';
   import ReturnReceipt from '../../components/admin/Transaction/ReturnReceipt.vue';
@@ -63,7 +62,6 @@
     components: {
       TransactionNotification,
       TransactionProfile,
-      TransactionSearch,
       TransactionFillter,
       ReturnReceipt,
       DeliveryReceipt

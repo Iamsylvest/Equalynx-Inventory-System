@@ -34,4 +34,4 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users', [UserController::class, 'index']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
-Route::put('/users/{id}', [UserController::class, 'update']);
+Route::patch('/users/{id}', [UserController::class, 'update']);

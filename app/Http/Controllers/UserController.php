@@ -39,12 +39,32 @@ class UserController extends Controller
         ], 201);
         }
 
-        public function index()
+        public function index(Request $request)
         {
-            $users = User::all(); // Retrieve all users from the database
-            return response()->json(['users' => $users]); // Return the users as a JSON response
+            $query = User::query();
+        
+            // Apply status filter if provided
+            if ($request->has('status') && $request->status !== "") {
+                $query->where('is_active', $request->status);
+            }
+        
+            // Apply role filter if provided
+            if ($request->has('role') && $request->role !== "") {
+                $query->where('role', $request->role);
+            }
+        
+            $totalUsers = $query->count(); // Get total filtered user count
+            // Paginate the filtered results
+            $users = $query->paginate(7); // Set pagination limit to 7
+           
+        
+            return response()->json([
+                'data' => $users->items(),       // Actual users for current page
+                'total' => $totalUsers,           // Total users matching the filters
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+            ]);
         }
-
             // delete user UserController.php
         public function destroy($id)
         {
@@ -59,21 +79,26 @@ class UserController extends Controller
 
         public function update(Request $request, $id)
         {
-            // Find the user by ID or fail if not found
+            // Find the user by ID or return a 404 response if not found
             $user = User::findOrFail($id);
-    
-            // Validate the incoming request data
+
+            // Validate incoming request data
             $validated = $request->validate([
+                'first_name' => 'sometimes|string|max:255',
+                'last_name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $id, // Ensure email is unique except for this user
                 'role' => 'required|string',
                 'is_active' => 'required|boolean',
-                // Add other fields you want to update, such as name, email, etc.
             ]);
-    
-            // Update the user with the validated data
+
+            // Update the user with only the validated data
             $user->update($validated);
-    
-            // Return a response with a success message and the updated user data
-            return response()->json(['message' => 'User updated successfully', 'user' => $user]);
+
+            // Return response with updated user data
+            return response()->json([
+                'message' => 'User updated successfully',
+                'user' => $user
+            ], 200);
         }
     
 }

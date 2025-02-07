@@ -30,9 +30,25 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters["auth/isAuthenticated"];
+  const userRole = store.getters["auth/userRole"]; // get the user role
 
   if (to.path === "/login" && isAuthenticated) {
-    next("/UserManagement"); // Redirect logged-in users to dashboard
+    // Redirect based on role
+    if (userRole === "admin"){
+      next("/UserManagement");
+    } else if (userRole === "manager"){
+      next("/AdminTransaction"); 
+    }
+      else if (userRole === "warehouse_staff"){
+        next("/AdminInventory"); 
+    }
+    else if (userRole === "procurement"){
+        next("/UserManagement");
+    }
+     else {
+      next("/"); // Default fallback if role is unknown
+    }
+
   } else if (to.meta.requiresAuth && !isAuthenticated) {
     next({ path: "/login", query: { redirect: to.fullPath } }); // Save where the user was going
   } else {

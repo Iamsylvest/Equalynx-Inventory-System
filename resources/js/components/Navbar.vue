@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex h-screen">
+    <div class="relative flex h-screen font-roboto">
      <!-- Sidebar -->
      <div
      v-bind:style="{ width: isSidebarWide ? '220px' : '100px' }"
@@ -88,7 +88,7 @@
              </router-link>
   
              <router-link 
-             v-if="userRole === 'admin' || userRole === 'manager'"
+             v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff'"
              to="/ActivityLogs" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                   @click="activeLink = ('Activity')"
                    :class="{

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div  class="font-roboto">
       <!-- Modal Button -->
       <button
         @click="openModal"

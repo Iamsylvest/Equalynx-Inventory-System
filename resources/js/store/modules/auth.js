@@ -26,10 +26,11 @@ export default {
         const token = response.data.token;
         const user = response.data.user;
 
-        commit('setUser', user);  // Store user with role
-        commit('setToken', token);  // Save token in Vuex state and localStorage
+        commit('setUser', user); // Store user with role
+        commit('setToken', token); // Save token in Vuex state and localStorage
         localStorage.setItem('authToken', token);
-     
+        localStorage.setItem('authUser', JSON.stringify(user));
+
         const userResponse = await axios.get('/api/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -37,7 +38,9 @@ export default {
         commit('setUser', userResponse.data);
         localStorage.setItem('authUser', JSON.stringify(userResponse.data));
 
-        return true; // Indicate successful login
+           // Return user role for redirection
+        return user.role;  // ✅ FIXED: Now it returns the role
+
       } catch (error) {
         console.error('Login failed:', error);
         throw new Error(error.response?.data?.message || 'Login failed');
@@ -45,7 +48,13 @@ export default {
     },
     restoreSession({ commit }) {
       const token = localStorage.getItem('authToken');
-      const user = JSON.parse(localStorage.getItem('authUser'));
+      let user = null;
+
+      try {
+        user = JSON.parse(localStorage.getItem('authUser'));
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage:", error);
+      }
 
       if (token && user) {
         commit('setToken', token);
@@ -55,11 +64,11 @@ export default {
       }
     },
     logout({ commit }) {
-      commit("SET_TOKEN", null);
-      commit("SET_USER", null);
+      commit("setToken", null);
+      commit("setUser", null);
       localStorage.removeItem("authToken");
       localStorage.removeItem("authUser");
-    
+
       // Force reload to clear cached state
       setTimeout(() => {
         window.location.href = "/login";
@@ -68,7 +77,7 @@ export default {
   },
   getters: {
     isAuthenticated: (state) => !!state.token,
-    user: (state) => state.user ? state.user.data : null,
+    user: (state) => state.user,
     userRole: (state) => state.user ? state.user.data.role : '',
   },
 };
