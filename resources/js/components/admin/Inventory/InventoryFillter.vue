@@ -16,32 +16,18 @@
       </button>
     </div>
 
-    <!-- Meterials Filter -->
-    <select
-      v-model="selectedRole"
-      @change="applyFilters"
-      class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option value="">All Materials</option>
-      <option value="">none</option>
-      <option value="">none</option>
-      <option value="">none</option>
-      <option value="">none</option>
-    </select>
-
-      
       <!-- Threshold Filter -->
-    <select
-      id="threshold"
-      v-model="selectedThreshold"
-      @change="applyFilters"
-      class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option value="">All Stock Level</option>
-      <option value="low">Low Stock</option>
-      <option value="medium">Medium Stock</option>
-      <option value="high">High Stock</option>
-    </select>
+      <select
+        id="threshold"
+        v-model="selectedStocks"
+        @change="applyFilters"  
+        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Stock Level</option>
+        <option value="Low">Low</option>
+        <option value="Normal">Normal</option>
+        <option value="High">High</option>
+      </select>
 
         <!-- Date Added Filter -->
       <label for="date_added" class="block text-md font-medium text-gray-700">Date Added</label>
@@ -71,5 +57,33 @@
 
 <script>
 
+
+
+export default {
+  data () {
+    return{
+      tempSearchQuery: "",
+      selectedMaterial: "",
+      selectedStocks: "",
+      selectedDateAdded: "",
+      selectedLastUpdate: "",
+    }
+  },
+  methods: {
+    applySearch () {
+      this.$emit("search", this.tempSearchQuery)
+    },
+    applyFilters () {
+      this.$emit( "filter",{
+
+        stocks: this.selectedStocks, 
+        created_at: this.selectedDateAdded, 
+        updated_at: this.selectedLastUpdate, 
+       })
+     
+    }
+},
+
+}
 
 </script>

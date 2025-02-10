@@ -20,7 +20,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(user, index) in filteredUsers" :key="user.id" :class="index % 2 === 0 ? 'bg-gray-100' : 'bg-white'">
+        <tr v-for="(user, index) in filteredUsers" :key="user.id" 
+        :class="{
+                'border-b': true,             /* Add bottom border */
+                'border-b-gray-400': true,    /* Darker gray border color */
+                'bg-gray-100 ': index % 2 === 0,      /* Alternating gray color for even rows */
+                'bg-white': index % 2 !== 0,          /* Alternating white color for odd rows */    
+              }"
+        >
           <td class="text-center px-4 py-2 border-0">
             <div class="items-center justify-center space-x-3">
               <span class="font-bold">{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</span>
@@ -125,7 +132,6 @@ export default {
       userToDeleteId: null,
       isEditModalVisible: false,
       editingUser: null,
-      isLoading: false,
       currentPage: 1,
       lastPage: 1, // ✅ Add this to prevent the Vue warning
       total: 0,
