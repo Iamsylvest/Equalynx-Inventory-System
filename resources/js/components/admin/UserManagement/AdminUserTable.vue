@@ -24,9 +24,8 @@
         :class="{
                 'border-b': true,             /* Add bottom border */
                 'border-b-gray-400': true,    /* Darker gray border color */
-                'bg-gray-100 ': index % 2 === 0,      /* Alternating gray color for even rows */
-                'bg-white': index % 2 !== 0,          /* Alternating white color for odd rows */    
-              }"
+                'bg-white hover:bg-gray-200':true,    /* Alternating gray color for even rows */         /* Alternating white color for odd rows */    
+              }"  
         >
           <td class="text-center px-4 py-2 border-0">
             <div class="items-center justify-center space-x-3">
@@ -73,7 +72,7 @@
               <button 
                 @click="fetchUsers(currentPage - 1)" 
                 :disabled="currentPage === 1" 
-                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 cursor-pointer"
               >
                 ←
               </button>
@@ -93,7 +92,7 @@
               <button 
                 @click="fetchUsers(currentPage + 1)" 
                 :disabled="currentPage === lastPage" 
-                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 cursor-pointer"
               >
                 →
               </button>
@@ -106,7 +105,7 @@
       @close="closeEditModal" 
       @update="updateUser"  
     /> 
-  </div>
+     </div>
     
           
 </template>
@@ -128,7 +127,6 @@ export default {
   data() {
     return {
       users: [],
-      isModalVisible: false,
       userToDeleteId: null,
       isEditModalVisible: false,
       editingUser: null,

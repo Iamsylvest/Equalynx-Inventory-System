@@ -24,17 +24,16 @@
             <div class="flex flex-col gap-4">
               <div>
                 <label class="block text-gray-700">Material Name:</label>
-                <input v-model="editedMaterial.material_name" type="text"   :readonly="true"  class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
+                <input v-model="editedMaterial.material_name" type="text"
+                :readonly="true"
+                :class="{ 'bg-gray-200 text-gray-600 cursor-not-allowed': true }"
+                 class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
               </div>
               <div>
                 <label class="block text-gray-700">Stocks:</label>
                 <input v-model="editedMaterial.stocks" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
               </div>
-              <div>
-                <label class="block text-gray-700">Threshold:</label>
-                <input v-model="editedMaterial.threshold" type="text"  class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg "  >
-              </div>
-  
+             
               <div>
                 <label class="block text-gray-700">Measurement:</label>
                 <div class="flex">

@@ -38,10 +38,7 @@
               <label class="block text-gray-700">Stocks:</label>
               <input v-model="form.stocks" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
             </div>
-            <div>
-              <label class="block text-gray-700">Threshold:</label>
-              <input v-model="form.threshold" type="text"  class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg "  >
-            </div>
+     
 
             <div>
               <label class="block text-gray-700">Measurement:</label>
@@ -78,7 +75,7 @@
 
         <!-- Submit Button -->
         <div class="flex justify-end p-4">
-          <button @click="addMaterial" class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Add Material</button>
+          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Add Material</button>
         </div>
       </div>
     </div>
@@ -86,8 +83,8 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 export default {
   data() {
@@ -96,51 +93,55 @@ export default {
       form: {
         material_name: '',
         stocks: '',
-        threshold: '',
         measurement_quantity: '',
         measurement_unit: '',
-      }
+      },
     };
   },
   
   methods: {
     async addMaterial() {
       // Basic validation
-      if (!this.form.material_name || !this.form.stocks || !this.form.threshold || !this.form.measurement_quantity || !this.form.measurement_unit) {
-        Swal.fire({
-          title: 'Validation Error!',
-          text: 'Please fill in all fields.',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        });
-        return;
+      if (!this.form.material_name || !this.form.stocks || !this.form.measurement_quantity || !this.form.measurement_unit) {
+        return; // Prevent the submission if any field is empty
       }
 
       try {
-        console.log(this.form); // Log the form data before sending it
-        const response = await axios.post('/api/inventory', this.form);
-        this.$emit('materialAdded', response.data.inventory);
-        this.showModal = false;
+        // Step 1: Check if the material already exists
+        const checkResponse = await axios.get(`/api/inventory/check?material_name=${this.form.material_name}&measurement_unit=${this.form.measurement_unit}`);
 
-        // Show success alert
+        // Step 2: If the material exists, show an error and prevent addition
+        if (checkResponse.data.exists) {
+          Swal.fire({
+            title: 'Error!',
+            text: 'This material already exists. You can edit the existing one.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+          return; // Stop the process if material exists
+        }
+
+        // Step 3: If the material doesn't exist, proceed with adding it
+        const response = await axios.post('/api/inventory', this.form);
+        
+        // Emit to parent component to update material list in real-time
+        this.$emit('materialAdded', response.data.inventory);
+        this.showModal = false; // Close the modal in the child
+        // Step 4: Show success alert
         Swal.fire({
-          title: 'Material Added!',
-          text: 'The Material has been successfully added.',
+          title: 'Success!',
+          text: 'Material added successfully.',
           icon: 'success',
           confirmButtonText: 'OK'
         });
-      } 
-      
-      catch (error) {
-        console.error('Error adding material:', error.response ? error.response.data : error.message);
-        Swal.fire({
-          title: 'Error!',
-          text: error.response ? error.response.data.message : 'Failed to add material. Please try again.',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
+
+        // Close the modal after submitting
+        this.showModal = false;
+      } catch (error) {
+        console.error('Error adding material:', error);
+        Swal.fire("Error!", "Failed to add material.", "error");
       }
-    },
+    }
   }
 };
 </script>

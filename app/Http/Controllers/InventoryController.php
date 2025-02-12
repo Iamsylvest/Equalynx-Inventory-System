@@ -15,41 +15,68 @@ class InventoryController extends Controller
         $request->validate([
             'material_name' => 'required|string|max:255',
             'stocks' => 'required|integer|min:0',
-            'threshold' => 'required|integer|min:0',
             'measurement_quantity' => 'required|integer|min:0',
             'measurement_unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',  // Valid units
         ]);
-
-        // Try to create the inventory item
+    
         try {
-            // Ensure a default value for threshold if needed
-            
-            $threshold = $request->threshold ?? 0;
-
-            $inventory = Inventory::create([
-                'material_name' => $request->material_name,
-                'stocks' => $request->stocks,
-                'threshold' => $threshold, // Ensure threshold is set
-                'measurement_quantity' => intval($request->measurement_quantity),  // Force it to be an integer
-                'measurement_unit' => $request->measurement_unit,
-            ]);
-
+            // Check if material already exists with the same name and measurement unit
+            $inventory = Inventory::where('material_name', $request->material_name)
+                                  ->where('measurement_unit', $request->measurement_unit)
+                                  ->first();
+    
+            if ($inventory) {
+                // If the material exists, update the stocks and measurement_quantity
+                $inventory->update([
+                    'stocks' => $inventory->stocks + $request->stocks,
+                    'measurement_quantity' => $inventory->measurement_quantity + $request->measurement_quantity,
+                ]);
+                $message = 'Inventory updated successfully';
+            } else {
+                // If material doesn't exist, create a new inventory record
+                $inventory = Inventory::create([
+                    'material_name' => $request->material_name,
+                    'stocks' => $request->stocks,
+                    'measurement_quantity' => $request->measurement_quantity,
+                    'measurement_unit' => $request->measurement_unit,
+                ]);
+                $message = 'Inventory added successfully';
+            }
+    
             return response()->json([
                 'success' => true,
-                'message' => 'Inventory item added successfully',
+                'message' => $message,
                 'inventory' => $inventory,
             ], 201);
-
+    
         } catch (\Exception $e) {
-            // Log the error for better debugging
-            Log::error('Error adding inventory: ' . $e->getMessage());
-
+            Log::error('Error adding/updating inventory: ' . $e->getMessage());
+    
             return response()->json([
                 'error' => 'Server Error',
                 'message' => $e->getMessage(),
             ], 500);
         }
     }
+
+        public function checkMaterial(Request $request)
+        {
+            // Validate the incoming request to ensure necessary data
+            $request->validate([
+                'material_name' => 'required|string|max:255',
+                'measurement_unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',  // Valid units
+            ]);
+        
+            // Check if material already exists with the same name and measurement unit
+            $inventory = Inventory::where('material_name', $request->material_name)
+                                ->where('measurement_unit', $request->measurement_unit)
+                                ->exists();
+        
+            return response()->json(['exists' => $inventory]);
+        }
+
+
+
 
     public function index(Request $request)
     {
@@ -102,7 +129,6 @@ class InventoryController extends Controller
             // Validate incoming request for only editable fields
             $request->validate([
                 'stocks' => 'required|integer|min:0',
-                'threshold' => 'required|integer|min:0',
                 'measurement_quantity' => 'required|integer|min:0',
                 'measurement_unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',
             ]);
@@ -114,7 +140,6 @@ class InventoryController extends Controller
                 // Update only the editable fields
                 $inventory->update([
                     'stocks' => $request->stocks,
-                    'threshold' => $request->threshold,
                     'measurement_quantity' => $request->measurement_quantity,
                     'measurement_unit' => $request->measurement_unit,
                     // 'material_name' remains unchanged
@@ -139,13 +164,23 @@ class InventoryController extends Controller
 
         public function destroy($id)
         {
-            $inventory = Inventory::find($id);
-            if ($inventory) {
+            try {
+                // Find the inventory item or fail
+                $inventory = Inventory::findOrFail($id);
+                
+                // Delete the inventory item
                 $inventory->delete();
-                return response()->json(['message' => 'User deleted successfully.']);
-            } else {
-                return response()->json(['message' => 'User not found.'], 404);
+        
+                // Log the deletion action
+                Log::info("Material deleted successfully: ID {$id}");
+        
+                return response()->json(['message' => 'Material deleted successfully']);
+            } catch (\Exception $e) {
+                // Log the error for debugging
+                Log::error('Error deleting material: ' . $e->getMessage());
+        
+                // Return a 500 error if something went wrong
+                return response()->json(['message' => 'Failed to delete material', 'error' => $e->getMessage()], 500);
             }
         }
-  
 }

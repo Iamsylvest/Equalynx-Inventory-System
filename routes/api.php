@@ -41,3 +41,4 @@ Route::post('/inventory', [InventoryController::class, 'store']);
 Route::get('/inventory', [InventoryController::class, 'index']);
 Route::patch('/inventory/{id}', [InventoryController::class, 'update']);
 Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+Route::get('/inventory/check', [InventoryController::class, 'checkMaterial']);

@@ -21,7 +21,7 @@
         id="threshold"
         v-model="selectedStocks"
         @change="applyFilters"  
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
       >
         <option value="">All Stock Level</option>
         <option value="Low">Low</option>
@@ -36,7 +36,7 @@
         type="date"
         v-model="selectedDateAdded"
         @change="applyFilters"
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
       />
 
       <!-- Last Update Filter -->
@@ -46,7 +46,7 @@
         type="date"
         v-model="selectedLastUpdate"
         @change="applyFilters"
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
       />
 
 

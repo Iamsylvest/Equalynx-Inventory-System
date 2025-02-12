@@ -5,7 +5,7 @@
       <h1 class="text-lg">Materials ( <span> {{ total }} </span> )</h1>
       <div class="flex items-center justify-end space-x-6">
         <InventoryFillter @search="updateSearch" @filter="updateFilter"/>
-        <AddMaterial v-if="userRole === 'warehouse_staff'" @materialAdded="handleMaterialAdded" />
+        <AddMaterial v-if="userRole === 'warehouse_staff'" @materialAdded="handleMaterialAdded"/>
       </div>
     </div>
 
@@ -30,8 +30,8 @@
               :key="material.id" 
               :class="{
                 'border-b border-b-gray-400': true,   /* Always apply bottom border */
-                'bg-white': material.stocks > 20 && index % 2 === 0 || material.stocks > 20 && index % 2 !== 0,  /* Even rows - Gray */
-                'bg-red-200': material.stocks <= 20  /* Low stock - Always Red */
+                'bg-white hover:bg-gray-200': material.stocks > 20 && index % 2 === 0 || material.stocks > 20 && index % 2 !== 0,  /* Even rows - Gray */
+                'bg-red-200 hover:bg-red-300': material.stocks <= 20  /* Low stock - Always Red */
               }"
             >
           <td class="text-center px-4 py-2 border-0">{{ material.material_name }}</td>
@@ -124,10 +124,10 @@
       selectedStocks: '',
       selectedDateAdded: '',
       selectedLastUpdate: '',
+      selectedMaterial: null, // Store selected material
+      isEditModalVisible: false, // To show/hide edit modal
+    
 
-      selectedMaterial: null, // <-- Added this to store selected material
-      isEditModalVisible: false,
-   
     };
   },
   mounted() {
@@ -135,9 +135,12 @@
   },
   computed: {
     ...mapGetters('auth', ['user', 'userRole']),
-
     filteredMaterials() {
+      if (!this.materials) return []; // Prevent null reference error
+
       return this.materials.filter(material => {
+        if (!material || !material.material_name) return false; // Ensure material is valid
+
         const materialName = material.material_name.toLowerCase();
         const matchesMaterialName = this.tempSearchQuery
           ? materialName.includes(this.tempSearchQuery.toLowerCase())
@@ -145,9 +148,9 @@
         const matchesStocks = this.selectedStocks
           ? this.isStockLevelMatch(material.stocks, this.selectedStocks)
           : true;
-          const matchesDateAdded = this.selectedDateAdded
-            ? this.formatDate(material.created_at) === this.selectedDateAdded
-            : true;
+        const matchesDateAdded = this.selectedDateAdded
+          ? this.formatDate(material.created_at) === this.selectedDateAdded
+          : true;
         const matchesLastUpdate = this.selectedLastUpdate
           ? this.formatDate(material.updated_at) === this.selectedLastUpdate
           : true;
@@ -155,14 +158,24 @@
         return matchesMaterialName && matchesStocks && matchesDateAdded && matchesLastUpdate;
       });
     },
-
-  
   },
-    
   methods: {
 
+    handleMaterialAdded(newMaterial) {
+    this.materials.push(newMaterial);
+    this.materials.total++
+    this.isEditModalVisible = false; // Close modal
+    },
+
+
+
     deleteMaterial(materialId) {
-        Swal.fire({
+    if (this.userRole !== 'warehouse_staff') {
+        Swal.fire("Permission Denied", "You are not authorized to delete materials.", "error");
+        return;
+    }
+
+    Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
         icon: "warning",
@@ -170,64 +183,65 @@
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-          if(result.isConfirmed) {
-            axios.delete(`/api/inventory/${materialId}`).then(() => {
-              this.materials = this.materials.filter(material => material.id !== materialId);
-              this.total--;
-
-              Swal.fire("Deleted!", "The user has been deleted.", "success");
-            } )
-            .catch(error => {
-              console.error("Error deleting user:", error);
-              Swal.fire("Error!", "Something went wrong.", "error");
-            });
-          }
-        });
-    },
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  axios.delete(`/api/inventory/${materialId}`).then(() => {
+                      // Update the frontend
+                      this.materials = this.materials.filter(material => material.id !== materialId); // Filter out the deleted material
+                      this.total--; // Decrement the total count
+                      Swal.fire("Deleted!", "The material has been deleted.", "success");
+                  })
+                  .catch(error => {
+                      console.error("Error deleting material:", error);
+                      Swal.fire("Error!", "Something went wrong.", "error");
+                  });
+              }
+          });
+      },
 
     closeEditModal(){
       console.log("Close Edit Modal triggered");
       this.isEditModalVisible = false;
       this.selectedMaterial = null;
     },
+    
     showEditModal(material) {
       console.log("Editing Material:", material); // ✅ Check if this runs
       this.selectedMaterial = material;
       this.isEditModalVisible = true; // ✅ Now modal will open properly
     },
     
-     // Handle the update event from the EditMaterial component
-     updateMaterial(updatedMaterial) {
-           axios.
-           patch(`/api/inventory/${updatedMaterial.id}`, updatedMaterial)
-          .then(() => {
-            // Find the index of the updated material in the array
-            const index = this.materials.findIndex(material => material.id === updatedMaterial.id);
-            if (index !== -1) {
-              // Replace the old material with the updated one
-              this.materials[index] = updatedMaterial;
-              // Force reactivity by creating a new array
-              this.materials = [...this.materials];
-            }
+    // Handle the update event from the EditMaterial component
+    updateMaterial(updatedMaterial) {
+    
+      axios.patch(`/api/inventory/${updatedMaterial.id}`, updatedMaterial)
+        .then(() => {
+          // Find the index of the updated material in the array
+          const index = this.materials.findIndex(material => material.id === updatedMaterial.id);
+          if (index !== -1) {
+            // Replace the old material with the updated one
+            this.materials[index] = updatedMaterial;
+            // Force reactivity by creating a new array
+            this.materials = [...this.materials];
+          }
 
-            // Re-fetch materials to ensure the UI syncs with the server
-            this.fetchMaterials(this.currentPage);
-            
-            // Close the modal and reset the selected material
-            this.isEditModalVisible = false;
-            this.selectedMaterial = null;
+          // Re-fetch materials to ensure the UI syncs with the server
+          this.fetchMaterials(this.currentPage);
+          
+          // Close the modal and reset the selected material
+          this.isEditModalVisible = false;
+          this.selectedMaterial = null;
 
-            Swal.fire("Success!", "Material updated successfully.", "success");
-          })
-          .catch((error) => {
-            console.error("Error updating material:", error.response.data);
-            Swal.fire("Error!", `Failed to update material: ${error.response.data.message}`, "error");
-          });
-      },
+          Swal.fire("Success!", "Material updated successfully.", "success");
+        })
+        .catch((error) => {
+          console.error("Error updating material:", error.response.data);
+          Swal.fire("Error!", `Failed to update material: ${error.response.data.message}`, "error");
+        })
+    },
 
-      // Add the 'isStockLevelMatch' method
-      isStockLevelMatch(stocks, selectedLevel) {
+    // Add the 'isStockLevelMatch' method
+    isStockLevelMatch(stocks, selectedLevel) {
       // Aligning with the backend logic for stock levels
       if (selectedLevel === 'Low' && stocks <= 20) return true;  // Backend uses <= 20 for Low
       if (selectedLevel === 'Normal' && stocks > 20 && stocks <= 40) return true;  // Backend uses > 20 AND <= 40 for Normal
@@ -235,52 +249,41 @@
       return false;
     },
 
-    handleMaterialAdded(newMaterial) {
-      this.materials.push(newMaterial);
-      this.total++; 
-
-      Swal.fire({
-        title: 'Success!',
-        text: 'New material added successfully.',
-        icon: 'success',
-        confirmButtonColor: '#3085d6'
-      });
-    },
 
     async fetchMaterials(page = 1) {
-        try {
-          const params = new URLSearchParams();
-          params.append('page', page);
+      try {
+        const params = new URLSearchParams();
+        params.append('page', page);
 
-          if (this.tempSearchQuery !== '') {
-            params.append('search', this.tempSearchQuery);
-          }
-          if (this.selectedStocks !== '') {
-            params.append('stocks', this.selectedStocks);
-          }
-          if (this.selectedDateAdded !== '') {
-            const formattedDate = this.formatDate(this.selectedDateAdded);
-            params.append('created_at', formattedDate);
-            console.log("Filtering by Date Added:", formattedDate);
-          }
-          if (this.selectedLastUpdate !== '') {
-            const formattedUpdate = this.formatDate(this.selectedLastUpdate);
-            params.append('updated_at', formattedUpdate);
-            console.log("Filtering by Last Update:", formattedUpdate);
-          }
-
-          const url = `/api/inventory?${params.toString()}`;
-          console.log("Fetching data from:", url); // ✅ Check if dates are included
-
-          const response = await axios.get(url);
-          this.materials = response.data.data;
-          this.total = response.data.total;
-          this.currentPage = response.data.current_page;
-          this.lastPage = response.data.last_page;
-        } catch (error) {
-          console.error('Error fetching materials:', error);
+        if (this.tempSearchQuery !== '') {
+          params.append('search', this.tempSearchQuery);
         }
-      },
+        if (this.selectedStocks !== '') {
+          params.append('stocks', this.selectedStocks);
+        }
+        if (this.selectedDateAdded !== '') {
+          const formattedDate = this.formatDate(this.selectedDateAdded);
+          params.append('created_at', formattedDate);
+          console.log("Filtering by Date Added:", formattedDate);
+        }
+        if (this.selectedLastUpdate !== '') {
+          const formattedUpdate = this.formatDate(this.selectedLastUpdate);
+          params.append('updated_at', formattedUpdate);
+          console.log("Filtering by Last Update:", formattedUpdate);
+        }
+
+        const url = `/api/inventory?${params.toString()}`;
+        console.log("Fetching data from:", url); // ✅ Check if dates are included
+
+        const response = await axios.get(url);
+        this.materials = response.data.data;
+        this.total = response.data.total;
+        this.currentPage = response.data.current_page;
+        this.lastPage = response.data.last_page;
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+      }
+    },
 
     updateSearch(query) {
       this.tempSearchQuery = query;
@@ -298,18 +301,18 @@
     },
 
     formatDate(dateString) {
-        if (!dateString) return ''; // Handle empty input
+      if (!dateString) return ''; // Handle empty input
 
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-          console.error('Invalid date:', dateString);
-          return '';
-        }
-
-        const formattedDate = date.toISOString().split('T')[0]; // Converts to 'YYYY-MM-DD'
-        console.log(`Formatting Date: ${dateString} -> ${formattedDate}`);
-        return formattedDate;
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return '';
       }
+
+      const formattedDate = date.toISOString().split('T')[0]; // Converts to 'YYYY-MM-DD'
+      console.log(`Formatting Date: ${dateString} -> ${formattedDate}`);
+      return formattedDate;
+    }
   }
 };
 </script>

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->id();
             $table->string('material_name', 255);
             $table->integer('stocks') -> unsigned(); // Stocks can't be negative
-            $table->integer('threshold') -> unsigned();
             $table->integer('measurement_quantity'); // Change this from decimal to integer
             $table->string('measurement_unit', 50); // Add the unit of measurement, e.g., 'cm', 'm', 'kg'
             $table->timestamps();
