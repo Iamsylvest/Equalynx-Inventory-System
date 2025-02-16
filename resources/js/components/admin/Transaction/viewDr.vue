@@ -52,6 +52,7 @@
               <!-- Material Details -->
               <div class="bg-gray-100 p-6 rounded-md shadow-lg">
                 <div v-if="selectedmaterials.length === 0" class="text-gray-500 text-sm">No materials available.</div>
+                <h2 class="font-medium text-gray-700 mb-6">General Information</h2>
                 <div v-for="(material, index) in selectedmaterials" :key="index" class="flex space-x-6">
                     <div class="flex-1 mb-3">
                         <label class="text-sm text-gray-600">Material:</label>
@@ -71,7 +72,7 @@
         <!-- Location Details -->
                 <div class="bg-gray-100 p-6 rounded-md shadow-lg">
                 <h2 class="font-medium text-gray-700 mb-6">Location Details</h2>
-                <div v-if="item">
+                <div v-if="item" class="space-y-6">
                     <div>
                     <label class="text-sm text-gray-600">Location:</label>
                     <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ item.location ?? 'N/A' }}</p>

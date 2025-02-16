@@ -10,6 +10,8 @@
 
     <!-- Modal -->
     <div v-if="showModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center">
+      <div @click="showModal = false" class="absolute inset-0"></div>
+  
       <!-- Modal Content -->
       <div class="bg-white shadow-lg rounded-md max-w-2xl w-full mx-auto p-4 relative">
         <!-- Header -->

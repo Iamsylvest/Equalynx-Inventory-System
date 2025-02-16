@@ -49,3 +49,4 @@ Route::get('/inventory/check', [InventoryController::class, 'checkMaterial']);
 Route::post('/Dr', [DrController::class, 'store']); // Save DR
 Route::get('/Dr', [DrController::class, 'index']);  // Fetch DRs
 Route::get('/Dr/{id}', [DrController::class, 'show']);  // Fetch DRs
+Route::delete('/Dr/{id}', [DrController::class, 'destroy']);

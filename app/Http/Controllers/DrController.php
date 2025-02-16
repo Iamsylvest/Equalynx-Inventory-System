@@ -84,5 +84,24 @@ class DrController extends Controller
             'materials' => $dr->materials ?? []
         ]);
     }
+
+    public function destroy($id) {
+        try {
+              // Find the inventory item or fail
+            $dr = Dr::findorfail($id);
+
+            // Delete the inventory item
+            $dr -> delete();
+
+            Log::info("Delivery Receipt Deleted Successfully: ID {$id}");
+
+            return response()->json([ 'message' => 'Delivery Receipt Deleted Successfully']);
+        } catch (\Exception $e) {
+              // Log the error for debugging
+                Log::error('Error Deleting Delivery Receipt' . $e ->getMessage());
+                 // Return a 500 error if something went wrong
+                 return response()->json(['message' => 'Failed to Delete Delivery Receipt', 'ERROR' => $e->getMessage()], 500);
+        }
+    }
 }
 
