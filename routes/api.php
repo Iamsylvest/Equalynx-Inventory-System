@@ -7,6 +7,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Resources\UserResource; // Make sure to import the UserResource
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DrController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,3 +43,9 @@ Route::get('/inventory', [InventoryController::class, 'index']);
 Route::patch('/inventory/{id}', [InventoryController::class, 'update']);
 Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
 Route::get('/inventory/check', [InventoryController::class, 'checkMaterial']);
+
+
+
+Route::post('/Dr', [DrController::class, 'store']); // Save DR
+Route::get('/Dr', [DrController::class, 'index']);  // Fetch DRs
+Route::get('/Dr/{id}', [DrController::class, 'show']);  // Fetch DRs

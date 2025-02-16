@@ -256,10 +256,12 @@ export default {
           Swal.fire("Error!", "Failed to update user.", "error");
         });
     },
-    
     formatDate(date) {
-      const formattedDate = new Date(date);
-      return formattedDate.toLocaleDateString();
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     },
 
     handleUserAdded(newUser) {

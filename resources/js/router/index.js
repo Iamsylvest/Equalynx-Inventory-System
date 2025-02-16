@@ -9,6 +9,7 @@ import Notification from '@/pages/admin/Notification.vue';
 import Settings from '@/pages/admin/Settings.vue';
 import store from '@/store'; // Import the store
 
+
 const routes = [
   { path: '/', redirect: '/login' }, // Redirect root to login
   { path: '/login', component: Login },

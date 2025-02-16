@@ -9,6 +9,9 @@
     <meta http-equiv="Expires" content="0">
      <!-- ✅ Add Google Fonts (Roboto) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+       <!-- Include Google Maps API -->
+    
+    
     <title>Equalynx App</title>
     @vite('resources/js/app.js')  <!-- Include Vite build -->
     @vite('resources/css/app.css') <!-- Include your CSS -->

@@ -300,18 +300,12 @@
       this.fetchMaterials(this.currentPage);  // Fetch materials for the first page with new filters
     },
 
-    formatDate(dateString) {
-      if (!dateString) return ''; // Handle empty input
-
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        console.error('Invalid date:', dateString);
-        return '';
-      }
-
-      const formattedDate = date.toISOString().split('T')[0]; // Converts to 'YYYY-MM-DD'
-      console.log(`Formatting Date: ${dateString} -> ${formattedDate}`);
-      return formattedDate;
+    formatDate(date) {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     }
   }
 };

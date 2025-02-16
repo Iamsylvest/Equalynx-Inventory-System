@@ -75,7 +75,7 @@
 
         <!-- Submit Button -->
         <div class="flex justify-end p-4">
-          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Add Material</button>
+          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Submit</button>
         </div>
       </div>
     </div>
@@ -103,13 +103,20 @@ export default {
     async addMaterial() {
       // Basic validation
       if (!this.form.material_name || !this.form.stocks || !this.form.measurement_quantity || !this.form.measurement_unit) {
-        return; // Prevent the submission if any field is empty
+        Swal.fire({
+                title: 'Warning!',
+                text: 'Please fill in all the required fields before submitting.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent submission if any field is empty
       }
 
       try {
+        
         // Step 1: Check if the material already exists
         const checkResponse = await axios.get(`/api/inventory/check?material_name=${this.form.material_name}&measurement_unit=${this.form.measurement_unit}`);
-
+          
         // Step 2: If the material exists, show an error and prevent addition
         if (checkResponse.data.exists) {
           Swal.fire({
