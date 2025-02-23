@@ -2,8 +2,10 @@
     <div>
    <!-- Modal -->
       <div v-if="isVisible" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center">
+        <div @click="$emit('closeModal')" class="absolute inset-0"></div>
         <!-- Modal Content -->
         <div class="bg-white shadow-lg rounded-md max-w-2xl w-full mx-auto p-4 relative">
+        
           <!-- Header -->
           <div class="bg-custom-blue p-4 rounded-t-md flex justify-between items-center">
             <h1 class="text-lg text-white font-semibold flex items-center">
@@ -68,7 +70,7 @@
   
           <!-- Submit Button -->
           <div class="flex justify-end p-4">
-            <button @click="updateMaterial" class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Add Material</button>
+            <button @click="updateMaterial" class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Save changes</button>
           </div>
         </div>
       </div>

@@ -26,12 +26,27 @@ class InventoryController extends Controller
                                   ->first();
     
             if ($inventory) {
-                // If the material exists, update the stocks and measurement_quantity
-                $inventory->update([
-                    'stocks' => $inventory->stocks + $request->stocks,
-                    'measurement_quantity' => $inventory->measurement_quantity + $request->measurement_quantity,
-                ]);
-                $message = 'Inventory updated successfully';
+                // If the material exists, check the measurement_quantity
+                if ($inventory->measurement_quantity == $request->measurement_quantity) {
+                    // If the material quantity is the same, suggest editing it
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This material already exists with the same quantity. Please edit the existing material.',
+                    ], 400);
+                } else {
+                    // If the material quantity is different, allow adding the new material
+                    $inventory = Inventory::create([
+                        'material_name' => $request->material_name,
+                        'stocks' => $request->stocks,
+                        'measurement_quantity' => $request->measurement_quantity,
+                        'measurement_unit' => $request->measurement_unit,
+                    ]);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'New inventory added successfully.',
+                        'inventory' => $inventory,
+                    ], 201);
+                }
             } else {
                 // If material doesn't exist, create a new inventory record
                 $inventory = Inventory::create([
@@ -40,14 +55,12 @@ class InventoryController extends Controller
                     'measurement_quantity' => $request->measurement_quantity,
                     'measurement_unit' => $request->measurement_unit,
                 ]);
-                $message = 'Inventory added successfully';
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Inventory added successfully.',
+                    'inventory' => $inventory,
+                ], 201);
             }
-    
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'inventory' => $inventory,
-            ], 201);
     
         } catch (\Exception $e) {
             Log::error('Error adding/updating inventory: ' . $e->getMessage());
@@ -58,22 +71,25 @@ class InventoryController extends Controller
             ], 500);
         }
     }
+    
 
-        public function checkMaterial(Request $request)
-        {
-            // Validate the incoming request to ensure necessary data
-            $request->validate([
-                'material_name' => 'required|string|max:255',
-                'measurement_unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',  // Valid units
-            ]);
-        
-            // Check if material already exists with the same name and measurement unit
-            $inventory = Inventory::where('material_name', $request->material_name)
-                                ->where('measurement_unit', $request->measurement_unit)
-                                ->exists();
-        
-            return response()->json(['exists' => $inventory]);
-        }
+    public function checkMaterial(Request $request)
+    {
+        // Validate the incoming request to ensure necessary data
+        $request->validate([
+            'material_name' => 'required|string|max:255',
+            'measurement_quantity' => 'required|integer|min:0',
+            'measurement_unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',  // Valid units
+        ]);
+    
+        // Check if material already exists with the same name, quantity, and measurement unit
+        $inventory = Inventory::where('material_name', $request->material_name)
+                              ->where('measurement_quantity', $request->measurement_quantity)
+                              ->where('measurement_unit', $request->measurement_unit)
+                              ->exists();
+    
+        return response()->json(['exists' => $inventory]);
+    }
 
 
 

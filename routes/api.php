@@ -8,6 +8,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Resources\UserResource; // Make sure to import the UserResource
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DrController;
+use App\Http\Controllers\PDFController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -48,5 +49,9 @@ Route::get('/inventory/check', [InventoryController::class, 'checkMaterial']);
 
 Route::post('/Dr', [DrController::class, 'store']); // Save DR
 Route::get('/Dr', [DrController::class, 'index']);  // Fetch DRs
-Route::get('/Dr/{id}', [DrController::class, 'show']);  // Fetch DRs
+Route::get('/Dr/{id}', [DrController::class, 'show']);
 Route::delete('/Dr/{id}', [DrController::class, 'destroy']);
+Route::patch('/Dr/{id}', [DrController::class, 'update']);
+
+
+Route::get('pdf/generate/{id}', [PDFController::class, 'generatePdf']);

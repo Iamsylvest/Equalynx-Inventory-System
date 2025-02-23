@@ -1,57 +1,57 @@
 <template>
-  <div class="flex items-center gap-4 ">
+  <div class="flex items-center gap-3">
     <!-- Search Bar with Button -->
     <div class="flex items-center gap-2">
       <input
         v-model="tempSearchQuery"
         type="text"
         placeholder="Search by name..."
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
       />
       <button
         @click="applySearch"
-        class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-400 transition"
+        class="px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-400 transition"
       >
         Search
       </button>
     </div>
 
-      <!-- Threshold Filter -->
-      <select
-        id="threshold"
-        v-model="selectedStocks"
-        @change="applyFilters"  
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-      >
-        <option value="">All Stock Level</option>
-        <option value="Low">Low</option>
-        <option value="Normal">Normal</option>
-        <option value="High">High</option>
-      </select>
+    <!-- Threshold Filter -->
+    <select
+      id="threshold"
+      v-model="selectedStocks"
+      @change="applyFilters"
+      class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-32"
+    >
+      <option value="">All Stock Level</option>
+      <option value="Low">Low</option>
+      <option value="Normal">Normal</option>
+      <option value="High">High</option>
+    </select>
 
-        <!-- Date Added Filter -->
-      <label for="date_added" class="block text-md font-medium text-gray-700">Date Added</label>
+    <!-- Date Added Filter -->
+    <div class="flex items-center gap-2">
+      <label for="date_added" class="text-sm text-gray-700">Date Added</label>
       <input
         id="date_added"
         type="date"
         v-model="selectedDateAdded"
         @change="applyFilters"
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-36"
       />
+    </div>
 
-      <!-- Last Update Filter -->
-      <label for="last_update" class="block text-mdfont-medium text-gray-700">Last Update</label>
+    <!-- Last Update Filter -->
+    <div class="flex items-center gap-2">
+      <label for="last_update" class="text-sm text-gray-700">Last Update</label>
       <input
         id="last_update"
         type="date"
         v-model="selectedLastUpdate"
         @change="applyFilters"
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-36"
       />
-
-
-
-
+    </div>
   </div>
 </template>
 

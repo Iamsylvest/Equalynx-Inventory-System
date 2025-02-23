@@ -5,7 +5,7 @@
         <div @click="$emit('close')" class="absolute inset-0"></div>
 
         <!-- Modal Content -->
-        <div class="relative bg-white shadow-lg rounded-md w-full max-w-7xl mx-auto mt-10 mb-10">
+        <div class="relative bg-white shadow-lg rounded-md w-full [max-width:95rem] mx-auto mt-10 mb-10">
           <!-- Header -->
           <div class="sticky top-0 bg-custom-blue p-4 rounded-t-md z-10">
             <div class="flex items-center justify-between">
@@ -52,20 +52,24 @@
               <!-- Material Details -->
               <div class="bg-gray-100 p-6 rounded-md shadow-lg">
                 <div v-if="selectedmaterials.length === 0" class="text-gray-500 text-sm">No materials available.</div>
-                <h2 class="font-medium text-gray-700 mb-6">General Information</h2>
+                <h2 class="font-medium text-gray-700 mb-6">Materials Information</h2>
                 <div v-for="(material, index) in selectedmaterials" :key="index" class="flex space-x-6">
-                    <div class="flex-1 mb-3">
-                        <label class="text-sm text-gray-600">Material:</label>
-                        <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ material.material_name || 'N/A' }}</p>
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-sm text-gray-600">Measurement:</label>
-                        <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ material.measurement_unit || 'N/A' }}</p>
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-sm text-gray-600">Quantity:</label>
-                        <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ material.material_quantity || 'N/A' }}</p>
-                    </div>
+                  <div class="flex-1 mb-3">
+                    <label class="text-sm text-gray-600">Material:</label>
+                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md w-full" >{{ material.material_name || 'N/A' }}</p>
+                  </div>
+                  <div class="flex-1">
+                    <label class="text-sm text-gray-600">Measurement:</label>
+                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md w-full" >{{ material.measurement || 'N/A' }}</p>
+                  </div>
+                  <div class="flex-1">
+                    <label class="text-sm text-gray-600">Unit:</label>
+                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md w-full" >{{ material.unit || 'N/A' }}</p>
+                  </div>
+                  <div class="flex-1">
+                    <label class="text-sm text-gray-600">Quantity:</label>
+                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md w-full" >{{ material.material_quantity || 'N/A' }}</p>
+                  </div>
                     </div>
               </div>
 

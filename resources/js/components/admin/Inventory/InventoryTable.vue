@@ -209,7 +209,7 @@
       console.log("Editing Material:", material); // ✅ Check if this runs
       this.selectedMaterial = material;
       this.isEditModalVisible = true; // ✅ Now modal will open properly
-    },
+    }, 
     
     // Handle the update event from the EditMaterial component
     updateMaterial(updatedMaterial) {

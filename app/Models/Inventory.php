@@ -18,7 +18,6 @@ class Inventory extends Model
     protected $fillable = [
         'material_name',
         'stocks',
-        'threshold',
         'measurement_quantity',
         'measurement_unit',
     ];

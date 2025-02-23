@@ -185,6 +185,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Barryvdh\Snappy\ServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -207,9 +208,7 @@ return [
     | the aliases are "lazy" loaded so they don't hinder performance.
     |
     */
-
     'aliases' => Facade::defaultAliases()->merge([
-        // 'ExampleClass' => App\Example\ExampleClass::class,
+        'PDF' => Barryvdh\Snappy\Facades\SnappyPdf::class,
     ])->toArray(),
-
 ];

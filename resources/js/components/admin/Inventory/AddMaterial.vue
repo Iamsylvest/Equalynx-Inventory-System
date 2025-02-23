@@ -117,7 +117,7 @@ export default {
       try {
         
         // Step 1: Check if the material already exists
-        const checkResponse = await axios.get(`/api/inventory/check?material_name=${this.form.material_name}&measurement_unit=${this.form.measurement_unit}`);
+        const checkResponse = await axios.get(`/api/inventory/check?material_name=${this.form.material_name}&measurement_quantity=${this.form.measurement_quantity}&measurement_unit=${this.form.measurement_unit}`);
           
         // Step 2: If the material exists, show an error and prevent addition
         if (checkResponse.data.exists) {
