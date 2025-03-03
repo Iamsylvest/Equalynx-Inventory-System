@@ -9,6 +9,13 @@
       </div>
     </div>
 
+    <!-- <div class="grid cols-2 w-auto h-[250px] sm:h-[50px] bg-red-500 mb-5">
+        <div class="grid-cols-1 w-[50%] bg-blue-500"> 1 </div>
+        <div> 2 </div>
+        <div> 3 </div>
+        <div> 4 </div>
+    </div> -->
+
     <!-- Table for Materials -->
     <table class="table-auto w-full border-collapse mt-1 shadow-lg">
       <thead class="h-14">

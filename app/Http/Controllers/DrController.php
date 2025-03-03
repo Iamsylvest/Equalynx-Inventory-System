@@ -7,7 +7,7 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Models\Material;
-use App\Models\User;
+
 
 class DrController extends Controller
 {
@@ -75,7 +75,9 @@ class DrController extends Controller
     public function index(Request $request)
     {
         $query = Dr::query();
+
         Log::info('DrController@index invoked');
+
         if ($request->has('status')) {
             $query->where('status', $request->input('status'));
         }
@@ -92,7 +94,7 @@ class DrController extends Controller
             });
         }
     
-        $drs = $query->paginate(10);
+        $drs = $query->with('approver')->paginate(10);
     
         return response()->json($drs);
     }
@@ -150,41 +152,63 @@ class DrController extends Controller
     
             // Check if the status is changing and if it is 'approved'
             $newStatus = $request->status;
-    
-            // If status is 'approved', perform stock deductions
+
+                    // If status is 'approved', perform stock deductions
             if ($newStatus === 'approved') {
                 if (auth()->check() && auth()->user()->role !== 'manager') {
                     return response()->json(['message' => 'You are not authorized to approve this delivery receipt'], 403);
                 }
-    
+              
+
+                    
                 foreach ($request->materials as $material) {
+                    // Find the inventory item based on name, unit, and measurement quantity
                     $inventoryItem = Inventory::where('material_name', $material['material_name'])
-                        ->where('measurement_unit', $material['unit'])
-                        ->where('measurement_quantity', $material['measurement'])
-                        ->first();
-    
+                                                ->where('measurement_quantity', $material['measurement']) // Include this!
+                                                ->where('measurement_unit', $material['unit'])
+                                                ->first();
+
+                    // If no matching material with the same name & unit exists, return error
                     if (!$inventoryItem) {
-                        Log::error("Inventory item not found: {$material['material_name']}, Measurement: {$material['measurement']}");
-                        return response()->json(['message' => "Inventory item {$material['material_name']} not found"], 404);
+                        Log::error("Inventory item not found: {$material['material_name']}, Unit: {$material['unit']}");
+                        return response()->json([
+                            'message' => "Inventory item '{$material['material_name']}' with unit '{$material['unit']}' not found."
+                        ], 404);
                     }
-    
+
+                    // ✅ Strictly enforce that the measurement quantity must match exactly
+                    if ($inventoryItem->measurement_quantity != $material['measurement']) {
+                        Log::warning("Measurement mismatch for {$material['material_name']}. Expected: {$inventoryItem->measurement_quantity}, Given: {$material['measurement']}");
+                        return response()->json([
+                            'message' => "Measurement mismatch for '{$material['material_name']}'. Measurement: {$material['measurement']} {$material['unit']}. Not available/existing in the Inventory Table "
+                        ], 422);
+                    }
+
+                    // Ensure stock is set before checking availability
                     if ($inventoryItem->stocks === null) {
-                        $inventoryItem->stocks = 0; // Set stock to 0 if it's null
+                        $inventoryItem->stocks = 0; // Prevent null values from causing issues
                     }
-    
-                    // Check if there is enough stock to deduct
-                    if ($inventoryItem->stocks >= $material['material_quantity']) {
-                        $inventoryItem->stocks -= $material['material_quantity'];
-                        $inventoryItem->save();
-                        Log::info("Stock updated for {$inventoryItem->material_name}, New Stock: {$inventoryItem->stocks}");
-                    } else {
+
+                    // Check if there's enough stock to deduct
+                    if ($inventoryItem->stocks < $material['material_quantity']) {
                         Log::warning("Not enough stock for {$material['material_name']}. Available: {$inventoryItem->stocks}, Required: {$material['material_quantity']}");
-                        return response()->json(['message' => "Not enough stock for {$material['material_name']}"], 400);
-                    }    
+                        return response()->json([
+                            'message' => "Not enough stock for '{$material['material_name']}'. Available: {$inventoryItem->stocks}, Required: {$material['material_quantity']}."
+                        ], 400);
+                    }
+
+                    // Deduct stock and save
+                    $inventoryItem->stocks -= $material['material_quantity'];
+                    $inventoryItem->save();
+
+                    Log::info("Stock updated for {$inventoryItem->material_name}, New Stock: {$inventoryItem->stocks}");
                 }
             }
-    
+
+
+     
             // Update the DR item status
+            $dr->approved_by = auth()->id();  // Save user ID
             $dr->status = $newStatus;
             $dr->save();
     
@@ -227,14 +251,16 @@ class DrController extends Controller
             }
 
             // Fetch the name of the user who approved the DR (if any)
-            $approver = $dr->approved_by ? User::find($dr->approved_by) : null;
-            $approvedName = $approver ? $approver->name : 'Unknown'; // Default to 'Unknown' if no approver found
+            $dr = Dr::with('approver')->where('id', $id)->first();
 
+            Log::info("DR Data:", ['dr' => $dr]);
             return response()->json([
                 'success' => true,
                 'message' => 'Delivery Receipt updated successfully',
                 'dr' => $dr,
-                'appover_name' => $approvedName, // Add the approver's name to the response
+                'approved_by' => $dr->approver 
+                ? trim("{$dr->approver->first_name} {$dr->approver->middle_name} {$dr->approver->last_name}") 
+                : 'pending'
             ], 200);
     
         } catch (\Exception $e) {

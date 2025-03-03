@@ -27,7 +27,7 @@
           </button>
         </div>
         <div class="flex space-x-4">
-          <TransactionFillter @search="applySearch" @updateFilters="updateFilters"/>
+          <TransactionFillter @search="applySearch" @updateFilters="updateFilters" v-if="showTable === 'delivery'"/>
             <addDR @addedDR="handleDRadded"  @closeModal="showDrmodal = false" v-if="userRole === 'procurement'" />
         </div>
           
@@ -55,16 +55,38 @@
             <tr v-for="(item, index) in filteredDR" :key="index" class="bg-white border-b">
               <td class="px-6 py-4 text-center">{{ formatDate(item.created_at) }}</td>
 
-              <td class="px-6 py-4 text-center">
-                <button @click= "viewDr(item.id)" class="hover:underline custom-bg-blue ">
-                  {{ item.dr_number }}
+              <td @click="viewDr(item.id)" class="px-6 py-4 text-center">
+                <button class="hover:underline custom-bg-blue ">
+                  {{ item.dr_number}}
                 </button>
               </td>
               <td class="px-6 py-4 text-center">{{ item.name }}</td>
               <td class="px-6 py-4 text-center">{{ item.project_name }}</td>
-              <td class="px-6 py-4 text-center">{{ item.approved_by || 'Unknown' }}</td>
-              <td class="px-6 py-4 text-center">{{ item.status }}</td>
+
+              <td class="px-6 py-4 text-center">  
+                {{ item.approver ? (item.approver.first_name + ' ' + (item.approver.middle_name ? item.approver.middle_name + ' ' : '') + item.approver.last_name) : 'pending' }}
+              </td>
+
+              <td class="px-6 py-4 text-center">
+                <span  class="p-2 rounded-xl text-white font-semibold"
+                :class="{
+                'bg-green-300 text-green-600': item.status === 'approved',
+                'bg-red-300 text-red-600': item.status  === 'rejected',
+                'bg-yellow-300 text-yellow-600': item.status  === 'pending'
+              }">
+              {{ item.status }}
+                </span>
+           
+              </td>
+              
               <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
+                <button @click="addRR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z" />
+                  </svg>
+
+                </button>
+
                 <button @click="editDR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -78,7 +100,7 @@
                     </svg>
                 </button>
                             
-                <button @click="deleteDr(item.id)"  class="text-gray-500 hover:underline">
+                <button @click="deleteDr(item.id, item.dr_number)"  class="text-gray-500 hover:underline">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
@@ -89,23 +111,89 @@
         </table>
       </div>
 
+    
+
+          <!-- RETURN TABLE -->
+      
       <div>
         <table v-if="showTable === 'return'" class="table-auto w-full border-collapse mt-1 shadow-lg">
           <thead class="h-14 bg-gray-100">
             <tr class="bg-custom-blue text-white">
-              <th class="px-6 py-4 font-bold text-center">Date</th>
-              <th class="px-6 py-4 font-bold text-center">RR#</th>
+              <th class="px-6 py-4 font-bold text-center">Date Added</th>
+              <th class="px-6 py-4 font-bold text-center">RR# </th>
+              <th class="px-6 py-4 font-bold text-center">DR#</th>
               <th class="px-6 py-4 font-bold text-center">Name</th>
               <th class="px-6 py-4 font-bold text-center">Project Name</th>
-              <th class="px-6 py-4 font-bold text-center">Approved by</th>
+              <th class="px-6 py-4 font-bold text-center">Approved by:</th>
               <th class="px-6 py-4 font-bold text-center">Status</th>
               <th class="px-4 py-2 border-0 font-bold text-center">Action</th>
             </tr>
           </thead>
-          <tbody>
-          
-          </tbody>
+          <tbody v-if="returnRR.length > 0">
+              <tr v-for="(rr, returnRR) in returnRR" :key="rr.id">
+                <td class="px-6 py-4 text-center">{{ formatDate(rr.created_at) }}</td>
+
+                <td @click="viewRR(rr.id)"  class="px-6 py-4 text-center">
+                  <button class="hover:underline custom-bg-blue">
+                    {{ rr.rr_number }}
+                  </button>
+                </td>
+
+                <td class="px-6 py-4 text-center">
+                  <button class="hover:underline custom-bg-blue">
+                    {{ rr.dr ? rr.dr.dr_number : 'N/A' }}
+                    
+                  </button>
+                </td>
+
+                <td class="px-6 py-4 text-center">{{ rr.name }}</td>
+                <td class="px-6 py-4 text-center">{{ rr.project_name }}</td>
+
+                <td class="px-6 py-4 text-center"></td>
+
+                <td class="px-6 py-4 text-center">
+                  <span class="p-2 rounded-xl text-white font-semibold"
+                    :class="{
+                      'bg-green-300 text-green-600': rr.status === 'approved',
+                      'bg-red-300 text-red-600': rr.status === 'rejected',
+                      'bg-yellow-300 text-yellow-600': rr.status === 'pending'
+                    }">
+                    {{ rr.status }}
+                  </span>
+                </td>
+                <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
+      
+
+                <button class="text-gray-500 hover:underline w-full sm:w-auto" >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                  </svg>
+                </button>
+
+                <button  @click="downloadPDF(item.id)" 
+                        class="text-gray-500 hover:underline w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                </button>
+                            
+                <button @click="deleteRr(rr.id, rr.rr_number)"  class="text-gray-500 hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+              </button>
+              </td>
+              </tr>
+            </tbody>
+
+            <!-- Show message when there is no data -->
+            <tbody v-else>
+              <tr>
+                <td colspan="7" class="text-center p-4 text-gray-500">No data available</td>
+              </tr>
+            </tbody>
         </table>
+
            <!-- Pagination -->
           <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
                     <!-- Previous Button -->
@@ -146,6 +234,17 @@
           :materials="selectedmaterials"  
           @close="showViewDrModal = false" 
         />
+ 
+                  <!-- View Delivery Receipt Modal -->
+      <viewRR
+          v-if="viewReturn" 
+          :viewReturn="viewReturn" 
+          :item="selectedRR" 
+          :materials="selectedReturnMaterials"  
+          @closeViewReturnModal="viewReturn = false" 
+        />
+            
+
 
            <!-- Edit Delivery Receipt Modal -->
            <editDR
@@ -154,11 +253,17 @@
             :item="selectedDR"
             :materials="selectedmaterials" 
             @closeModal="closeEditDrModal" 
-            @update-item="handleUpdatedDR"
-            @update-materials="updateSelectedMaterials" 
           />
 
- 
+           <!-- Create Return Receipt Modal -->
+          <addRR
+            v-if="showEditDR_Return"
+            :showEditDR_Return="showEditDR_Return"
+            @closeModalReturnModal="closeCreateRRmodal"
+            :item="selectedDR"
+            :materials="selectedmaterials" 
+          />
+          
   
              
     </div>
@@ -170,6 +275,8 @@ import TransactionProfile from '@/components/admin/Transaction/TransactionProfil
 import addDR from '@/components/admin/Transaction/addDR.vue';
 import viewDr from '@/components/admin/Transaction/viewDr.vue';
 import editDR from '@/components/admin/Transaction/editDR.vue';
+import viewRR from '@/components/admin/Transaction/viewRR.vue';
+import addRR from '@/components/admin/Transaction/addRR.vue';
 import TransactionFillter from '@/components/admin/Transaction/TransactionFillter.vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -177,12 +284,15 @@ import {mapGetters} from 'vuex';
 
 export default {
     components: {
-        TransactionNotification,
+      TransactionNotification,
         TransactionProfile,
         addDR,
         viewDr,
         editDR,
         TransactionFillter,
+        addRR,
+        viewRR,
+        
      
      
     },
@@ -190,10 +300,15 @@ export default {
         return {
             showTable: 'delivery', // Default value
             showViewDrModal: false, // Control modal visibility
+            viewReturn: false,
             selectedDR: null, // ✅ Initialize as null
             selectedmaterials: [], // ✅ Initialize as empty array
+            selectedRR: null, // ✅ Initialize as null
+            selectedReturnMaterials: [], // ✅ Initialize as empty array
             drs: [], // Fixed naming for clarity
+            returnRR:[],
             showEditDrModal:false,
+            showEditDR_Return:false,
             tempSearchQuery:"",
             selectedStatus:'',
             selectedDateAdded:'',
@@ -207,7 +322,7 @@ export default {
     
     mounted() {
         this.fetchDRs(); // Fetch data when the component loads
- 
+        this.fetchRRs();
     },
     computed: {
       ...mapGetters('auth', ['user', 'userRole']),
@@ -264,9 +379,9 @@ export default {
           day: "numeric"
         });
       },
-    deleteDr(deliveryReceiptId){
+    deleteDr(deliveryReceiptId, dr_number){
         Swal.fire({
-          title: "Are you sure?",
+          title: `Are you sure you want to delete #${dr_number}?`,
           text: "You won't be able to revert this!",
           icon: "warning",
           showCancelButton: true,
@@ -299,6 +414,20 @@ export default {
         console.error("Error fetching delivery receipt:", error);
       }
     },
+    async viewRR(id) {
+      try {
+        const response = await axios.get(`/api/Rr/${id}`);
+        console.log('API Response:', response.data);  // Log the response to see what it returns
+        if (response.data) {
+          this.selectedRR = response.data.item || {}; // Default to empty object if no item
+          this.selectedReturnMaterials = response.data.materials || [];
+          this.viewReturn = true; // Show View Modal only after data is ready
+        }
+      } catch (error) {
+        console.error("Error fetching delivery receipt:", error);
+      }
+    },
+
     openEditDrModal() {
     this.showEditDrModal = true; // Show Edit Modal
     },
@@ -306,33 +435,36 @@ export default {
     closeEditDrModal() {
       this.showEditDrModal = false; // Close Edit Modal
     },
+  
 
     updateSelectedMaterials(updatedMaterials) {
         this.selectedmaterials = [...updatedMaterials]; // Ensure reactivity
     },
 
+
     async editDR(id) {
-  try {
-    const response = await axios.get(`/api/Dr/${id}`);
-    console.log("API Response:", response.data);
-    console.log("Materials in response:", response.data.item?.materials);
+      try {
+        const response = await axios.get(`/api/Dr/${id}`);
+        console.log("API Response:", response.data);
+        console.log("Materials in response:", response.data.item?.materials);
 
-    if (response.data) {
-      // Temporarily clear the selectedDR before assigning new data
-      this.selectedDR = null;
+        if (response.data) {
+          // Temporarily clear the selectedDR before assigning new data
+          this.selectedDR = null;
 
-      this.$nextTick(() => {
-        this.selectedDR = { ...response.data.item }; // ✅ Ensure reactivity
-        this.selectedmaterials = [...(response.data.item?.materials || [])];
+          this.$nextTick(() => {
+            this.selectedDR = { ...response.data.item }; // ✅ Ensure reactivity
+            this.selectedmaterials = [...(response.data.item?.materials || [])];
 
-        console.log("Selected Materials:", this.selectedmaterials);
-        this.showEditDrModal = true;
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching Delivery Receipt for edit:", error);
-  }
-},
+            console.log("Selected Materials:", this.selectedmaterials);
+            this.showEditDrModal = true;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching Delivery Receipt for edit:", error);
+      }
+    },
+
     handleUpdatedDR(updatedDR) {
         const index = this.drs.findIndex(dr => dr.id === updatedDR.id);
         if (index !== -1) {
@@ -363,10 +495,12 @@ export default {
         try {
           const response = await axios.get('/api/Dr', { params });
           console.log('✅ API Response:', response.data);
-           // Make sure to map through the data to include 'approved_by_name'
-          this.drs = response.data.data.map(dr => ({
+
+          this.drs = response.data.data.map(dr=> ({
             ...dr,
-            approved_by_name: dr.approved_by_name || 'Unknown', // Add a fallback for empty values
+            approved_by_name: dr.approver
+            ? `${dr.approver.first_name} ${dr.approver.middle_name ? dr.approver.middle_name + ' ' : ''}${dr.approver.last_name}`
+          : 'Pending'
           }));
           this.currentPage = response.data.current_page;
           this.lastPage = response.data.last_page;
@@ -384,9 +518,86 @@ export default {
       applySearch(query) {
         this.tempSearchQuery = query;
         this.fetchDRs(1); // ✅ Fetch data when searching
-    }
+    },
+
+
+
+    // RETURN TABLE LOGIC IN FRONT END
+
+    openCreateRRmodal(){
+      this.showEditDR_Return = true;
+    },
+    closeCreateRRmodal(){
+    this.showEditDR_Return = false;
     
+    },
+
+    async addRR(id) {
+      try {
+        const response = await axios.get(`/api/Dr/${id}`);
+        console.log("API Response:", response.data);
+        console.log("Materials in response:", response.data.item?.materials);
+
+        if (response.data) {
+          // Temporarily clear the selectedDR before assigning new data
+          this.selectedDR = null;
+
+          this.$nextTick(() => {
+            this.selectedDR = { ...response.data.item }; // ✅ Ensure reactivity
+            this.selectedmaterials = [...(response.data.item?.materials || [])];
+
+            console.log("Selected Materials:", this.selectedmaterials);
+            this.showEditDR_Return = true;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching Delivery Receipt for edit:", error);
+      }
+    },
+
+    async fetchRRs() {
+        try {
+            const response = await axios.get('/api/Rr');
+            console.log('API Response:', response.data);
+
+            // Ensure returnRR is an array
+            if (Array.isArray(response.data)) {
+                this.returnRR = response.data;
+            } else {
+                this.returnRR = []; // Prevents undefined errors
+            }
+        } catch (error) {
+            console.error('Error fetching RRs:', error);
+            this.returnRR = []; // Ensures empty state instead of breaking UI
+        }
+    },
+
+    deleteRr(returnReceiptId, rr_number){
+        Swal.fire({
+          title: `Are you sure you want to delete #${rr_number}?`, // ✅ Proper string interpolation
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios.delete(`/api/Rr/${returnReceiptId}`).then(() => {
+                // ✅ Fetch updated list after deletion
+                this.fetchRRs();
+                   // Update the frontend
+                   Swal.fire("Deleted!", "The Return Receipt has been deleted.", "success");   
+            }).catch(error =>{
+                console.error("Error deleting Return Receipt:", error);
+                Swal.fire("Error", "Something went wrong", "error");
+            });
+          }
+        })
+    },
+
+
   },
-   
+
 };
 </script>

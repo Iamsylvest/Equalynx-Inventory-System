@@ -10,8 +10,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
               </svg>
-              <span v-if="userRole === 'manager'">EDIT STATUS OF DELIVERY RECEIPT</span>
-               <span v-else>EDIT DELIVERY RECEIPT</span>
+              <span v-if="userRole === 'manager'">EDIT STATUS OF DELIVERY RECEIPT #{{ item.dr_number }}</span>
+               <span v-else>EDIT DELIVERY RECEIPT  #{{ item.dr_number }}</span>
             </h1>
             <button @click="$emit('closeModal')" class="text-white hover:text-gray-300 focus:outline-none">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
@@ -168,8 +168,8 @@
             </div>
   
             <!-- Buttons -->
-            <div class="flex justify-center mt-8 space-x-4">
-              <button @click="updateDR" class="px-32 py-2 rounded-lg bg-custom-blue text-white">
+            <div class="flex justify-center mt-8 space-x-4" v-if="showSaveButton">
+              <button @click="updateDR" class="px-32 py-2 rounded-lg bg-custom-blue text-white" >
                 Save changes
               </button>
             </div>
@@ -204,16 +204,19 @@ import {mapGetters} from 'vuex';
     data() {
       return {
         selectedmaterials: [],
+        showSaveButton: true,  //✅ Keep button visible until saved
+        originalStatus:"", //✅ Track original status before changes
+        
       }
     },
     mounted() {
       this.initMap();
     },
     watch: {
-  showEditDR(newVal) {
-    if (newVal) {
-      this.initMap();
-    }
+    showEditDR(newVal) {
+      if (newVal) {
+        this.initMap();
+      }
   },
       item: {
         handler(newItem) {
@@ -225,11 +228,21 @@ import {mapGetters} from 'vuex';
 
             // Ensure `status` updates correctly
             this.selectedStatus = newItem.status || ''; 
-            
-            // If coordinates exist, update the map
-            if (newItem.latitude && newItem.longitude) {
-              this.updateMapMarker();
-            }
+
+              // ✅ Track the original status (before user changes)
+            this.originalStatus = newItem.status;
+
+             // Update the save button visibility based on the status
+                if (newItem.status === "approved" || newItem.status === "rejected") {
+                    this.showSaveButton = true;
+                } else {
+                    this.showSaveButton = false;
+                }
+
+                // If coordinates exist, update the map
+                if (newItem.latitude && newItem.longitude) {
+                    this.updateMapMarker();
+                }
           }
         },
         deep: true,
@@ -257,33 +270,44 @@ import {mapGetters} from 'vuex';
         this.$emit('closeModal'); // Close the modal
       },
       async updateDR() {
-          try {
-              console.log("Before sending update:", this.selectedmaterials);
+    try {
+        // Prepare the updated data, including both status and materials
+        const updatedData = { 
+            ...this.item, 
+            status: this.item.status,  // Ensure the status is included
+            materials: this.selectedmaterials  // Include selected materials
+        };
 
-              // Prepare the updated data, including both status and materials
-              const updatedData = { 
-                  ...this.item, 
-                  status: this.item.status,  // Make sure status is included
-                  materials: this.selectedmaterials  // Include selected materials
-              };
+        // Log the updated data after it's initialized
+        console.log("Before sending update:", updatedData);
+        console.log("Selected materials:", this.selectedmaterials);
 
-              // ✅ Sending PATCH request to update both status and materials in the DR
-              const response = await axios.patch(`/api/Dr/${updatedData.id}`, updatedData);
+        // Send the PATCH request to update both status and materials in the DR
+        const response = await axios.patch(`/api/Dr/${updatedData.id}`, updatedData);
 
-              console.log("Updated DR Response:", response.data);
+        console.log("Updated DR Response:", response.data);
 
-              // ✅ Emit events to update parent components with new data
-              this.$emit("update-item", response.data.dr);  // Emit the updated DR object
-              this.$emit("update-materials", this.selectedmaterials);  // Emit updated materials
-              this.$emit("closeModal");  // Close the modal
+        // Emit events to update parent components with new data
+        this.$emit("update-item", response.data.dr);  // Emit the updated DR object
+        this.$emit("update-materials", this.selectedmaterials);  // Emit updated materials
+        this.$emit("closeModal");  // Close the modal
 
-              // Show success alert
-              Swal.fire("Success!", "Delivery Receipt Updated Successfully!", "success");
-          } catch (error) {
-              console.error("Error updating DR:", error.response?.data || error.message);
-              Swal.fire("Error!", `Delivery Receipt Failed to Update: ${error.response?.data?.message || error.message}`, "error");
-          }
-      },
+        // Hide the Save Button if the status has changed from "pending"
+        if (this.originalStatus === "pending" && this.item.status !== "pending") {
+            this.showSaveButton = false;
+        }
+
+        // Show success alert
+        Swal.fire("Success!", "Delivery Receipt Updated Successfully!", "success");
+    } catch (error) {
+        console.error("Error updating DR:", error.response?.data || error.message);
+        if (error.response?.status === 422 && error.response?.data?.error === "Mismatch") {
+            Swal.fire("Error!", "Measurement does not match the existing inventory!", "warning");
+        } else {
+            Swal.fire("Error!", `Delivery Receipt Failed to Update: ${error.response?.data?.message || error.message}`, "error");
+        }
+    }
+},
         initMap() {
           if (this.item.latitude && this.item.longitude) {
             this.map = L.map("map").setView([this.item.latitude, this.item.longitude], 15);
@@ -296,7 +320,7 @@ import {mapGetters} from 'vuex';
             this.marker.setLatLng([this.item.latitude, this.item.longitude]);
             this.map.setView([this.item.latitude, this.item.longitude]);
           }
-                },
+       },
          
       
     },

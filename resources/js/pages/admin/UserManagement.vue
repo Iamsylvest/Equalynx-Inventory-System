@@ -2,8 +2,8 @@
    
    <div class="p-8 ">
     <header class="flex flex-row justify-between items-center">
-        <h1 class="text-2xl  whitespace-nowrap">User Management</h1>
-        <div class="flex items-end justify-end">
+        <h1 class="text-2xl whitespace-nowrap">User Management</h1>
+        <div class="hidden sm:flex md:flex lg:flex items-end justify-end">
             <AdminNotification />
             <AdminProfile />
         </div>

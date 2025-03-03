@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource; // Make sure to import the UserResource
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DrController;
 use App\Http\Controllers\PDFController;
+use App\Http\Controllers\RrController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -55,3 +56,9 @@ Route::patch('/Dr/{id}', [DrController::class, 'update']);
 
 
 Route::get('pdf/generate/{id}', [PDFController::class, 'generatePdf']);
+
+
+Route::post('/update-dr-Rr', [RrController::class, 'store']); // Save Return
+Route::get('/Rr', [RrController::class, 'index']);
+Route::delete('/Rr/{id}', [RrController::class, 'destroy']);
+Route::get('/Rr/{id}', [RrController::class, 'show']);

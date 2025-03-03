@@ -50,7 +50,7 @@
 import { mapActions } from 'vuex';
 import backgroundImage from '@/assets/dataCenter.jpg';
 import Swal from 'sweetalert2'; // Import SweetAlert2
-import router from '../router';
+
 
 export default {
   name: 'LoginPage',

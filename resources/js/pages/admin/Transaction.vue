@@ -3,7 +3,7 @@
   <div class="p-8 ">
    <header class="flex flex-row justify-between items-center">
        <h1 class="text-2xl  whitespace-nowrap">Transaction</h1>
-       <div class="flex items-end justify-end">
+       <div class="hidden sm:flex md:flex items-end justify-end">
            <TransactionNotification />
            <TransactionProfile />
        </div>
