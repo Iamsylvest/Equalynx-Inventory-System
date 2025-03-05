@@ -164,13 +164,13 @@
                 <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
       
 
-                <button class="text-gray-500 hover:underline w-full sm:w-auto" >
+                <button @click="editRR(rr.id)"  class="text-gray-500 hover:underline w-full sm:w-auto" >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
                 </button>
 
-                <button  @click="downloadPDF(item.id)" 
+                <button  @click="downloadPDFrr(rr.id)" 
                         class="text-gray-500 hover:underline w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -263,6 +263,14 @@
             :item="selectedDR"
             :materials="selectedmaterials" 
           />
+               <!-- Create Return Receipt Modal -->
+          <editRR
+            v-if="showEditReturn"
+            :showEditReturn="showEditReturn"
+            @closeEditReturn="closeEditRRmodal"
+            :item="selectedRR"
+            :materials="selectedReturnMaterials" 
+          />
           
   
              
@@ -275,6 +283,7 @@ import TransactionProfile from '@/components/admin/Transaction/TransactionProfil
 import addDR from '@/components/admin/Transaction/addDR.vue';
 import viewDr from '@/components/admin/Transaction/viewDr.vue';
 import editDR from '@/components/admin/Transaction/editDR.vue';
+import editRR from '@/components/admin/Transaction/editRR.vue';
 import viewRR from '@/components/admin/Transaction/viewRR.vue';
 import addRR from '@/components/admin/Transaction/addRR.vue';
 import TransactionFillter from '@/components/admin/Transaction/TransactionFillter.vue';
@@ -289,6 +298,7 @@ export default {
         addDR,
         viewDr,
         editDR,
+        editRR,
         TransactionFillter,
         addRR,
         viewRR,
@@ -300,6 +310,7 @@ export default {
         return {
             showTable: 'delivery', // Default value
             showViewDrModal: false, // Control modal visibility
+            showEditReturn: false,
             viewReturn: false,
             selectedDR: null, // ✅ Initialize as null
             selectedmaterials: [], // ✅ Initialize as empty array
@@ -354,6 +365,31 @@ export default {
           const a = document.createElement("a");
           a.href = blobUrl;
           a.download = `DeliveryReceipt_${id}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } catch (error) {
+          console.error("Download error:", error);
+        }
+      },
+      async downloadPDFrr(id) {
+        const apiUrl = `/api/pdf/generate/${id}`; // Relative URL without the full domain
+        console.log('Requesting PDF with ID:', id);
+        
+        try {
+          const response = await axios.get(apiUrl, {
+            responseType: 'blob', // Important for binary data
+            headers: {
+              "Accept": "application/pdf"
+            }
+          });
+
+          const blob = response.data;
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `ReturnReceipt_${id}.pdf`;
           document.body.appendChild(a);
           a.click();
           a.remove();
@@ -463,6 +499,29 @@ export default {
       } catch (error) {
         console.error("Error fetching Delivery Receipt for edit:", error);
       }
+    },
+    async editRR(id){
+        try{
+          const response = await axios.get(`/api/Rr/${id}`);
+          console.log("Api response", response.data);
+          console.log("Materials in response", response.data.item?.materials);
+
+          if (response.data) {
+              this.selectedRR = null;
+                this.$nextTick(() => {
+                  this.selectedRR = {...response.data.item};
+                  this.selectedReturnMaterials = [...(response.data.item?.materials || [])]
+                  console.log("Selected Materials:", this.selectedReturnMaterials);
+                  this.showEditReturn = true;
+                });
+          }
+        } catch(error){
+            console.error("Error Fetching Return Receipt for edit:", error);
+        }
+    },
+
+    closeEditRRmodal(){
+      this.showEditReturn = false;
     },
 
     handleUpdatedDR(updatedDR) {

@@ -33,11 +33,11 @@
                             <div class="space-y-6">
                                 <div>
                                     <label class="text-sm text-gray-600">Name:</label>
-                                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ item.name }}</p>
+                                    <p class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md">{{ item.name }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm text-gray-600">Project Name:</label>
-                                    <p class="text-xs bg-white p-2 border border-gray-300 rounded-md">{{ item.project_name }}</p>
+                                    <p class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md">{{ item.project_name }}</p>
                                 </div>
                                 <div>
                                     <label class="text-sm text-gray-600">Status:</label>
@@ -47,23 +47,24 @@
                                     <label class="text-sm text-gray-600">Remarks:</label>
                                     <p class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md">{{ item.remarks }}</p>
                                 </div>
-                                <div>
+                           
+                                <!-- Modal (Only shown when showProofModal is true) -->
+                                <div v-if="showProofModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center">
+                                <div class="relative p-4 rounded-lg shadow-lg">
+                                    <button @click="closeProof" class="absolute top-2 right-2 text-white bg-gray-500 rounded-full p-3">
+                                        ✕
+                                    </button>
+                                    <img :src="proofImageUrl" alt="Proof Return" class="max-w-full max-h-screen" />
+                                </div>
+                            </div>
+
+                            <div>
                                     <label class="text-sm text-gray-600">Proof Return:</label>
                                     <p class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md cursor-pointer text-blue-600 underline"
                                         @click="showProof">
                                         {{ item.return_proof_original_name || 'View Proof' }}
                                     </p>
                                 </div>
-
-                                <!-- Modal (Only shown when showProofModal is true) -->
-                                <div v-if="showProofModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center">
-                                <div class="relative p-4 rounded-lg shadow-lg">
-                                    <button @click="closeProof" class="absolute top-2 right-2 text-white bg-gray-500 rounded-full p-1">
-                                        ✕
-                                    </button>
-                                    <img :src="proofImageUrl" alt="Proof Return" class="max-w-full max-h-screen" />
-                                </div>
-                            </div>
                                                             
                             </div>
                         </div>

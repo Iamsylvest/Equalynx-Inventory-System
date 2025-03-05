@@ -143,12 +143,12 @@
                     class="text-xs p-2 border border-gray-300 rounded-md w-full">
                   </div>
                 </div>
-              <div  class="flex mt-5"  v-if="userRole === 'procurement'">
+              <div  class="flex mt-5"  v-if="userRole === 'warehouse_staff'">
                 <p @click.prevent="addMaterialInput" class="text-blue-500 text-xs cursor-pointer">Add material +</p>
               </div>
 
               <!-- Delete Button -->
-              <div v-if="userRole === 'procurement' && selectedmaterials.length> 1" class="flex justify-center mt-4">
+              <div v-if="userRole === 'warehouse_staff' && selectedmaterials.length> 1" class="flex justify-center mt-4">
                 <button @click.prevent="deleteMaterialInput" class="text-red-500 text-xs hover:text-red-700">
                   Delete Last Material
                 </button>
@@ -258,6 +258,20 @@ mounted() {
   }
 },
 methods: {
+  addMaterialInput() {
+          this.selectedmaterials.push({ 
+            id: Date.now(), // Temporary ID to track items
+            material_name: '', 
+            measurement:null, 
+            unit: '', 
+            material_quantity: null 
+          });
+        },
+        deleteMaterialInput(index) {
+        if (this.selectedmaterials.length > 0) {
+            this.selectedmaterials.pop(index, 1); // Properly remove the material from the array
+        }
+    },
   initMap() {
     if (this.map) {
       this.map.remove(); // Remove old map instance

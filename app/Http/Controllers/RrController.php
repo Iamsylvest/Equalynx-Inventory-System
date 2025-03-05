@@ -180,7 +180,104 @@ class RrController extends Controller
      */
     public function update(Request $request, $id)
     {
-      
+        $request->validate([
+            'name' => 'required|string',
+            'project_name' => 'required|string',
+            'status' => 'required|string',
+            'remarks' => 'nullable|string',
+            'location' => 'required|string',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'return_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'materials.*.material_name' => 'required|string',
+            'materials.*.measurement' => 'required|integer|min:1',
+            'materials.*.unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',
+            'materials.*.material_quantity' => 'required|integer|min:1',
+        ]);
+    
+        try {
+            $rr = Rr::findOrFail($id);
+    
+            // Handle file upload if a new file is provided
+            if ($request->hasFile('return_proof')) {
+                $file = $request->file('return_proof');
+                $returnProofPath = $file->store('return_proofs', 'public');
+                $returnProofOriginalName = $file->getClientOriginalName();
+    
+                // Update file fields
+                $rr->return_proof = $returnProofPath;
+                $rr->return_proof_original_name = $returnProofOriginalName;
+            }
+    
+            // Update the RR record
+            $rr->update([
+                'name' => $request->name,
+                'project_name' => $request->project_name,
+                'status' => $request->status,
+                'location' => $request->location,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'remarks' => $request->remarks,
+            ]);
+    
+            // Handle materials update
+            $existingMaterialIds = $rr->materials()->pluck('id')->toArray();
+            $newMaterialIds = [];
+                // Decode materials if they were sent as JSON string (because of FormData in Vue)
+                $materials = json_decode($request->input('materials'), true);
+
+                if (!is_array($materials)) {
+                    return response()->json(['error' => 'Invalid materials format'], 400);
+                }
+
+                // Handle materials update
+                $existingMaterialIds = $rr->materials()->pluck('id')->toArray();
+                $newMaterialIds = [];
+ 
+                foreach ($materials as $material) {
+                    if (!empty($material['id'])) {
+                        // Update existing material
+                        $existingMaterial = ReturnMaterial::find($material['id']);
+                        if ($existingMaterial) {
+                            $existingMaterial->update([
+                                'material_name' => $material['material_name'],
+                                'measurement' => $material['measurement'],
+                                'unit' => $material['unit'],
+                                'material_quantity' => $material['material_quantity'],
+                            ]);
+                            $newMaterialIds[] = $existingMaterial->id;
+                        }
+                    } else {
+                        // Create new material
+                        $newMaterial = ReturnMaterial::create([
+                            'rr_id' => $rr->id,
+                            'material_name' => $material['material_name'],
+                            'measurement' => $material['measurement'],
+                            'unit' => $material['unit'],
+                            'material_quantity' => $material['material_quantity'],
+                        ]);
+                        $newMaterialIds[] = $newMaterial->id;
+                    }
+                }
+                    
+            // Delete materials that were removed from the request
+            $materialsToDelete = array_diff($existingMaterialIds, $newMaterialIds);
+            ReturnMaterial::destroy($materialsToDelete);
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Return Receipt Successfully Updated',
+                'rr' => $rr->load('materials'),
+            ], 200);
+    
+        } catch (\Exception $e) {
+            Log::error('Error updating Return Receipt: ' . $e->getMessage());
+    
+            return response()->json([
+                'error' => 'Server Error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
     /**
      * Remove the specified resource from storage.
@@ -208,4 +305,5 @@ class RrController extends Controller
             return response()->json(['message' => 'Failed to Delete Return Receipt', 'error' => $e->getMessage()], 500);
         }
     }
+
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use App\Models\Dr;
+use App\Models\Rr;
 use Illuminate\Support\Facades\Log;
 
 class PDFController extends Controller
@@ -28,6 +29,40 @@ class PDFController extends Controller
         } catch (\Exception $e) {
             // Log the error for debugging if the PDF generation fails
             Log::error('PDF generation failed: ' . $e->getMessage());
+            return response()->json(['error' => 'PDF generation failed'], 500);
+        }
+    }
+    
+    public function generatePDFrr($id)
+    {
+        try {
+            // Fetch RR data with materials relationship (you can add a limit if needed)
+            $rr = Rr::with('materials')->find($id);
+    
+            if (!$rr) {
+                Log::warning("RR not found with ID: {$id}");
+                return response()->json(['error' => 'Return Receipt not found'], 404);
+            }
+    
+            // Log loaded RR data (consider removing in production if it contains sensitive data)
+            Log::debug('RR Data:', ['rr' => $rr->toArray()]);
+    
+            // Optional - Log only the materials' names to check loading
+            Log::debug('Materials Names:', $rr->materials->pluck('material_name')->toArray());
+    
+            // Render the view into HTML
+            $htmlContent = view('pdf.return_receipt', compact('rr'))->render();
+    
+            // Log the HTML content (can be large, so be careful in production)
+            Log::debug('Generated HTML Content Length:', ['length' => strlen($htmlContent)]);
+    
+            // Generate and return the PDF
+            return PDF::loadHTML($htmlContent)->inline('return_receipt.pdf');
+    
+        } catch (\Exception $e) {
+            // Log the error message and stack trace
+            Log::error('PDF generation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+    
             return response()->json(['error' => 'PDF generation failed'], 500);
         }
     }

@@ -56,9 +56,10 @@ Route::patch('/Dr/{id}', [DrController::class, 'update']);
 
 
 Route::get('pdf/generate/{id}', [PDFController::class, 'generatePdf']);
-
+Route::get('pdf/generate/{id}', [PDFController::class, 'generatePDFrr']);
 
 Route::post('/update-dr-Rr', [RrController::class, 'store']); // Save Return
 Route::get('/Rr', [RrController::class, 'index']);
 Route::delete('/Rr/{id}', [RrController::class, 'destroy']);
 Route::get('/Rr/{id}', [RrController::class, 'show']);
+Route::post('/updateReturnReceipt/{id}', [RrController::class, 'update']);

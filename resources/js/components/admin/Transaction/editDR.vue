@@ -49,7 +49,7 @@
                           id="status" 
                           v-model="item.status" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
-                          :disabled="userRole  !== 'manager' || item.status  === 'approved' ||  item.status ==='rejected'" 
+                          :disabled="!(userRole === 'manager') || item.status === 'approved' || item.status === 'rejected'"
                            class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300"
                         >
                           <option value="pending">pending</option>
@@ -60,9 +60,11 @@
                   <div>
                     <label class="text-sm text-gray-600">Remarks:</label>
                     <textarea v-model="item.remarks" 
-                    :disabled="userRole !== 'procurement'" 
+                    :disabled="!(userRole === 'procurement' || userRole === 'manager')"
                       class="text-xs p-2 border border-gray-300 rounded-md w-full"
-                      :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" >
+                      :class="(userRole === 'procurement' || userRole === 'manager') 
+                            ? 'bg-white text-black' 
+                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'">
                 </textarea>
                   </div>
                 </div>
@@ -275,7 +277,8 @@ import {mapGetters} from 'vuex';
         const updatedData = { 
             ...this.item, 
             status: this.item.status,  // Ensure the status is included
-            materials: this.selectedmaterials  // Include selected materials
+            materials: this.selectedmaterials , // Include selected materials
+            remarks: this.item.remarks
         };
 
         // Log the updated data after it's initialized
