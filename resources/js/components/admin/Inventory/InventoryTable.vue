@@ -155,12 +155,17 @@
         const matchesStocks = this.selectedStocks
           ? this.isStockLevelMatch(material.stocks, this.selectedStocks)
           : true;
-        const matchesDateAdded = this.selectedDateAdded
-          ? this.formatDate(material.created_at) === this.selectedDateAdded
-          : true;
-        const matchesLastUpdate = this.selectedLastUpdate
-          ? this.formatDate(material.updated_at) === this.selectedLastUpdate
-          : true;
+        // Get `YYYY-MM-DD` from material.created_at and updated_at
+        const createdAt = material.created_at ? material.created_at.split('T')[0] : null;
+        const updatedAt = material.updated_at ? material.updated_at.split('T')[0] : null;
+
+          const matchesDateAdded = this.selectedDateAdded
+              ? createdAt === this.selectedDateAdded
+              : true;
+
+          const matchesLastUpdate = this.selectedLastUpdate
+              ? updatedAt === this.selectedLastUpdate
+              : true;
 
         return matchesMaterialName && matchesStocks && matchesDateAdded && matchesLastUpdate;
       });
@@ -269,14 +274,14 @@
           params.append('stocks', this.selectedStocks);
         }
         if (this.selectedDateAdded !== '') {
-          const formattedDate = this.formatDate(this.selectedDateAdded);
-          params.append('created_at', formattedDate);
-          console.log("Filtering by Date Added:", formattedDate);
+            const formattedDate = new Date(this.selectedDateAdded).toISOString().split('T')[0];
+            params.append('created_at', formattedDate);
+            console.log("📅 Filtering by Date Added:", formattedDate);
         }
         if (this.selectedLastUpdate !== '') {
-          const formattedUpdate = this.formatDate(this.selectedLastUpdate);
-          params.append('updated_at', formattedUpdate);
-          console.log("Filtering by Last Update:", formattedUpdate);
+            const formattedUpdate = new Date(this.selectedLastUpdate).toISOString().split('T')[0];
+            params.append('updated_at', formattedUpdate);
+            console.log("📅 Filtering by Last Update:", formattedUpdate);
         }
 
         const url = `/api/inventory?${params.toString()}`;
@@ -299,8 +304,8 @@
 
     updateFilter(filters) {
       this.selectedStocks = filters.stocks || ''; 
-      this.selectedDateAdded = filters.created_at ? this.formatDate(filters.created_at) : '';  
-      this.selectedLastUpdate = filters.updated_at ? this.formatDate(filters.updated_at) : ''; 
+      this.selectedDateAdded = filters.created_at || '';  
+      this.selectedLastUpdate = filters.updated_at ||''; 
       this.tempSearchQuery = filters.material_name || '';
 
       this.currentPage = 1;  // Reset to the first page when applying filters

@@ -18,7 +18,9 @@
     "dependencies": {
         "html2canvas": "^1.4.1",
         "jspdf": "^3.0.0",
+        "laravel-echo": "^2.0.2",
         "leaflet": "^1.9.4",
+        "pusher-js": "^8.4.0",
         "sweetalert2": "^11.15.10",
         "vue-router": "^4.5.0",
         "vuex": "^4.0.2",

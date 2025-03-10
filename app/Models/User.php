@@ -23,6 +23,7 @@ class User extends Authenticatable
         'middle_name',
         'last_name',
         'is_active',
+        'status',
         'email', // <-- Add email field
         'password',
         'role', // <-- Ensure role is included if used in seeder

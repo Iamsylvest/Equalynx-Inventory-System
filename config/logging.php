@@ -51,9 +51,17 @@ return [
     */
 
     'channels' => [
+
+        'activity' => [
+            'driver' => 'daily', // Rotates logs daily to prevent a huge log file // Keep logs for 4 months (120 days)
+            'path' => storage_path('logs/activity.log'),
+            'level' => 'info',
+            'days' => 7, // Automatically deletes logs older than 4 months (120 days)
+        ],
+
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single', 'daily'], // Includes both single and daily logs
             'ignore_exceptions' => false,
         ],
 

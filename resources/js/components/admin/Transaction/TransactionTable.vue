@@ -18,7 +18,7 @@
           <button
             class="p-3 px-4 text-sm font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
             @click="showTable = 'return'"
-            :class="{
+            :class="{ 
               'bg-custom-blue text-white': showTable === 'return',
               'hover:bg-custom-blue hover:text-white': showTable !== 'return'
             }"
@@ -28,6 +28,7 @@
         </div>
         <div class="flex space-x-4">
           <TransactionFillter @search="applySearch" @updateFilters="updateFilters" v-if="showTable === 'delivery'"/>
+          <returnFillter @searchReturn="applySearchReturn" @updateFiltersReturn="updateFiltersReturn" v-if="showTable === 'return'"/>
             <addDR @addedDR="handleDRadded"  @closeModal="showDrmodal = false" v-if="userRole === 'procurement'" />
         </div>
           
@@ -63,7 +64,7 @@
               <td class="px-6 py-4 text-center">{{ item.name }}</td>
               <td class="px-6 py-4 text-center">{{ item.project_name }}</td>
 
-              <td class="px-6 py-4 text-center">  
+              <td class="px-6 py-4 text-center" v-if="item.approver !== 'manager'">  
                 {{ item.approver ? (item.approver.first_name + ' ' + (item.approver.middle_name ? item.approver.middle_name + ' ' : '') + item.approver.last_name) : 'pending' }}
               </td>
 
@@ -87,7 +88,7 @@
 
                 </button>
 
-                <button @click="editDR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" >
+                <button @click="editDR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" v-if="item.status !== 'approved' && item.status !== 'rejected'" >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
@@ -129,8 +130,11 @@
               <th class="px-4 py-2 border-0 font-bold text-center">Action</th>
             </tr>
           </thead>
-          <tbody v-if="returnRR.length > 0">
-              <tr v-for="(rr, returnRR) in returnRR" :key="rr.id">
+          <tbody>
+            <tr v-if="filteredRR.length === 0" >
+              <td colspan="6" class="text-center py-4">No materials found</td>
+            </tr>
+              <tr v-for="(rr, index) in filteredRR" :key="index">
                 <td class="px-6 py-4 text-center">{{ formatDate(rr.created_at) }}</td>
 
                 <td @click="viewRR(rr.id)"  class="px-6 py-4 text-center">
@@ -149,7 +153,14 @@
                 <td class="px-6 py-4 text-center">{{ rr.name }}</td>
                 <td class="px-6 py-4 text-center">{{ rr.project_name }}</td>
 
-                <td class="px-6 py-4 text-center"></td>
+                <td class="px-6 py-4 text-center">
+                  {{ rr.approver 
+                        ? rr.approver.first_name + ' ' + 
+                          (rr.approver.middle_name ? rr.approver.middle_name + ' ' : '') + 
+                          rr.approver.last_name 
+                        : 'N/A' 
+                    }}
+            </td>
 
                 <td class="px-6 py-4 text-center">
                   <span class="p-2 rounded-xl text-white font-semibold"
@@ -164,7 +175,7 @@
                 <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
       
 
-                <button @click="editRR(rr.id)"  class="text-gray-500 hover:underline w-full sm:w-auto" >
+                <button @click="editRR(rr.id)"  class="text-gray-500 hover:underline w-full sm:w-auto" v-if="rr.status !== 'approved' && rr.status !== 'rejected'">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
@@ -187,15 +198,11 @@
             </tbody>
 
             <!-- Show message when there is no data -->
-            <tbody v-else>
-              <tr>
-                <td colspan="7" class="text-center p-4 text-gray-500">No data available</td>
-              </tr>
-            </tbody>
+
         </table>
 
            <!-- Pagination -->
-          <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+          <div v-if="showTable === 'delivery'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
                     <!-- Previous Button -->
                     <button 
                       @click="fetchDRs(currentPage - 1)" 
@@ -225,6 +232,40 @@
                       →
                     </button>
               </div>
+
+                        <!-- Pagination -->
+          <div v-if="showTable === 'return'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+                    <!-- Previous Button -->
+                    <button 
+                      @click="fetchRRs(currentPage_Return - 1)" 
+                      :disabled="currentPage_Return === 1" 
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                    >
+                      ←
+                    </button>
+
+                    <!-- Pagination Numbers -->
+                    <span 
+                      v-for="page in lastPage_Return" 
+                      :key="page"
+                      @click="fetchRRs(page)"
+                      class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+                      :class="{'bg-blue-500 text-white': lastPage_Return === page, 'hover:bg-gray-200': lastPage_Return !== page}"
+                    >
+                      {{ page }}
+                    </span>
+
+                    <!-- Next Button -->
+                    <button 
+                      @click="fetchRRs(currentPage + 1)" 
+                      :disabled="currentPage_Return === lastPage_Return" 
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                    >
+                      →
+                    </button>
+              </div>
+              
+         
             </div>
           <!-- View Delivery Receipt Modal -->
       <viewDr 
@@ -287,6 +328,7 @@ import editRR from '@/components/admin/Transaction/editRR.vue';
 import viewRR from '@/components/admin/Transaction/viewRR.vue';
 import addRR from '@/components/admin/Transaction/addRR.vue';
 import TransactionFillter from '@/components/admin/Transaction/TransactionFillter.vue';
+import returnFillter from '@/components/admin/Transaction/returnFillter.vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import {mapGetters} from 'vuex';
@@ -302,7 +344,7 @@ export default {
         TransactionFillter,
         addRR,
         viewRR,
-        
+        returnFillter,
      
      
     },
@@ -323,8 +365,15 @@ export default {
             tempSearchQuery:"",
             selectedStatus:'',
             selectedDateAdded:'',
+            tempSearchQueryReturn:"",
+            selectedStatusReturn:'',
+            selectedDateAddedReturn:'',
+            currentPage_Return: 1,
+            lastPage_Return: 1,
             currentPage: 1,
             lastPage: 1,
+
+    
           
            
 
@@ -344,9 +393,17 @@ export default {
           return matchesStatus && matchesDateAdded;
         });
       },
+      filteredRR(){
+          return this.returnRR.filter(rr => {
+              const matchesStatus = this.selectedStatusReturn ? rr.status === this.selectedStatusReturn : true;
+              const matchesDateAdded = this.selectedDateAddedReturn ?  new Date(rr.created_at).toISOString().split("T")[0] === this.selectedDateAddedReturn : true;
+              return matchesStatus && matchesDateAdded;
+          });
+    }, 
     },
 
     methods: {
+  
       async downloadPDF(id) {
         const apiUrl = `/api/pdf/generate/${id}`; // Relative URL without the full domain
         console.log('Requesting PDF with ID:', id);
@@ -415,6 +472,8 @@ export default {
           day: "numeric"
         });
       },
+
+      
     deleteDr(deliveryReceiptId, dr_number){
         Swal.fire({
           title: `Are you sure you want to delete #${dr_number}?`,
@@ -535,6 +594,17 @@ export default {
 
         this.showEditDrModal = false; // Close modal
     },
+
+    handleUpdaterRR(updatedRR){
+        const index = this.returnRR.findIndex(rr => rr.id === updatedRR.id);
+        if (index !== -1) {
+           this.returnRR[index] = {...updatedRR};
+           this.returnRR = [...this.returnRR]; // ✅ Force reactivity
+        } else{
+          this.returnRR.push[updatedRR];// If it's a new entry
+        }
+    },
+
     async fetchDRs(page = 1) {
         const params = { page };
         
@@ -567,8 +637,8 @@ export default {
           console.error('❌ Error fetching DRs:', error);
         }
       },
-    
-    updateFilters(filters) {
+
+      updateFilters(filters) {
       this.selectedStatus = filters.status || '';
       this.selectedDateAdded = filters.created_at || '';
       this.currentPage = 1;  // Reset to the first page when applying filters
@@ -579,6 +649,42 @@ export default {
         this.fetchDRs(1); // ✅ Fetch data when searching
     },
 
+
+      async fetchRRs(page = 1){
+        const params = {page};
+        if (this.selectedStatusReturn) {params.status = this.selectedStatusReturn};
+        if(this.selectedDateAddedReturn) {let formattedDate = new Date(this.selectedDateAddedReturn).toISOString().split("T")[0]; params.created_at = formattedDate};
+        if(this.tempSearchQueryReturn) {params.search = this.tempSearchQueryReturn};
+        console.log('Fetching Return Receipt:', params);
+        console.log('selectedStatusReturn:', this.selectedStatusReturn);
+        try{
+          const response = await axios.get('api/Rr', {params});
+          console.log('Apis response', response.data);
+
+          this.returnRR = response.data.data.map(rr=> ({
+            ...rr,
+            approved_by_name: rr.approver
+            ? `${rr.approver.first_name} ${rr.approver.middle_name ? rr.approver.middle_name + ' ' : ''}${rr.approver.last_name}`
+          : 'N/A'
+          }));
+          this.currentPage_Return = response.data.current_page;
+          this.lastPage_Return = response.data.last_page;
+        }catch(error){
+          console.error('Failed to Fetch RRs', error)
+        }
+      },
+    
+      updateFiltersReturn(filters){
+        this.selectedDateAddedReturn = filters.created_at || '';
+        this.selectedStatusReturn = filters.status || '';
+        this.currentPage_Return = 1;  // Reset to the first page when applying filters
+        this.fetchRRs(1);// Fetch data with the new filters
+      },
+      applySearchReturn(query){
+          this.tempSearchQueryReturn = query;
+          this.fetchRRs(1);// ✅ Fetch data when searching
+      },
+      
 
 
     // RETURN TABLE LOGIC IN FRONT END
@@ -614,22 +720,6 @@ export default {
       }
     },
 
-    async fetchRRs() {
-        try {
-            const response = await axios.get('/api/Rr');
-            console.log('API Response:', response.data);
-
-            // Ensure returnRR is an array
-            if (Array.isArray(response.data)) {
-                this.returnRR = response.data;
-            } else {
-                this.returnRR = []; // Prevents undefined errors
-            }
-        } catch (error) {
-            console.error('Error fetching RRs:', error);
-            this.returnRR = []; // Ensures empty state instead of breaking UI
-        }
-    },
 
     deleteRr(returnReceiptId, rr_number){
         Swal.fire({

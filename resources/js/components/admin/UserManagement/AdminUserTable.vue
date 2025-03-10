@@ -47,9 +47,13 @@
             </span>
           </td>
           <td class="text-center px-4 py-2 border-0">{{ formatDate(user.created_at) }}</td>
-          <td class="text-center px-4 py-2 border-0"
-          :class="user.is_active ? 'text-green-600' : 'text-red-600'"
-          >{{ user.is_active ? 'Active' : 'Inactive' }}</td>
+          <td class="text-center px-4 py-2 border-0">
+              <span
+                  :class="{ 'text-green-600': user.status === 'active', 'text-red-600': user.status === 'inactive' }">
+                  {{ user.status }}
+              </span>
+          </td>
+        
           <td class="text-center px-4 py-2 border-0 md:space-x-3">
             <button class="text-gray-500 hover:underline w-full md:w-auto" @click="showEditModal(user)">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -147,13 +151,32 @@ export default {
           return this.searchQuery ? fullName.includes(this.searchQuery.toLowerCase()) || email.includes(this.searchQuery.toLowerCase()) : true;
         })
         .filter(user => (this.selectedRole ? user.role === this.selectedRole : true))
-        .filter(user => (this.selectedStatus !== "" ? user.is_active == this.selectedStatus : true));
+        .filter(user => (this.selectedStatus !== "" ? user.status == this.selectedStatus : true));
     }
   },
 
   mounted() {
     this.fetchUsers();
+
+    window.Echo.private('user-activity') // Use `.private()` for a private channel
+    .listen('UserLoggedIn', (event) => {
+        console.log('User logged in:', event);
+
+        // Update users array with the new status of the logged-in user
+        this.users = this.users.map(user =>
+            user.id === event.id ? { ...user, status: event.status } : user
+        );
+    })
+    .listen('UserLoggedOut', (event) => {
+        console.log('User logged out:', event);
+
+        // Update users array with the new status of the logged-out user
+        this.users = this.users.map(user => 
+            user.id === event.id ? { ...user, status: event.status } : user
+        );
+    });
   },
+
   methods: {
       fetchUsers(page = 1) {
       // Check if the selectedStatus or selectedRole are not empty before appending them to the URL

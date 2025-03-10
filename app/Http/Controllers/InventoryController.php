@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
+use App\Events\ActivityLogged;
 
 
 class InventoryController extends Controller
@@ -55,6 +56,32 @@ class InventoryController extends Controller
                     'measurement_quantity' => $request->measurement_quantity,
                     'measurement_unit' => $request->measurement_unit,
                 ]);
+
+
+                
+            
+                event(new ActivityLogged([
+                    'action' => $inventory->stocks . $inventory->material_name . '" was added by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                ' on ' . now()->toDayDateTimeString(),
+                
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Include role of the performing user
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+                
+                    
+                Log::channel('activity')->info(json_encode([
+                    'action' => $inventory->stocks . ' ' . $inventory->material_name . '" was added by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Ensure role is logged
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+
+
+
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Inventory added successfully.',
@@ -160,6 +187,25 @@ class InventoryController extends Controller
                     'measurement_unit' => $request->measurement_unit,
                     // 'material_name' remains unchanged
                 ]);
+
+                event(new ActivityLogged([
+                    'action' => 'Material ' . $inventory->material_name . ' was edited by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                ' on ' . now()->toDayDateTimeString(),
+                
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Include role of the performing user
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+                
+                    
+                Log::channel('activity')->info(json_encode([
+                    'action' => 'Material ' .  $inventory->material_name . ' was edited by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Ensure role is logged
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
         
                 return response()->json([
                     'success' => true,
@@ -189,6 +235,25 @@ class InventoryController extends Controller
         
                 // Log the deletion action
                 Log::info("Material deleted successfully: ID {$id}");
+
+                event(new ActivityLogged([
+                    'action' => 'Material ' . $inventory->material_name . ' was deleted by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                ' on ' . now()->toDayDateTimeString(),
+                
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Include role of the performing user
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+                
+                    
+                Log::channel('activity')->info(json_encode([
+                    'action' => 'Material ' .  $inventory->material_name . ' was deleted by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Ensure role is logged
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
         
                 return response()->json(['message' => 'Material deleted successfully']);
             } catch (\Exception $e) {

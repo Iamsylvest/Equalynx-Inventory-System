@@ -49,7 +49,7 @@
                           id="status" 
                           v-model="item.status" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
-                          :disabled="!(userRole === 'manager') || item.status === 'approved' || item.status === 'rejected'"
+                          :disabled="userRole !== 'manager'"
                            class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300"
                         >
                           <option value="pending">pending</option>
@@ -102,7 +102,7 @@
                           :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'">
                             
                           <option value="" disabled>Select unit</option>
-                          <option value="pcs">Pcs</option>
+                          <option value="pcs">pcs</option>
                           <option value="kg">Kg</option>
                           <option value="g">g</option>
                           <option value="m">m</option>
@@ -207,7 +207,7 @@ import {mapGetters} from 'vuex';
       return {
         selectedmaterials: [],
         showSaveButton: true,  //✅ Keep button visible until saved
-        originalStatus:"", //✅ Track original status before changes
+      
         
       }
     },
@@ -234,17 +234,7 @@ import {mapGetters} from 'vuex';
               // ✅ Track the original status (before user changes)
             this.originalStatus = newItem.status;
 
-             // Update the save button visibility based on the status
-                if (newItem.status === "approved" || newItem.status === "rejected") {
-                    this.showSaveButton = true;
-                } else {
-                    this.showSaveButton = false;
-                }
-
-                // If coordinates exist, update the map
-                if (newItem.latitude && newItem.longitude) {
-                    this.updateMapMarker();
-                }
+    
           }
         },
         deep: true,
@@ -295,10 +285,6 @@ import {mapGetters} from 'vuex';
         this.$emit("update-materials", this.selectedmaterials);  // Emit updated materials
         this.$emit("closeModal");  // Close the modal
 
-        // Hide the Save Button if the status has changed from "pending"
-        if (this.originalStatus === "pending" && this.item.status !== "pending") {
-            this.showSaveButton = false;
-        }
 
         // Show success alert
         Swal.fire("Success!", "Delivery Receipt Updated Successfully!", "success");

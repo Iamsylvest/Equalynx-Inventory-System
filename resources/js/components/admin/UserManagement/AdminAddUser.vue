@@ -60,14 +60,7 @@
                 <option value="warehouse_staff">Warehouse Staff</option>
               </select>
             </div>
-            <div>
-              <p class="text-xs">Status:</p>
-              <select v-model="form.is_active" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                <option value="" disabled selected>Select Status</option>
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
-            </div>
+
           </div>
         </div>
 
@@ -95,7 +88,6 @@ export default {
         last_name: '',
         email: '',
         role: '',
-        is_active: true,
         password: '',
       }
     };

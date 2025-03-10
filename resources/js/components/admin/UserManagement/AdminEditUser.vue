@@ -22,13 +22,6 @@
               <option value="warehouse_staff">Warehouse Staff</option>
             </select>
           </div>
-          <div class="mb-4">
-            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-            <select id="status" v-model="localUser.is_active" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-              <option :value="true">Active</option>
-              <option :value="false">Inactive</option>
-            </select>
-          </div>
           <div class="flex justify-end space-x-4">
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Save Changes</button>
             <button type="button" @click="closeModal" class="bg-gray-300 text-black px-4 py-2 rounded-md">Cancel</button>

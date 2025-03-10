@@ -83,16 +83,14 @@
 import { mapGetters } from 'vuex'; // ✅ Import mapGetters
 import Notification from '../../components/admin/Notification/Notification.vue';
 import Profile from '../../components/admin/Notification/Profile.vue';
-import Today from '../../components/admin/Notification/Today.vue';
-import Previous from '../../components/admin/Notification/Previous.vue';
+
 
 export default {
 
     components: {
         Notification,
         Profile,
-        Today,
-        Previous,
+
     },
     data () {
             return {

@@ -101,12 +101,7 @@
                 </div>
             </div>
 
-            <!-- Close Button -->
-            <div class="flex justify-center mt-8">
-              <button @click="$emit('close')" class="px-32 py-2 rounded-lg bg-custom-blue text-white">
-                Close
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

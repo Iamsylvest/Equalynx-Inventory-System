@@ -51,7 +51,7 @@
                           id="status" 
                           v-model="item.status" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
-                          :disabled="!(userRole  === 'manager' || item.status  === 'approved' ||  item.status ==='rejected')" 
+                          :disabled="userRole !== 'manager'"
                            class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300"
                         >
                           <option value="pending">pending</option>
@@ -198,7 +198,7 @@
   
             <!-- Buttons -->
             <div class="flex justify-center mt-8 space-x-4" >
-              <button @click="updateEditReturn" class="px-32 py-2 rounded-lg bg-custom-blue text-white">
+              <button  @click="updateEditReturn" class="px-32 py-2 rounded-lg bg-custom-blue text-white">
                 Save Return Receipt
               </button>
             </div>
@@ -235,7 +235,9 @@
              imagePreview: null,           // Image preview for fullscreen
              isFullScreen: false,          // Controls full screen view
              mapKey: 0,                     // Key to force map refresh
-             map: null                      // Store Leaflet map instance
+             map: null,             // Store Leaflet map instance
+        
+
          };
      },
      watch: {
@@ -251,7 +253,7 @@
                             this.fileName = newItem.return_proof_original_name || this.extractFileName(newItem.returnproof);
                             this.imagePreview = `/storage/${newItem.returnproof}`;  // Correct path for image preview
                         }
- 
+
                      if (newItem.latitude && newItem.longitude) {
                          this.updateMapMarker();
                      }
@@ -346,6 +348,8 @@
                     Swal.fire("Error!", `Return Receipt failed to Update: ${error.response?.data?.message || error.message}`, "error");
                 }
             },
+
+
          extractFileName(url) {
              // Example: Extract file name from URL if file comes from backend
              return url.split('/').pop();

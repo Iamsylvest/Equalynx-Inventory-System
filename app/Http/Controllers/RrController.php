@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\Inventory;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Rr;
 use Illuminate\Http\Request;
 use App\Models\ReturnMaterial;
 use Illuminate\Support\Facades\Log; // Import Log facade
+use App\Events\ActivityLogged;
 class RrController extends Controller
 
 {
@@ -14,14 +17,44 @@ class RrController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
 
         Log::info('RrController@index invoked');
+        try{
+            
+        $query = Rr::query();
 
-        $rrs = Rr::with('dr:id,dr_number')->get();    // Fetch all RR records with related DR data
-        return response()->json($rrs); // Return JSON response
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->has('created_at')) {
+            $query->whereDate('created_at', $request->input('created_at'));
+        }
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search){
+                   $q->where('name', 'like', "%$search%")
+                    ->orWhere('rr_number', 'like', "%$search%")
+                    ->orWhere('project_name', 'like', "%$search%")
+                    ->orWhereHas('approver', function($query) use ($search) {
+                        $query->where('first_name', 'like', "%{$search}%")
+                              ->orWhere('middle_name', 'like', "%{$search}%")
+                              ->orWhere('last_name', 'like', "%{$search}%");
+                    });
+            });
+                
+        }
 
+        $rrs = $query->with('dr:id,id,dr_number','approver')->paginate(10);
+        Log::info('Fetching RRs successful. Total records: ' . $rrs->total());
+
+        return response()->json($rrs);
+
+        }catch(\Exception $e){
+            Log::error('Failed to Fetch RRs', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to Fetch Return Receipts'], 500);
+        }
     }
 
     /**
@@ -113,6 +146,27 @@ class RrController extends Controller
                 ]);
             }
     
+
+            
+        event(new ActivityLogged([
+            'action' => $rr->rr_number . ' number ' . ' was created by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                        ' on ' . now()->toDayDateTimeString(),
+
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Include role of the performing user
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+                
+        // ✅ Write log to a file
+        Log::channel('activity')->info(json_encode([
+            'action' => $rr->rr_number . ' number ' . ' was created by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Ensure role is logged
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+
             // Return a success response with the created RR record and related materials
             return response()->json([
                 'success' => true,
@@ -179,106 +233,175 @@ class RrController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'project_name' => 'required|string',
-            'status' => 'required|string',
-            'remarks' => 'nullable|string',
-            'location' => 'required|string',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'return_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'materials.*.material_name' => 'required|string',
-            'materials.*.measurement' => 'required|integer|min:1',
-            'materials.*.unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',
-            'materials.*.material_quantity' => 'required|integer|min:1',
-        ]);
-    
-        try {
-            $rr = Rr::findOrFail($id);
-    
-            // Handle file upload if a new file is provided
-            if ($request->hasFile('return_proof')) {
-                $file = $request->file('return_proof');
-                $returnProofPath = $file->store('return_proofs', 'public');
-                $returnProofOriginalName = $file->getClientOriginalName();
-    
-                // Update file fields
-                $rr->return_proof = $returnProofPath;
-                $rr->return_proof_original_name = $returnProofOriginalName;
-            }
-    
-            // Update the RR record
-            $rr->update([
-                'name' => $request->name,
-                'project_name' => $request->project_name,
-                'status' => $request->status,
-                'location' => $request->location,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'remarks' => $request->remarks,
-            ]);
-    
-            // Handle materials update
-            $existingMaterialIds = $rr->materials()->pluck('id')->toArray();
-            $newMaterialIds = [];
-                // Decode materials if they were sent as JSON string (because of FormData in Vue)
-                $materials = json_decode($request->input('materials'), true);
+{
+    $request->validate([
+        'name' => 'required|string',
+        'project_name' => 'required|string',
+        'status' => 'required|string',
+        'remarks' => 'nullable|string',
+        'location' => 'required|string',
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+        'return_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        'materials.*.material_name' => 'required|string',
+        'materials.*.measurement' => 'required|integer|min:1',
+        'materials.*.unit' => 'required|in:pcs,m,cm,in,kg,g,l,ml',
+        'materials.*.material_quantity' => 'required|integer|min:1',
+    ]);
 
-                if (!is_array($materials)) {
-                    return response()->json(['error' => 'Invalid materials format'], 400);
-                }
+    try {
+        $rr = Rr::findOrFail($id);
+        $newStatus = $request->status;
 
-                // Handle materials update
-                $existingMaterialIds = $rr->materials()->pluck('id')->toArray();
-                $newMaterialIds = [];
- 
-                foreach ($materials as $material) {
-                    if (!empty($material['id'])) {
-                        // Update existing material
-                        $existingMaterial = ReturnMaterial::find($material['id']);
-                        if ($existingMaterial) {
-                            $existingMaterial->update([
-                                'material_name' => $material['material_name'],
-                                'measurement' => $material['measurement'],
-                                'unit' => $material['unit'],
-                                'material_quantity' => $material['material_quantity'],
-                            ]);
-                            $newMaterialIds[] = $existingMaterial->id;
-                        }
-                    } else {
-                        // Create new material
-                        $newMaterial = ReturnMaterial::create([
-                            'rr_id' => $rr->id,
-                            'material_name' => $material['material_name'],
-                            'measurement' => $material['measurement'],
-                            'unit' => $material['unit'],
-                            'material_quantity' => $material['material_quantity'],
-                        ]);
-                        $newMaterialIds[] = $newMaterial->id;
-                    }
-                }
-                    
-            // Delete materials that were removed from the request
-            $materialsToDelete = array_diff($existingMaterialIds, $newMaterialIds);
-            ReturnMaterial::destroy($materialsToDelete);
-    
-            return response()->json([
-                'success' => true,
-                'message' => 'Return Receipt Successfully Updated',
-                'rr' => $rr->load('materials'),
-            ], 200);
-    
-        } catch (\Exception $e) {
-            Log::error('Error updating Return Receipt: ' . $e->getMessage());
-    
-            return response()->json([
-                'error' => 'Server Error',
-                'message' => $e->getMessage(),
-            ], 500);
+        // Decode materials if they were sent as JSON string (for FormData from Vue)
+        $materials = json_decode($request->input('materials'), true);
+        if (!is_array($materials)) {
+            return response()->json(['error' => 'Invalid materials format'], 400);
         }
+
+        // --- STATUS HANDLING ---
+        if ($newStatus === 'approved') {
+            if (auth()->check() && auth()->user()->role !== 'manager') {
+                return response()->json(['message' => 'You are not authorized to approve this Return Receipt'], 403);
+            }
+
+            foreach ($materials as $material) {
+                // Find inventory item based on name, measurement, and unit
+                $inventoryItem = Inventory::where('material_name', $material['material_name'])
+                    ->where('measurement_quantity', $material['measurement'])
+                    ->where('measurement_unit', $material['unit'])
+                    ->first();
+
+                if (!$inventoryItem) {
+                    Log::error("Inventory Item not Found, {$material['material_name']}, Unit: {$material['unit']}");
+                    return response()->json([
+                        'message' => "Inventory item '{$material['material_name']}' with unit '{$material['unit']}' not found."
+                    ], 404);
+                }
+
+                // Strictly check the measurement
+                if ($inventoryItem->measurement_quantity != $material['measurement']) {
+                    Log::warning("Measurement mismatch for {$material['material_name']}. Expected: {$inventoryItem->measurement}, Given: {$material['measurement']}");
+                    return response()->json([
+                        'message' => "Measurement mismatch for '{$material['material_name']}'. Measurement: {$material['measurement']} {$material['unit']}. Not available/existing in the Inventory Table"
+                    ], 422);
+                }
+
+                // Ensure stocks is initialized
+                if ($inventoryItem->stocks === null) {
+                    $inventoryItem->stocks = 0;
+                }
+
+                // Add stock
+                $inventoryItem->stocks += $material['material_quantity'];
+                $inventoryItem->save();
+
+                Log::info("Stock updated for {$inventoryItem->material_name}, New Stock: {$inventoryItem->stocks}");
+            }
+
+            // Save approver when approved
+            $rr->approved_by = auth()->id();
+            $rr->save();  //  This ensures the value is stored in the database
+        }
+
+        // --- FILE HANDLING ---
+        if ($request->hasFile('return_proof')) {
+            $file = $request->file('return_proof');
+            $returnProofPath = $file->store('return_proofs', 'public');
+            $returnProofOriginalName = $file->getClientOriginalName();
+
+            $rr->return_proof = $returnProofPath;
+            $rr->return_proof_original_name = $returnProofOriginalName;
+        }
+
+        // --- UPDATE RR DETAILS ---
+        $rr->update([
+            'name' => $request->name,
+            'project_name' => $request->project_name,
+            'status' => $request->status,
+            'location' => $request->location,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'remarks' => $request->remarks,
+        ]);
+
+        // --- MATERIALS HANDLING ---
+        $existingMaterialIds = $rr->materials()->pluck('id')->toArray();
+        $newMaterialIds = [];
+
+        foreach ($materials as $material) {
+            if (!empty($material['id'])) {
+                // Update existing material
+                $existingMaterial = ReturnMaterial::find($material['id']);
+                if ($existingMaterial) {
+                    $existingMaterial->update([
+                        'material_name' => $material['material_name'],
+                        'measurement' => $material['measurement'],
+                        'unit' => $material['unit'],
+                        'material_quantity' => $material['material_quantity'],
+                    ]);
+                    $newMaterialIds[] = $existingMaterial->id;
+                }
+            } else {
+                // Create new material
+                $newMaterial = ReturnMaterial::create([
+                    'rr_id' => $rr->id,
+                    'material_name' => $material['material_name'],
+                    'measurement' => $material['measurement'],
+                    'unit' => $material['unit'],
+                    'material_quantity' => $material['material_quantity'],
+                ]);
+                $newMaterialIds[] = $newMaterial->id;
+            }
+        }
+
+        // Delete removed materials
+        $materialsToDelete = array_diff($existingMaterialIds, $newMaterialIds);
+        ReturnMaterial::destroy($materialsToDelete);
+
+       // Fetch the name of the user who approved the DR (if any)
+       $rr = Rr::with('approver')->where('id', $id)->first();
+
+        Log::info("RR Data:", ['rr' => $rr]);
+
+
+        event(new ActivityLogged([
+            'action' => $rr->rr_number . ' number ' . ' was edited by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                        ' on ' . now()->toDayDateTimeString(),
+
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Include role of the performing user
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+                
+        // ✅ Write log to a file
+        Log::channel('activity')->info(json_encode([
+            'action' => $rr->rr_number . ' number ' . ' was edited by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Ensure role is logged
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Return Receipt Successfully Updated',
+            'rr' => $rr,
+            'approved_by' => $rr->approver
+            ? trim("{$rr->approver->first_name} " . ($rr->approver->middle_name ? $rr->approver->middle_name . ' ' : '') . "{$rr->approver->last_name}")
+            : 'pending'
+        ], 200);
+
+    } catch (\Exception $e) {
+        Log::error('Error updating Return Receipt: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'Server Error',
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
     /**
      * Remove the specified resource from storage.
      *
@@ -298,6 +421,25 @@ class RrController extends Controller
             $rr->delete();
     
             Log::info("Return Receipt Deleted Successfully: ID {$id}");
+
+            event(new ActivityLogged([
+                'action' => $rr->rr_number . ' number ' . ' was deleted by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                            ' on ' . now()->toDayDateTimeString(),
+    
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+                    
+            // ✅ Write log to a file
+            Log::channel('activity')->info(json_encode([
+                'action' => $rr->rr_number . ' number ' . ' was deleted by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Ensure role is logged
+                'timestamp' => now()->toDateTimeString(),
+            ]));
     
             return response()->json(['message' => 'Return Receipt Deleted Successfully']);
         } catch (\Exception $e) {

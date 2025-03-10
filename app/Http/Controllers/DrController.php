@@ -7,7 +7,7 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Models\Material;
-
+use App\Events\ActivityLogged;
 
 class DrController extends Controller
 {
@@ -55,6 +55,26 @@ class DrController extends Controller
                     'material_quantity' => $material['material_quantity'],
                 ]);
             }
+
+            event(new ActivityLogged([
+                'action' => 'New ' . $dr->dr_number . ' was created by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                            ' on ' . now()->toDayDateTimeString(),
+    
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+                    
+            // ✅ Write log to a file
+            Log::channel('activity')->info(json_encode([
+                'action' => 'New ' . $dr->dr_number . ' was created by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Ensure role is logged
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+    
                 
             return response()->json([
                 'success' => true,
@@ -90,7 +110,14 @@ class DrController extends Controller
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('project_name', 'like', "%{$search}%");
+                 ->orWhere('dr_number', 'like', "%{$search}%")
+                  ->orWhere('project_name', 'like', "%{$search}%")
+                  ->orWhereHas('approver', function($query) use ($search) {
+                    $query->where('first_name', 'like', "%{$search}%")
+                          ->orWhere('middle_name', 'like', "%{$search}%")
+                          ->orWhere('last_name', 'like', "%{$search}%");
+                });
+                  
             });
         }
     
@@ -120,6 +147,26 @@ class DrController extends Controller
             $dr -> delete();
 
             Log::info("Delivery Receipt Deleted Successfully: ID {$id}");
+
+
+            event(new ActivityLogged([
+                'action' => $dr->dr_number. ' number ' . ' was deleted by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                            ' on ' . now()->toDayDateTimeString(),
+    
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+                    
+            // ✅ Write log to a file
+            Log::channel('activity')->info(json_encode([
+                'action' => $dr->dr_number. ' number ' . ' was deleted by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Ensure role is logged
+                'timestamp' => now()->toDateTimeString(),
+            ]));
 
             return response()->json([ 'message' => 'Delivery Receipt Deleted Successfully']);
         } catch (\Exception $e) {
@@ -252,6 +299,28 @@ class DrController extends Controller
 
             // Fetch the name of the user who approved the DR (if any)
             $dr = Dr::with('approver')->where('id', $id)->first();
+
+
+
+            event(new ActivityLogged([
+                'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                            ' on ' . now()->toDayDateTimeString(),
+    
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+                    
+            // ✅ Write log to a file
+            Log::channel('activity')->info(json_encode([
+                'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Ensure role is logged
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+
 
             Log::info("DR Data:", ['dr' => $dr]);
             return response()->json([

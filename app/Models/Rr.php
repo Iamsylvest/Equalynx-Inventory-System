@@ -43,4 +43,8 @@ class Rr extends Model
     {
         return $this->belongsTo(Dr::class, 'dr_id');
     }
+    public function approver(): BelongsTo{
+        return $this->belongsTo(User::class,'approved_by');
+    }
+
 }

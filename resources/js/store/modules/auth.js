@@ -63,17 +63,33 @@ export default {
         commit('logout');
       }
     },
-    logout({ commit }) {
+    async logout({ commit }) {
+      try {
+          // Send request to invalidate token on Laravel
+          await axios.post('/api/logout', {}, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`
+              }
+          });
+      } catch (error) {
+          console.error("Logout API error:", error);
+      }
+  
+      // Clear token and user from Vuex and local storage
       commit("setToken", null);
       commit("setUser", null);
       localStorage.removeItem("authToken");
       localStorage.removeItem("authUser");
-
-      // Force reload to clear cached state
+  
+      // Clear Laravel session cookies manually (important for session-based auth)
+      document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "laravel_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  
+      // Reload page to clear cached state
       setTimeout(() => {
-        window.location.href = "/login";
+          window.location.href = "/login";
       }, 100);
-    }
+  }
   },
   getters: {
     isAuthenticated: (state) => !!state.token,

@@ -8,126 +8,177 @@
            <ActivityLogsProfile />
          </div>
      </header>
-  
-     <div class="flex flex-wrap items-center justify-between relative top-10 w-full">
-        <div class="flex space-x-4">
-      <button
-      class="p-3 px-12 text-md font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
-        @click="showTable = 'delivery'"
-        :class="{
-          'bg-custom-blue text-white': showTable === 'delivery',
-          'hover:bg-custom-blue hover:text-white': showTable !== 'delivery'
-        }"
-      >
-        Delivery Receipt
-      </button>
-
-      <button
-      class="p-3 px-12 text-md font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
-        @click="showTable = 'return'"
-        :class="{
-          'bg-custom-blue text-white': showTable === 'return',
-          'hover:bg-custom-blue hover:text-white': showTable !== 'return'
-        }"
-      >
-        Return Receipt
-      </button>
-
-      <button
-      class="p-3 px-12 text-md font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
-        @click="showTable = 'inventory'"
-        :class="{
-          'bg-custom-blue text-white': showTable === 'inventory',
-          'hover:bg-custom-blue hover:text-white': showTable !== 'inventory'
-        }"
-      >
-        Inventory
-      </button>
-    </div>
-             <div class="flex items-center space-x-4 ml-auto">
-                <ActivityLogsFillter Class="w-full sm:w-auto"  />  
-             </div>
-     </div>
-
-     <div class="flex-wrap gap-2 md:gap-8 border-2 px-5 mb-8 mt-16 shadow-md ">
-      <div class="flex flex-wrap gap-4 md:flex-nowrap mt-5 mb-5 ">
-        <div class="flex-grow w-full md:w-auto">
-          <label for="start-date" class="whitespace-nowrap text-md font-medium text-gray-700">Start Date:</label>
-          <input
-            type="date"
-            id="start-date"
-            v-model="selectedStartDate"
-            class="mt-1 border-2 px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full md:w-auto"
-          />
+     <div  >
+        <div class="md:flex md:items-center md:justify-end space-x-6 mt-4">
+           <ActivityLogsFillter @search="updateSearch" @filter="applyFilter"/>
         </div>
-
-        <div class="flex-grow w-full md:w-auto">
-          <label for="end-date" class="whitespace-nowrap text-md font-medium text-gray-700">End Date:</label>
-          <input
-            type="date"
-            id="end-date"
-            v-model="selectedStartEnd"
-            class="mt-1 border-2 px-4 py-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full md:w-auto"
-          />
-        </div>
-
-        <div class="flex-grow w-full md:w-auto">
-          <button class="mt-1 px-6 py-2 rounded-sm bg-green-300 hover:bg-green-400 w-full md:w-auto">
-            Search
-          </button>
-        </div>
-
-        <div class="flex-grow w-full md:w-auto">
-          <select class="border-2 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-auto">
-            <option value="" disabled selected>Select Activity Type</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <option value="option3">Option 3</option>
-          </select>
-        </div>
-      </div>
     </div>
 
-    <div class="mt-8">
-        <DeliveryReceipt v-if="showTable === 'delivery'" class="w-full sm:w-auto" />
-        <ReturnReceipt v-if="showTable === 'return'" class="w-full sm:w-auto" />
-        <Inventory v-if="showTable === 'inventory'" class="w-full sm:w-auto" />
+ <!-- Activity Logs Table -->
+    <table class="table-auto w-full border-collapse mt-5 shadow-lg">
+      <thead class="h-14">
+        <tr class="bg-custom-blue text-white">
+          <th class="px-4 py-2 border-0 text-center font-bold">User</th>
+          <th class="px-4 py-2 border-0 text-center font-bold">Date Added</th>
+          <th class="px-4 py-2 border-0 text-center font-bold">Time</th>
+          <th class="px-4 py-2 border-0 text-center font-bold">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="filteredLogs.length === 0" >
+              <td colspan="6" class="text-center py-4">No Activity Logs found</td>
+            </tr>
+        <tr v-for="(log, index) in filteredLogs" :key="index" class="text-center border border-l-0 border-r-0  ">
+            <td class="px-4 py-2 flex flex-col justify-center ">
+              <span class="font-semibold"> {{ log.performed_by }} </span>
+              <span 
+              class="font-semibold"
+              :class="{
+                ' text-green-600': log.role === 'admin',
+                ' text-orange-600': log.role === 'manager',
+                ' text-red-600': log.role === 'procurement',
+                ' text-yellow-600': log.role === 'warehouse_staff'
+                  
+              }"
+              >{{ log.role }}</span>
+            </td>
+          <td class="px-4 py-2 ">{{ formatDate(log.timestamp) }}</td>
+          <td class="px-4 py-2 ">{{ formatTime(log.timestamp) }}</td>
+          <td class="px-4 py-2 ">{{ log.action }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+        <!-- Previous Button -->
+        <button 
+          @click="fetchLogs(currentPage - 1)" 
+          :disabled="currentPage === 1" 
+          class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+        >
+          ←
+        </button>
+
+        <!-- Pagination Numbers -->
+        <span 
+          v-for="page in lastPage" 
+          :key="page"
+          @click="fetchLogs(page)"
+          class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+          :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
+        >
+          {{ page }}
+        </span>
+
+        <!-- Next Button -->
+        <button 
+          @click="fetchLogs(currentPage + 1)" 
+          :disabled="currentPage === lastPage" 
+          class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+        >
+          →
+        </button>
       </div>
- 
- </div>
- 
+  </div>
+
  
  
  </template>
  
 
 <script>
+import axios from 'axios';
 import { mapGetters } from 'vuex'; // ✅ Import mapGetters
-import ActivityLogsFillter from '../../components/admin/ActivityLogs/ActivityLogsFillter.vue';
-import ActivityLogsNotification from '../../components/admin/ActivityLogs/ActivityLogsNotification.vue';
-import ActivityLogsProfile from '../../components/admin/ActivityLogs/ActivityLogsProfile.vue';
+import ActivityLogsFillter from '@/components/admin/ActivityLogs/ActivityLogsFillter.vue';
+import ActivityLogsNotification from '@/components/admin/ActivityLogs/ActivityLogsNotification.vue';
+import ActivityLogsProfile from '@/components/admin/ActivityLogs/ActivityLogsProfile.vue';
 
-import DeliveryReceipt from '../../components/admin/ActivityLogs/DeliveryReceipt.vue';
-import Inventory from '../../components/admin/ActivityLogs/Inventory.vue';
-import ReturnReceipt from '../../components/admin/ActivityLogs/ReturnReceipt.vue';
 
 export default {
     components :{
         ActivityLogsFillter,
         ActivityLogsNotification,
         ActivityLogsProfile,
-        DeliveryReceipt,
-        Inventory,
-        ReturnReceipt,
+
  
     },
     data() {
       return {
-        showTable: 'delivery' // Default value set to 'delivery'
+          logs: [], // Store logs here
+          tempSearchQuery:"",
+          selectedRole: '',
+          selectedDate: '',
+          currentPage: 1,
+          lastPage: 1,
       };
     },
     computed: {
-      ...mapGetters(['isAuthenticated']) // Map the Vuex getter
+      ...mapGetters(['isAuthenticated']), // Map the Vuex getter
+      filteredLogs(){
+          return this.logs.filter(log => {
+              const matchesRole = this.selectedRole ? log.role === this.selectedRole : true;
+              const matchesDateAdded = this.selectedDate && log.created_at 
+                ? (new Date(log.created_at).toISOString().split("T")[0] === this.selectedDate)
+                : true;
+              return matchesRole && matchesDateAdded;
+          });
+      }, 
+    },
+   mounted(){
+      this.fetchLogs();
+   },
+    methods:{
+      applyFilter(filters){
+        this.selectedDate = filters.created_at || '';
+        this.selectedRole = filters.role || '';
+        this.currentPage_Return = 1;  // Reset to the first page when applying filterssylv
+        this.fetchLogs(1);// Fetch data with the new filters
+      },
+      updateSearch(query){
+          this.tempSearchQuery = query;
+          this.fetchLogs(1);// ✅ Fetch data when searching
+      },
+      
+      async fetchLogs(page = 1) {
+
+        const params = {page};
+        if (this.tempSearchQuery) { params.search = this.tempSearchQuery};
+        if (this.selectedDate)  {let formattedDate = new Date(this.selectedDate).toISOString().split("T")[0]; params.created_at = formattedDate};
+        if (this.selectedRole) {params.role = this.selectedRole};
+
+        try {
+          const response = await axios.get('/api/activity-logs', {params});
+                console.log("API Response:", response.data); // ✅ Debugging output
+                this.logs = Array.isArray(response.data) 
+                  ? response.data.filter(log => log !== null) // Remove null entries
+                  : [];
+
+                  this.logs = response.data.data;
+                  this.currentPage = response.data.current_page;
+                  this.lastPage = response.data.last_page
+
+              } catch (error) {
+                console.error('Error fetching logs', error);
+              }
+            },
+     formatDate(timestamp){
+              return new Date(timestamp).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric'
+              });
+            },
+            formatTime(timestamp) {
+                if (!timestamp) return "Invalid Time";
+
+                const date = new Date(timestamp);
+                date.setHours(date.getHours() + 8); // Convert UTC to PH time
+
+                return date.toLocaleTimeString("en-US", { 
+                  hour: "2-digit", 
+                  minute: "2-digit",
+                  hour12: true 
+                });
+              }
     },
 
 };

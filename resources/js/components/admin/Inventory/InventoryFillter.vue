@@ -63,12 +63,6 @@
         placeholder="Search by name..."
         class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
       />
-      <button
-        @click="applySearch"
-        class="w-full px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-400 transition ml-2"
-      >
-        Search
-      </button>
       </div>
 
       <div class="col-span-2 ">
@@ -135,10 +129,13 @@ export default {
       selectedLastUpdate: "",
     }
   },
+  watch:{
+      tempSearchQuery(newQuery){
+        this.$emit("search", newQuery)
+      }
+  },
   methods: {
-    applySearch () {
-      this.$emit("search", this.tempSearchQuery)
-    },
+    
     applyFilters () {
       this.$emit( "filter",{
 

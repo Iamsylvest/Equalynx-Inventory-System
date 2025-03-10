@@ -8,12 +8,7 @@
         placeholder="Search by name..."
         class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[150px]"
       />
-      <button
-        @click="applySearch"
-        class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-400 transition"
-      >
-        Search
-      </button>
+
     </div> <br>
 
     <!-- Role Filter -->
@@ -35,8 +30,8 @@
       class="w-[240px] md:w-[148px]  border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="">All Status</option>
-      <option value="1">Active</option>
-      <option value="0">Inactive</option>
+      <option value="active">active</option>
+      <option value="inactive">inactive</option>
     </select>
   </div>
 </template>
@@ -50,11 +45,15 @@ export default {
       selectedStatus: ""
     };
   },
+  watch:{
+    tempSearchQuery(newQuery){
+      this.$emit("search", newQuery)
+    }
+  },
   methods: {
-    applySearch() {
-      this.$emit("search", this.tempSearchQuery);
-    },
+    
     applyFilters() {
+      console.log("Filtering by status:", this.selectedStatus); // Debugging line
       this.$emit("filter", {
         role: this.selectedRole,
         status: this.selectedStatus

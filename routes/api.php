@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Resources\UserResource; // Make sure to import the UserResource
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DrController;
 use App\Http\Controllers\PDFController;
@@ -20,6 +21,19 @@ use App\Http\Controllers\RrController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+// ✅ Add this to authenticate private channels with Sanctum
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
+// Route for broadcasting authentication
+Route::middleware('auth:sanctum')->post('/broadcasting/auth', function (Request $request) {
+    // Example: You can access $request if needed, for instance:
+    // Check if the user is authenticated
+    if ($request->user()) {
+        return response()->json(['message' => 'Authorized']);
+    }
+
+    return response()->json(['message' => 'Unauthorized'], 401);
+});
 // Protected route that requires authentication using Sanctum
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     // Return the UserResource to customize the response
@@ -32,6 +46,8 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 Route::post('login', [AuthController::class, 'login']);
 
 
+
+
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
 
@@ -39,6 +55,9 @@ Route::post('/users', [UserController::class, 'store']);
 Route::get('/users', [UserController::class, 'index']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::patch('/users/{id}', [UserController::class, 'update']);
+Route::get('/activity-logs', [UserController::class, 'getActivityLogs']);
+
+
 
 Route::post('/inventory', [InventoryController::class, 'store']);
 Route::get('/inventory', [InventoryController::class, 'index']);
@@ -63,3 +82,4 @@ Route::get('/Rr', [RrController::class, 'index']);
 Route::delete('/Rr/{id}', [RrController::class, 'destroy']);
 Route::get('/Rr/{id}', [RrController::class, 'show']);
 Route::post('/updateReturnReceipt/{id}', [RrController::class, 'update']);
+
