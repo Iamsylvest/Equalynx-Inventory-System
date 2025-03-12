@@ -4,8 +4,8 @@
      <header class="flex flex-row justify-between items-center">
          <h1 class="text-2xl  whitespace-nowrap">Activity Logs</h1>
          <div class="flex items-end justify-end">
-           <ActivityLogsNotification />
-           <ActivityLogsProfile />
+           <Notification />
+           <Profile />
          </div>
      </header>
      <div  >
@@ -89,15 +89,15 @@
 import axios from 'axios';
 import { mapGetters } from 'vuex'; // ✅ Import mapGetters
 import ActivityLogsFillter from '@/components/admin/ActivityLogs/ActivityLogsFillter.vue';
-import ActivityLogsNotification from '@/components/admin/ActivityLogs/ActivityLogsNotification.vue';
-import ActivityLogsProfile from '@/components/admin/ActivityLogs/ActivityLogsProfile.vue';
+import Notification from '@/components/admin/Notification/Notification.vue';
+import Profile from '@/components/admin/Notification/Profile.vue';
 
 
 export default {
     components :{
         ActivityLogsFillter,
-        ActivityLogsNotification,
-        ActivityLogsProfile,
+        Notification,
+        Profile,
 
  
     },

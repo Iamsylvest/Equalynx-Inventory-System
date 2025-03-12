@@ -364,7 +364,26 @@ class RrController extends Controller
 
         Log::info("RR Data:", ['rr' => $rr]);
 
+        if ($rr->status === 'approved' ||  $rr->status === 'rejected'){
+                event(new ActivityLogged([
+                    'action' => $rr->rr_number . ' number ' . ' was ' . $rr->status . ' by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                ' on ' . now()->toDayDateTimeString(),
 
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Include role of the performing user
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+                        
+                // ✅ Write log to a file
+                Log::channel('activity')->info(json_encode([
+                    'action' => $rr->rr_number . ' number ' . ' was ' . $rr->status . ' by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                    'role' => auth()->user()->role, // ✅ Ensure role is logged
+                    'timestamp' => now()->toDateTimeString(),
+                ]));
+    } else {
         event(new ActivityLogged([
             'action' => $rr->rr_number . ' number ' . ' was edited by ' . 
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
@@ -383,7 +402,7 @@ class RrController extends Controller
             'role' => auth()->user()->role, // ✅ Ensure role is logged
             'timestamp' => now()->toDateTimeString(),
         ]));
-
+    }
 
         return response()->json([
             'success' => true,

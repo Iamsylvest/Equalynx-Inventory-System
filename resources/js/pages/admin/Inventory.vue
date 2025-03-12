@@ -4,8 +4,8 @@
      <header class="flex flex-row justify-between items-center">
          <h1 class="text-2xl whitespace-nowrap">Inventory</h1>
          <div class="hidden sm:flex md:flex lg:flex items-end justify-end">
-             <InventoryNotification />
-             <InventoryProfile />
+             <Notification />
+             <Profile />
          </div>
      </header>
  
@@ -20,15 +20,15 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import InventoryProfile from '../../components/admin/Inventory/InventoryProfile.vue';
-import InventoryNotification from '../../components/admin/Inventory/InventoryNotification.vue';
+import Profile from '@/components/admin/Notification/Profile.vue';
+import Notification from '@/components/admin/Notification/Notification.vue';
 import InventoryTable from '../../components/admin/Inventory/InventoryTable.vue';
 
 export default {
     components :{
         InventoryTable,
-        InventoryProfile,
-        InventoryNotification,
+        Profile,
+        Notification,
 
  
     },

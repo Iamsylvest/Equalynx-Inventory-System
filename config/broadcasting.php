@@ -45,7 +45,7 @@ return [
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],
-            'middleware' => ['auth:api'], // Add this line for middleware to authenticate before broadcasting
+            'middleware' => ['auth:sanctum'], // ✅ Use Sanctum for authentication
         ],
 
         'ably' => [

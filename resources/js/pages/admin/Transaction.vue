@@ -4,8 +4,8 @@
    <header class="flex flex-row justify-between items-center">
        <h1 class="text-2xl  whitespace-nowrap">Transaction</h1>
        <div class="hidden sm:flex md:flex items-end justify-end">
-           <TransactionNotification />
-           <TransactionProfile />
+           <Notification />
+           <Profile />
        </div>
    </header>
 
@@ -22,15 +22,15 @@
   
   <script>
   import { mapGetters } from 'vuex'; // Ensure this is at the top
-  import TransactionNotification from '../../components/admin/Transaction/TransactionNotification.vue';
-  import TransactionProfile from '../../components/admin/Transaction/TransactionProfile.vue';
+  import Notification from '@/components/admin/Notification/Notification.vue';
+  import Profile from '@/components/admin/Notification/Profile.vue';
   import TransactionTable from '../../components/admin/Transaction/TransactionTable.vue';
 
   
   export default {
     components: {
-      TransactionNotification,
-      TransactionProfile,
+      Notification,
+      Profile,
       TransactionTable,
   
     },

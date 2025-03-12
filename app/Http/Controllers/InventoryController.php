@@ -6,7 +6,7 @@ use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Events\ActivityLogged;
-
+use App\Events\WarehouseNotification;
 
 class InventoryController extends Controller
 {
@@ -80,7 +80,13 @@ class InventoryController extends Controller
                 ]));
 
 
-
+                if ($inventory->stocks >= 50) {
+                    event(new WarehouseNotification([
+                        'type' => 'high_stock', // ✅ Define the type for handling in the event
+                        'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
+                        'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+                    ]));
+                }
 
                 return response()->json([
                     'success' => true,
@@ -206,7 +212,22 @@ class InventoryController extends Controller
                     'role' => auth()->user()->role, // ✅ Ensure role is logged
                     'timestamp' => now()->toDateTimeString(),
                 ]));
-        
+                
+
+                
+                if ($inventory->stocks <= 30 ) {
+                    event(new WarehouseNotification([
+                        'type' => 'low_stock',
+                        'action' => $inventory->material_name . ' is low stocked (' . $inventory->stocks . ' remaining).', 'timestamp' => now()->toDayDateTimeString(),
+                    ]));
+                    } elseif ($inventory->stocks >= 50){
+                        event(new WarehouseNotification([
+                            'type' => 'high_stock', // ✅ Define the type for handling in the event
+                            'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
+                            'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+                        ]));
+                    }
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Inventory item updated successfully',

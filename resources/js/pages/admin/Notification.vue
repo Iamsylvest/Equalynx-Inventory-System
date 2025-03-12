@@ -81,8 +81,8 @@
 <script>
 
 import { mapGetters } from 'vuex'; // ✅ Import mapGetters
-import Notification from '../../components/admin/Notification/Notification.vue';
-import Profile from '../../components/admin/Notification/Profile.vue';
+import Notification from '@/components/admin/Notification/Notification.vue';
+import Profile from '@/components/admin/Notification/Profile.vue';
 
 
 export default {

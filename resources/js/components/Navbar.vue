@@ -88,7 +88,7 @@
              </router-link>
   
              <router-link 
-             v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff'"
+             v-if="userRole === 'admin'"
              to="/ActivityLogs" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                   @click="activeLink = ('Activity')"
                    :class="{

@@ -35,7 +35,7 @@ class UserController extends Controller
 
 
         event(new ActivityLogged([
-            'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . ' was created by ' . 
+            'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . ' was created by ' . ' ' .
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                         ' on ' . now()->toDayDateTimeString(),
 
@@ -46,7 +46,7 @@ class UserController extends Controller
                 
         // ✅ Write log to a file
         Log::channel('activity')->info(json_encode([
-            'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . ' was created by' . 
+            'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . ' was created by' . ' ' .
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
             'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
             'role' => auth()->user()->role, // ✅ Ensure role is logged
@@ -242,5 +242,9 @@ class UserController extends Controller
         
             return response()->json($paginatedLogs);
         }
+        
+
+
+
     
 }

@@ -301,25 +301,46 @@ class DrController extends Controller
             $dr = Dr::with('approver')->where('id', $id)->first();
 
 
+                if ($dr->status === 'approved' ||  $dr->status === 'rejected') {
+                    event(new ActivityLogged([
+                        'action' => $dr->dr_number. ' number ' . ' was ' . $dr->status . ' by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                    ' on ' . now()->toDayDateTimeString(),
+            
+                        'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'role' => auth()->user()->role, // ✅ Include role of the performing user
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                            
+                    // ✅ Write log to a file
+                    Log::channel('activity')->info(json_encode([
+                        'action' => $dr->dr_number. ' number ' . ' was ' . $dr->status . ' by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'role' => auth()->user()->role, // ✅ Ensure role is logged
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                } else {
+                    event(new ActivityLogged([
+                        'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                                    ' on ' . now()->toDayDateTimeString(),
+            
+                        'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'role' => auth()->user()->role, // ✅ Include role of the performing user
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                            
+                    // ✅ Write log to a file
+                    Log::channel('activity')->info(json_encode([
+                        'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                        'role' => auth()->user()->role, // ✅ Ensure role is logged
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                }
 
-            event(new ActivityLogged([
-                'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
-                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
-                            ' on ' . now()->toDayDateTimeString(),
-    
-                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
-                'role' => auth()->user()->role, // ✅ Include role of the performing user
-                'timestamp' => now()->toDateTimeString(),
-            ]));
-                    
-            // ✅ Write log to a file
-            Log::channel('activity')->info(json_encode([
-                'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
-                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
-                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
-                'role' => auth()->user()->role, // ✅ Ensure role is logged
-                'timestamp' => now()->toDateTimeString(),
-            ]));
 
 
             Log::info("DR Data:", ['dr' => $dr]);

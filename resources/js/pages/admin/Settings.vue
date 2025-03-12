@@ -9,7 +9,7 @@
          </div>
      </header>
  
-     <SettingsForm/>
+
             
  
  </div>
@@ -19,15 +19,15 @@
  </template>
  
 <script>
-import Notification from '../../components/admin/Settings/Notification.vue';
-import Profile from '../../components/admin/Settings/Profile.vue';
-import SettingsForm from '../../components/admin/Settings/SettingsForm.vue';
+import Notification from '@/components/admin/Notification/Notification.vue';
+import Profile from '@/components/admin/Notification/Profile.vue';
+
 export default {
     components:
     {
         Notification,
         Profile,
-        SettingsForm,
+      
     },
 
 }
