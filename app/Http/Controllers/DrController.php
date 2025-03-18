@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Models\Material;
 use App\Events\ActivityLogged;
+use App\Events\AdminNotification;
+use App\Events\ProcurementNotification;
+use App\Events\ManagerNotification;
+use App\Events\LowstockUpdated;
 
 class DrController extends Controller
 {
@@ -73,6 +77,20 @@ class DrController extends Controller
                 'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'role' => auth()->user()->role, // ✅ Ensure role is logged
                 'timestamp' => now()->toDateTimeString(),
+            ]));
+
+            event(new AdminNotification([
+                'type' => 'new_dr',
+                'action' => 'New ' . $dr->dr_number . ' was created by ' .   auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name
+                . ' ' . ' status ' . $dr->status . '.',
+                'timestamp' => now()->toDateTimeLocalString(),
+            ]));
+
+            event(new ManagerNotification([
+                'type' => 'new_dr',
+                'action' => 'New ' . $dr->dr_number . ' was created by ' .   auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name
+                . ' ' . ' status ' . $dr->status . '.',
+                'timestamp' => now()->toDateTimeLocalString(),
             ]));
     
                 
@@ -252,8 +270,10 @@ class DrController extends Controller
                 }
             }
 
+            // calll the function to braodcast low stock materials
+            $this->broadcastLowStock();
 
-     
+
             // Update the DR item status
             $dr->approved_by = auth()->id();  // Save user ID
             $dr->status = $newStatus;
@@ -320,6 +340,28 @@ class DrController extends Controller
                         'role' => auth()->user()->role, // ✅ Ensure role is logged
                         'timestamp' => now()->toDateTimeString(),
                     ]));
+                          // NOTIFY ADMIN ACCOUNT
+                    event(new AdminNotification([
+                        'type' => 'approved_dr',
+                        'action' => $dr->dr_number .  ' was ' . $dr->status . ' by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . '.',
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                         // NOTIFY PROCUREMENT ACCOUNT
+                    event(new ProcurementNotification([
+                        'type' => 'approved_dr',
+                        'action' => $dr->dr_number .  ' was ' . $dr->status . ' by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . '.',
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+                         // NOTIFY MANAGER ACCOUNT
+                    event(new ManagerNotification([
+                        'type' => 'approved_dr',
+                        'action' => $dr->dr_number .  ' was ' . $dr->status . ' by ' . 
+                                    auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . '.',
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+        
                 } else {
                     event(new ActivityLogged([
                         'action' => $dr->dr_number. ' number ' . ' was edited by ' . 
@@ -363,8 +405,26 @@ class DrController extends Controller
         }
     }
 
+    
 
+    public function broadcastLowStock(){
+        $lowStockThreshhold = 20;
 
+        // get all low stock materials
+        $lowStockMaterials =  Inventory::where('stocks', '<=', $lowStockThreshhold)->get();
+        $totalLowStock = $lowStockMaterials->count();
 
+       $extraInfo = [];
+       foreach($lowStockMaterials as $material){
+        $extraInfo[] = [
+            'type' => 'lowStock_materials ',
+            'action' => $material->material_name . ' ' . $material->stocks . ' ',
+            'timestamp' => $material->updated_at->toDateTimeString(),
+        ];
+       }
+       broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
+    }
+
+  
 }
 

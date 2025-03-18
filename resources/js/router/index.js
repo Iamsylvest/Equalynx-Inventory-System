@@ -7,21 +7,22 @@ import Transaction from '@/pages/admin/Transaction.vue';
 import ActivityLogs from '@/pages/admin/ActivityLogs.vue';
 import Notification from '@/pages/admin/Notification.vue';
 import Settings from '@/pages/admin/Settings.vue';
+import ProcurementDashboard from '@/pages/admin/Procurement.vue';
 import store from '@/store'; // Import the store
 
-
 const routes = [
-  { path: '/', redirect: '/login' }, // Redirect root to login
+  { path: '/', redirect: '/login' }, 
   { path: '/login', component: Login },
   { path: '/reset-password', component: ResetPassword },
-  { path: '/Usermanagement', component: UserManagement, meta: { requiresAuth: true },},
-  { path: '/AdminInventory', component: Inventory, meta: { requiresAuth: true },},
-  { path: '/AdminTransaction',component: Transaction, meta: { requiresAuth: true },},
-  { path: '/ActivityLogs', component: ActivityLogs, meta: { requiresAuth: true }, },
-  { path: '/Notification', component: Notification, meta: { requiresAuth: true },},
-  { path: '/Settings', component: Settings, meta: { requiresAuth: true },},
-  
-  
+  { path: '/UserManagement', component: UserManagement, meta: { requiresAuth: true }},
+  { path: '/procurement', component: ProcurementDashboard, meta: { requiresAuth: true } },
+  { path: '/AdminInventory', component: Inventory, meta: { requiresAuth: true }},
+  { path: '/AdminTransaction', component: Transaction, meta: { requiresAuth: true }},
+  { path: '/ActivityLogs', component: ActivityLogs, meta: { requiresAuth: true }},
+  { path: '/Notification', component: Notification, meta: { requiresAuth: true }},
+  { path: '/Settings', component: Settings, meta: { requiresAuth: true }},
+  // Catch-all route for undefined routes
+  { path: '/:pathMatch(.*)*', redirect: '/login' },
 ];
 
 const router = createRouter({
@@ -31,29 +32,24 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters["auth/isAuthenticated"];
-  const userRole = store.getters["auth/userRole"]; // get the user role
+  const userRole = store.getters["auth/userRole"];
 
   if (to.path === "/login" && isAuthenticated) {
-    // Redirect based on role
-    if (userRole === "admin"){
+    if (userRole === "admin") {
       next("/UserManagement");
-    } else if (userRole === "manager"){
-      next("/AdminTransaction"); 
+    } else if (userRole === "manager") {
+      next("/AdminTransaction");
+    } else if (userRole === "warehouse_staff") {
+      next("/AdminInventory");
+    } else if (userRole === "procurement") {
+      next("/procurement");
+    } else {
+      next("/"); // Fallback for unknown roles
     }
-      else if (userRole === "warehouse_staff"){
-        next("/AdminInventory"); 
-    }
-    else if (userRole === "procurement"){
-        next("/UserManagement");
-    }
-     else {
-      next("/"); // Default fallback if role is unknown
-    }
-
   } else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ path: "/login", query: { redirect: to.fullPath } }); // Save where the user was going
+    next({ path: "/login", query: { redirect: to.fullPath } }); 
   } else {
-    next();
+    next(); // Continue if no issues
   }
 });
 

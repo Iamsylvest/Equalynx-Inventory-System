@@ -46,10 +46,21 @@
               <p class="text-xs">Email:</p>
               <input v-model="form.email" type="email" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
             </div>
-            <div>
-              <p class="text-xs">Password:</p>
-              <input v-model="form.password" type="password" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
-            </div>
+            <div class="relative">
+                  <p class="text-xs">Password:</p>
+                  <input 
+                    v-model="form.password" 
+                    :type="showPassword ? 'text' : 'password'" 
+                    class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                  />
+                  <button 
+                    type="button" 
+                    @click="togglePasswordVisibility" 
+                    class="absolute top-10 right-3 transform -translate-y-1/2 text-sm text-blue-500 hover:text-blue-700"
+                  >
+                    {{ showPassword ? 'Hide' : 'Show' }}
+                  </button>
+                </div>
             <div>
               <p class="text-xs">Role:</p>
               <select v-model="form.role" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
@@ -64,10 +75,21 @@
           </div>
         </div>
 
-        <!-- Save Button -->
+              <!-- Save Button -->
         <div class="text-center">
-          <button @click="addUser" class="w-full py-2 rounded-lg font-semibold bg-custom-blue text-white drop-shadow-md text-sm">
-            Add User
+          <button 
+            @click="addUser" 
+            :disabled="loading"
+            class="w-full py-2 rounded-lg font-semibold bg-custom-blue text-white drop-shadow-md text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <span v-if="!loading">Add User</span>
+            <span v-else class="flex items-center justify-center">
+              <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 1 0 16 0H4z"></path>
+              </svg>
+              Loading...
+            </span>
           </button>
         </div>
       </div>
@@ -82,6 +104,8 @@ export default {
   data() {
     return {
       showModal: false,
+      loading: false, // Added loading state
+      showPassword: false,
       form: {
         first_name: '',
         middle_name: '',
@@ -94,6 +118,8 @@ export default {
   }, 
     methods: {
     async addUser() {
+      if (this.loading) return; // Prevent multiple requests
+      this.loading = true; // Start loading state
       try {
         const response = await axios.post('/api/users', this.form);
         this.$emit('userAdded', response.data.user);
@@ -116,6 +142,12 @@ export default {
           confirmButtonText: 'OK'
         });
       }
+      finally {
+        this.loading = false; // End loading state
+      }
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     }
   }
 };

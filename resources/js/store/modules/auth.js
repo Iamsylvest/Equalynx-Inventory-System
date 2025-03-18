@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 export default {
   namespaced: true,
   state: {
@@ -38,6 +39,29 @@ export default {
         commit('setUser', userResponse.data);
         localStorage.setItem('authUser', JSON.stringify(userResponse.data));
 
+        // ✅ Initialize Pusher after login with new token
+        if (window.Echo) {
+          window.Echo.disconnect(); // Ensure old connection is closed
+          window.Echo = null;
+      }
+
+      window.Pusher = Pusher;
+      window.Echo = new Echo({
+          broadcaster: 'pusher',
+          key: 'your-app-key',
+          cluster: 'your-cluster',
+          forceTLS: true,
+          authEndpoint: '/broadcasting/auth',
+          auth: {
+              headers: {
+                  Authorization: `Bearer ${token}`,
+              },
+          },
+      });
+
+
+
+
            // Return user role for redirection
         return user.role;  // ✅ FIXED: Now it returns the role
 
@@ -73,6 +97,13 @@ export default {
           });
       } catch (error) {
           console.error("Logout API error:", error);
+      }
+      
+        // ✅ Disconnect Pusher on logout
+        if (window.Echo) {
+          window.Echo.disconnect();
+          window.Echo = null;
+          console.log('Pusher connection disconnected');
       }
   
       // Clear token and user from Vuex and local storage

@@ -50,33 +50,40 @@
     </table>
     <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
         <!-- Previous Button -->
-        <button 
-          @click="fetchLogs(currentPage - 1)" 
-          :disabled="currentPage === 1" 
-          class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
-        >
-          ←
-        </button>
+     <!-- First Button -->
+          <button 
+            @click="fetchLogs(1)" 
+            :disabled="currentPage === 1" 
+            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+            « 
+          </button>
 
-        <!-- Pagination Numbers -->
-        <span 
-          v-for="page in lastPage" 
-          :key="page"
-          @click="fetchLogs(page)"
-          class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
-          :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
-        >
-          {{ page }}
-        </span>
+          <!-- Ellipsis Before -->
+          <span v-if="paginationRange[0] > 1">...</span>
 
-        <!-- Next Button -->
-        <button 
-          @click="fetchLogs(currentPage + 1)" 
-          :disabled="currentPage === lastPage" 
-          class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
-        >
-          →
-        </button>
+          <!-- Pagination Numbers -->
+          <span 
+            v-for="page in paginationRange" 
+            :key="page"
+            @click="fetchLogs(page)"
+            class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+            :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
+          >
+            {{ page }}
+          </span>
+
+          <!-- Ellipsis After -->
+          <span v-if="paginationRange[paginationRange.length - 1] ">...</span>
+
+          <!-- Last Button -->
+          <button 
+            @click="fetchLogs(lastPage)" 
+            :disabled="currentPage === lastPage" 
+            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+           »
+          </button>
       </div>
   </div>
 
@@ -121,6 +128,22 @@ export default {
                 : true;
               return matchesRole && matchesDateAdded;
           });
+      },
+      paginationRange() {
+        const total = this.lastPage;
+        const current = this.currentPage;
+        const delta = 2; // Show 2 pages before and after the current page
+        const range = [];
+
+        for (
+          let i = Math.max(1, current - delta);
+          i <= Math.min(total, current + delta);
+          i++
+        ) {
+          range.push(i);
+        }
+
+        return range;
       }, 
     },
    mounted(){

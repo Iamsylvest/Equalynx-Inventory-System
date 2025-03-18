@@ -10,7 +10,7 @@
           'hover:text-white': !isClicked,
           'active:bg-custom-blue': isClicked
         }"
-        class="flex items-center justify-center w-12 h-12 cursor-pointer transition duration-300 focus:outline-none rounded-full"
+          class="relative flex items-center justify-center w-12 h-12 cursor-pointer transition duration-300 focus:outline-none rounded-full"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
           <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
@@ -18,9 +18,9 @@
       </button>
   
       <!-- Modal -->
-      <div v-if="modalProfile" class="absolute inset-0 flex items-center justify-end bg-opacity-50">
+      <div v-if="modalProfile"  class="absolute inset-0 flex items-center justify-end bg-opacity-50">
         <div @click="closeModal" class="fixed inset-0 z-10 opacity-50"></div>
-        <div class="bg-white border-1 shadow-lg rounded-md px-4 py-10 z-20 mx-4 w-full max-w-sm h-[420px] relative left-[-12px] top-[-40px] min-w-[200px] max-h-[500px] min-h-[300px]">
+        <div class="bg-white border-1 shadow-lg rounded-md px-4 py-10 z-20 mx-4 w-full max-w-sm h-[420px] absolute  top-20 right-12">
           <div class="flex items-center justify-end mb-4 relative top-[-30px]">
             <!-- Close Button -->
             <button @click="closeModal" class="flex items-center justify-center p-2 hover:bg-gray-100 rounded-full">
@@ -31,25 +31,14 @@
           </div>
   
           <!-- Profile Content -->
-          <div class="flex flex-col items-center justify-center space-y-6">
-            <!-- Profile Image -->
-            <div>
-              <button class="flex flex-col items-center justify-center w-20 h-20 cursor-pointer relative top-[-40px] group">
-                <img src="@/assets/Sylvest.jpg" alt="Description" class="rounded-full border-4 border-gray-300 shadow-lg" />
-                <span class="relative top-[-24px] left-8 group-hover:text-blue-500 rounded-full border-4 bg-gray-300 shadow-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5">
-                    <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.513 8.2Z" />
-                  </svg>
-                </span>
-              </button>
-            </div>
-  
+          <div class="flex flex-col items-center justify-center space-y-6 mt-16">
+    
             <!-- Name and Role -->
             <div>
-              <h1 class="font-bold relative top-[-50px] text-2xl">Sylvest Madelo</h1>
+              <h1 class="font-bold relative top-[-50px] text-2xl">{{ userDetails.first_name}} {{ userDetails.middle_name ?? ''}} {{ userDetails.last_name}}</h1>
             </div>
             <div>
-              <h1 class="font-bold relative top-[-55px] text-md">Manager</h1>
+              <h1 class="font-bold relative top-[-55px] text-md">{{ userDetails.role ?? ''}}</h1>
             </div>
   
             <!-- Settings Button -->
@@ -79,12 +68,15 @@
   </template>
   
   <script>
+import axios from 'axios';
+
 
   export default {
     data() {
       return {
         modalProfile: false,
         isClicked: false,
+        userDetails:{},
       };
     },
     methods: {
@@ -105,8 +97,22 @@
 
         // Close the modal if it's open
         this.closeModal();
-      }
+      },
+      async fetchUserDetails() {
+        try {
+          // ✅ Directly call the `/api/user` endpoint to get the logged-in user
+          const response = await axios.get('/api/user');
+          console.log('Fetch User Details', response.data);
 
+          // ✅ Use nullish coalescing for fallback to an empty object
+          this.userDetails = response.data.data ?? {}; 
+        } catch (error) {
+          console.error('Failed to Fetch User Details', error);
+        }
+      },
     },
+    mounted(){
+      this.fetchUserDetails();
+      }
   };
 </script>

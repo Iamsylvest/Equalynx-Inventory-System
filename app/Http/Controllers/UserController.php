@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ActivityLogged;
+use App\Events\AdminNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +35,15 @@ class UserController extends Controller
         ]);
 
 
+        event(new AdminNotification([
+            'type' => 'user_created',
+            'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . 
+                        ' was created by ' . auth()->user()->first_name . ' ' . 
+                        (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+        ]));
+        
+
+        
         event(new ActivityLogged([
             'action' => 'New user ' . $user->first_name . ' ' . $user->last_name . ' was created by ' . ' ' .
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
@@ -125,30 +135,48 @@ class UserController extends Controller
         {
             // Find the user by ID or return a 404 response if not found
             $user = User::findOrFail($id);
-
+            $original = $user->getOriginal();
+        
             // Validate incoming request data
             $validated = $request->validate([
                 'first_name' => 'sometimes|string|max:255',
                 'last_name' => 'sometimes|string|max:255',
                 'email' => 'sometimes|email|unique:users,email,' . $id, // Ensure email is unique except for this user
                 'role' => 'required|string',
+                'password' => 'nullable|string|min:8|confirmed', // Add password validation
             ]);
-
+        
+            // If password is provided, hash it before updating
+            if ($request->has('password')) {
+                $validated['password'] = bcrypt($request->password);
+            }
+        
             // Update the user with only the validated data
             $user->update($validated);
-
-
-            
+        
+            $actionMessage = $user->first_name . ' ' . $user->last_name . ' was edited by ' .
+            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name;
+        
+            if ($original['role'] !== $user->role) {
+                $actionMessage .= '. Role changed from ' . $original['role'] . ' to ' . $user->role;
+            }
+                
+            event(new AdminNotification([
+                'type' => 'edit_user',
+                'action' => $actionMessage,
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+        
             event(new ActivityLogged([
-                'action' => 'User ' . $user->first_name . ' ' . $user->last_name . 'account was edited by ' . 
+                'action' => 'User ' . $user->first_name . ' ' . $user->last_name . ' account was edited by ' . 
                             auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                             ' on ' . now()->toDayDateTimeString(),
-    
+        
                 'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'role' => auth()->user()->role, // ✅ Include role of the performing user
                 'timestamp' => now()->toDateTimeString(),
             ]));
-                    
+                        
             // ✅ Write log to a file
             Log::channel('activity')->info(json_encode([
                 'action' => 'User ' . $user->first_name . ' ' . $user->last_name . ' was edited by ' . 
@@ -157,7 +185,7 @@ class UserController extends Controller
                 'role' => auth()->user()->role, // ✅ Ensure role is logged
                 'timestamp' => now()->toDateTimeString(),
             ]));
-
+        
             // Return response with updated user data
             return response()->json([
                 'message' => 'User updated successfully',
@@ -243,8 +271,20 @@ class UserController extends Controller
             return response()->json($paginatedLogs);
         }
         
-
-
-
-    
+        public function getAuthUser()
+        {
+            $user = auth()->user();
+        
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+        
+            return response()->json([
+                'success' => true,
+                'data' => $user
+            ], 200);
+        }
 }

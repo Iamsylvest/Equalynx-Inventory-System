@@ -29,13 +29,20 @@
             <button type="button" @click="togglePasswordVisibility" class="absolute top-9 right-3">
               {{ showPassword ? 'Hide' : 'Show' }}
             </button>
+            
           </div>
+          <div class="flex flex-col mb-6 relative item">
+            <router-link to="/reset-password" class="text-blue-500 p-2 rounded-md cursor-pointer">
+              Forgot password?
+            </router-link>
+          </div>
+          
 
           <div class="flex justify-end">
             <button
               type="submit"
               class="w-full px-4 py-3 bg-blue-600 text-white rounded-md"
-              :disabled="isLoading" 
+              :disabled="isLoading"
             >
               Login
             </button>
@@ -50,6 +57,7 @@
 import { mapActions } from 'vuex';
 import backgroundImage from '@/assets/dataCenter.jpg';
 import Swal from 'sweetalert2'; // Import SweetAlert2
+import ResetPassword from '@/auth/ResetPassword.vue';
 
 
 export default {
@@ -73,51 +81,72 @@ export default {
       password: '',
       showPassword: false,
       isLoading: false, // Variable to track loading state
+      ResetPassword,
     };
   },
   methods: {
     ...mapActions('auth', ['login']), // Map the login action from Vuex
 
-    async handleLogin() {
-      this.isLoading = true; // Show the loading state
+async handleLogin() {
+  this.isLoading = true; // Show the loading state
 
-      // Show the SweetAlert loading spinner
-      Swal.fire({
-        title: 'Logging in...',
-        text: 'Please wait while we process your login.',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+  // Show the SweetAlert loading spinner
+  Swal.fire({
+    title: 'Logging in...',
+    text: 'Please wait while we process your login.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
 
-      try {
-        const userRole = await this.login({email: this.email, password: this.password});
+  try {
+    const userRole = await this.login({ email: this.email, password: this.password });
 
-        if (userRole === 'admin'){
-          this.$router.push("/UserManagement");
-        } else if (userRole === 'manager'){
-          this.$router.push("/AdminTransaction");
-        } else if (userRole === 'warehouse_staff'){
-          this.$router.push("/AdminInventory");
-        } 
-        else if (userRole === 'procurement'){
-          this.$router.push("/UserManagement");
-        } 
-         else {
-            this.$router.push("/"); // Default fallback
-          }
-      } catch (error) {
-        Swal.fire({
-          title: 'Error!',
-          text: error.message || 'Something went wrong. Please try again.',
-          icon: 'error',
-        });
-      } finally {
-        this.isLoading = false; // Hide the spinner
-        Swal.close(); // Close the SweetAlert spinner
-      }
-    },
+    // If login is successful, handle redirection
+    if (userRole === 'admin') {
+      this.$router.push("/UserManagement");
+    } else if (userRole === 'manager') {
+      this.$router.push("/AdminTransaction");
+    } else if (userRole === 'warehouse_staff') {
+      this.$router.push("/AdminInventory");
+    } else if (userRole === 'procurement') {
+      this.$router.push("/procurement");
+    } else {
+      this.$router.push("/"); // Default fallback
+    }
+
+    // Successfully logged in: Close the loading spinner and alert
+    Swal.close();
+    this.isLoading = false; // Hide the loading state
+  } catch (error) {
+    // Close the loading spinner if there's an error
+    Swal.close();
+
+  // Log the full error response for debugging
+  console.error('Full error response:', error.response);
+
+  if (error.response && error.response.status === 401) {
+  // Specific error handling for 401
+  Swal.fire({
+    title: 'Login Failed!',
+    text: error.response?.data?.message || 'Invalid email or password. Please try again.',
+    icon: 'error',
+    confirmButtonText: 'OK'
+  });
+} else {
+  // General error handling for other issues (e.g., network errors)
+  Swal.fire({
+    title: 'Login Failed!',
+    text: 'Invalid email or password. Please try again.', // Same message as 401 error
+    icon: 'error',
+    confirmButtonText: 'OK'
+  });
+}
+
+    this.isLoading = false; // Ensure the loading state is hidden even after an error
+  }
+},
 
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;

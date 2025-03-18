@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Http\Resources\UserResource; // Import the UserResource
 use Illuminate\Support\Facades\Log; // Import Log facade
+use App\Events\AdminNotification;
 
 class AuthController extends Controller
 {
@@ -29,12 +30,9 @@ class AuthController extends Controller
             
             $token = $request->user()->createToken('YourAppName_Token_' . Str::random(40))->plainTextToken;
 
-                    // After the user is authenticated...
-            event(new UserLoggedIn(Auth::user()));  // This triggers the broadcast event
+          
 
-            
-
-            event(new ActivityLogged([
+         event(new ActivityLogged([
                 'action' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' login ',
                        
 
@@ -57,9 +55,21 @@ class AuthController extends Controller
                 'token' => $token,
                 'user' => new UserResource($user), // Send the user data in the response
             ]);
-        }
+        }   
+            else {
+
+                Log::warning('Unauthorized login attempt with email: ' . $request->email);
+
+                event(new AdminNotification([
+                    'type' => 'access_invalid',
+                    'action' => 'Unauthorized login attempt with email ' . $request->email,
+                    'timestamp' => now()->toDateTimeLocalString(),
+                ]));
+
+                return response()->json(['message' => 'Invalid email or password. Please try again.'], 401);
+                
+            }
         
-        return response()->json(['message' => 'Unauthorized'], 401);
     }
     public function logout(Request $request)
     {

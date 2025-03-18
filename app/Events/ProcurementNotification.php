@@ -2,16 +2,15 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log; // Import Log facade
 use Illuminate\Support\Str; // ✅ Import Str for generating UUID
 
-class WarehouseNotification implements ShouldBroadcast
+class ProcurementNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -21,33 +20,31 @@ class WarehouseNotification implements ShouldBroadcast
     public function __construct($notif)
     {
        $this->notif = $notif;
-       $this->id = str::uuid()->toString(); // Generate unique ID
+       $this->id = Str::uuid()->toString(); // Unique id for notication
     }
+
     public function broadcastOn()
     {
-        return new PrivateChannel('warehouse-notification');
+        return new PrivateChannel('procurement-notification');
     }
+
     public function broadcastAs(){
-        
-        return 'notified-warehouse'; // ✅ Match event name
+        return 'notified-procurement';
     }
-    public function broadcastWith()
-    {
-        // List of allowed types
-        $allowedTypes = [
-            'low_stock', 'high_stock', 'edit', 'rr_created', 'approved', 'new_material'
-        ];
-        
-        // Check if the notification type is in the allowed types
-        if (in_array($this->notif['type'], $allowedTypes)) {
+
+    public function broadcastWith(){
+        $allowed_types =  ['approved_dr', 'approved_rr'];
+
+            // If the type is one of the allowed types, return the notification structure
+        if (in_array($this->notif['type'], $allowed_types)) {
             return [
                 'id' => $this->id, // include unique ID
                 'action' => $this->notif['action'] ?? 'No notification',
                 'timestamp' => now()->timestamp * 1000, // ✅ JS-compatible timestamp
             ];
         }
-    
-        // Return empty array for unsupported types
-        return [];
+          // Return an empty array for any other notification types
+          return null;
+
     }
 }

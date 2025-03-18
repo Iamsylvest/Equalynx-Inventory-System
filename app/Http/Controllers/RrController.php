@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\ReturnMaterial;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Events\ActivityLogged;
+use App\Events\WarehouseNotification;
+use App\Events\AdminNotification;
+use App\Events\ProcurementNotification;
+use App\Events\ManagerNotification;
+use App\Events\highStockUpdated;
+use App\Events\BarGraphUpdated;
 class RrController extends Controller
 
 {
@@ -146,8 +152,19 @@ class RrController extends Controller
                 ]);
             }
     
+        event(new WarehouseNotification([
+                'type' => 'rr_created', // ✅ Define the type for handling in the event
+                'action' => $rr->rr_number . ' was created by ' . auth()->user()->first_name . ' ' . auth()->user()->last_name,
+                'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+            ]));
 
-            
+            event(new ManagerNotification([
+                'type' => 'rr_created', // ✅ Define the type for handling in the event
+                'action' => $rr->rr_number . ' was created by ' . auth()->user()->first_name . ' ' . auth()->user()->last_name,
+                'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+            ]));
+
+
         event(new ActivityLogged([
             'action' => $rr->rr_number . ' number ' . ' was created by ' . 
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
@@ -253,6 +270,7 @@ class RrController extends Controller
         $rr = Rr::findOrFail($id);
         $newStatus = $request->status;
 
+
         // Decode materials if they were sent as JSON string (for FormData from Vue)
         $materials = json_decode($request->input('materials'), true);
         if (!is_array($materials)) {
@@ -264,6 +282,8 @@ class RrController extends Controller
             if (auth()->check() && auth()->user()->role !== 'manager') {
                 return response()->json(['message' => 'You are not authorized to approve this Return Receipt'], 403);
             }
+
+            $originalData = [];
 
             foreach ($materials as $material) {
                 // Find inventory item based on name, measurement, and unit
@@ -278,6 +298,11 @@ class RrController extends Controller
                         'message' => "Inventory item '{$material['material_name']}' with unit '{$material['unit']}' not found."
                     ], 404);
                 }
+
+                
+                // ✅ Save the original state of the item before updating
+                $original = $inventoryItem->getOriginal();
+                $originalData[] = $original;
 
                 // Strictly check the measurement
                 if ($inventoryItem->measurement_quantity != $material['measurement']) {
@@ -302,7 +327,22 @@ class RrController extends Controller
             // Save approver when approved
             $rr->approved_by = auth()->id();
             $rr->save();  //  This ensures the value is stored in the database
+
+
+            // ✅ Get the updated inventory data
+                $inventoryData = Inventory::all(); 
+                $extraInfo = [
+                    'updated_by' => auth()->user()->name ?? 'system',
+                    'timestamp' => now()->toDateTimeString(),
+                    'original_data' => $originalData, // Use collected original data
+                ];
+
+                    event(new BarGraphUpdated($inventoryData, $extraInfo));
         }
+        
+
+        $this->broadcastHighStock();
+
 
         // --- FILE HANDLING ---
         if ($request->hasFile('return_proof')) {
@@ -364,9 +404,10 @@ class RrController extends Controller
 
         Log::info("RR Data:", ['rr' => $rr]);
 
-        if ($rr->status === 'approved' ||  $rr->status === 'rejected'){
+      
+        if ($rr->status === 'approved' || $rr->status === 'rejected'){
                 event(new ActivityLogged([
-                    'action' => $rr->rr_number . ' number ' . ' was ' . $rr->status . ' by ' . 
+                    'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
                                 auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                                 ' on ' . now()->toDayDateTimeString(),
 
@@ -377,15 +418,38 @@ class RrController extends Controller
                         
                 // ✅ Write log to a file
                 Log::channel('activity')->info(json_encode([
-                    'action' => $rr->rr_number . ' number ' . ' was ' . $rr->status . ' by ' . 
+                    'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
                                 auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                     'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                     'role' => auth()->user()->role, // ✅ Ensure role is logged
                     'timestamp' => now()->toDateTimeString(),
                 ]));
+
+                event(new AdminNotification([
+                    'type' => 'approved_rr',
+                    'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                                'timestamp' => now()->toDateTimeString(),
+                ]));
+
+                event(new ProcurementNotification([
+                    'type' => 'approved_rr',
+                    'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                                'timestamp' => now()->toDateTimeString(),
+                ]));
+
+                event(new ManagerNotification([
+                    'type' => 'approved_rr',
+                    'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
+                                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                                'timestamp' => now()->toDateTimeString(),
+                ]));
+
+
     } else {
         event(new ActivityLogged([
-            'action' => $rr->rr_number . ' number ' . ' was edited by ' . 
+            'action' => $rr->rr_number . ' was edited by ' . 
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                         ' on ' . now()->toDayDateTimeString(),
 
@@ -396,10 +460,26 @@ class RrController extends Controller
                 
         // ✅ Write log to a file
         Log::channel('activity')->info(json_encode([
-            'action' => $rr->rr_number . ' number ' . ' was edited by ' . 
+            'action' => $rr->rr_number . ' was edited by ' . 
                         auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
             'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
             'role' => auth()->user()->role, // ✅ Ensure role is logged
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+    }
+
+    if ($rr->status === 'approved' || $rr->status === 'rejected') {
+        Log::info('Broadcasting warehouse notification:', [
+            'type' => 'approved',
+            'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name, 
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+    
+        event(new WarehouseNotification([
+            'type' => 'approved',
+            'action' => $rr->rr_number . ' was ' . $rr->status . ' by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name, 
             'timestamp' => now()->toDateTimeString(),
         ]));
     }
@@ -465,6 +545,29 @@ class RrController extends Controller
             Log::error('Error deleting Return Receipt: ' . $e->getMessage());
             return response()->json(['message' => 'Failed to Delete Return Receipt', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    public function broadcastHighStock()
+    {
+        // Define the high stock threshold
+        $highStockThreshold = 50;
+    
+        // Get all high stock materials
+        $highStock = Inventory::where('stocks', '>=', $highStockThreshold)->get();
+        $totalMaterials = $highStock->count();
+    
+        // Prepare additional info for broadcasting
+        $extraInfo = [];
+        foreach ($highStock as $material) { // Iterate over $highStock, not $totalMaterials
+            $extraInfo[] = [
+                'type' => 'highStock_materials',
+                'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
+                'timestamp' => $material->updated_at->toDateTimeString(),
+            ];
+        }
+                                                                            
+        // Broadcasting the event
+        broadcast(new highStockUpdated($highStock, $totalMaterials, $extraInfo));
     }
 
 }

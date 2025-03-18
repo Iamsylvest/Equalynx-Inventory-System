@@ -4,13 +4,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\PasswordResetController;
 use App\Http\Resources\UserResource; // Make sure to import the UserResource
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DrController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\RrController;
+use App\Http\Controllers\SendResetLinkEmail;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -48,11 +48,10 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
-
 
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users', [UserController::class, 'index']);
+Route::get('/user', [UserController::class, 'getAuthUser']); // get currently log in user
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::patch('/users/{id}', [UserController::class, 'update']);
 Route::get('/activity-logs', [UserController::class, 'getActivityLogs']);
@@ -83,3 +82,6 @@ Route::delete('/Rr/{id}', [RrController::class, 'destroy']);
 Route::get('/Rr/{id}', [RrController::class, 'show']);
 Route::post('/updateReturnReceipt/{id}', [RrController::class, 'update']);
 
+
+
+Route::post('forgot-password', [SendResetLinkEmail::class, 'sendResetLinkEmail']);

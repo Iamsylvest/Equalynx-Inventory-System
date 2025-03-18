@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Events\ActivityLogged;
 use App\Events\WarehouseNotification;
+use App\Events\AdminNotification;
+use App\Events\LowstockUpdated;
+use App\Events\highStockUpdated;
+use App\Events\outOfStockUpdated;
+use App\Events\BarGraphUpdated;
+use App\Events\LineGraph;
+use App\Models\Material;
 
 class InventoryController extends Controller
 {
@@ -81,12 +88,33 @@ class InventoryController extends Controller
 
 
                 if ($inventory->stocks >= 50) {
+                       // Notify warehouse staff
                     event(new WarehouseNotification([
                         'type' => 'high_stock', // ✅ Define the type for handling in the event
                         'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
                         'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
                     ]));
+                        // ✅ Notify admin about high stock
+                    event(new AdminNotification([
+                        'type' => 'high_stock', // ✅ Define the type for handling in the event
+                        'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
+                        'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+                    ]));
                 }
+                // Notify warehouse staff about new material
+                event(new WarehouseNotification([
+                        'type' => 'new_material',
+                        'action' => 'New material ' . $inventory->material_name . ' was added by ' . auth()->user()->first_name . ' ' 
+                        . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' ' . '(' . $inventory->stocks . '  remaining).',
+                        'timestamp' => now()->toDateTimeLocalString(),
+                ]));
+            // ✅ Notify admin about new material
+                event(new AdminNotification([
+                    'type' => 'new_material',
+                    'action' => 'New material ' . $inventory->material_name . ' was added by ' . auth()->user()->first_name . ' ' 
+                    . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' ' . '(' . $inventory->stocks . '  remaining).',
+                    'timestamp' => now()->toDateTimeLocalString(),
+            ]));
 
                 return response()->json([
                     'success' => true,
@@ -185,7 +213,7 @@ class InventoryController extends Controller
             try {
                 // Find the inventory item by its ID
                 $inventory = Inventory::findOrFail($id);
-        
+                $original = $inventory->getOriginal();
                 // Update only the editable fields
                 $inventory->update([
                     'stocks' => $request->stocks,
@@ -193,6 +221,29 @@ class InventoryController extends Controller
                     'measurement_unit' => $request->measurement_unit,
                     // 'material_name' remains unchanged
                 ]);
+
+                $actionMessage = $inventory->material_name . ' was edited by ' .
+                auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name;
+            
+                    if ($original['stocks'] !== $inventory->stocks) {
+                        $actionMessage .= '. Stocks changed from ' . $original['stocks'] . ' to ' . $inventory->stocks;
+                    }
+                    
+                    if ($original['measurement_quantity'] !== $inventory->measurement_quantity) {
+                        $actionMessage .= ', Measurement quantity changed from ' . $original['measurement_quantity'] . ' to ' . $inventory->measurement_quantity;
+                    }
+                    
+                    if ($original['measurement_unit'] !== $request->measurement_unit) {
+                        $actionMessage .= ', Measurement unit changed from ' . $original['measurement_unit'] . ' to ' . $request->measurement_unit;
+                    }
+                    
+                    event(new WarehouseNotification([
+                        'type' => 'edit',
+                        'action' => $actionMessage,
+                        'timestamp' => now()->toDateTimeString(),
+                    ]));
+
+                   
 
                 event(new ActivityLogged([
                     'action' => 'Material ' . $inventory->material_name . ' was edited by ' . 
@@ -220,14 +271,44 @@ class InventoryController extends Controller
                         'type' => 'low_stock',
                         'action' => $inventory->material_name . ' is low stocked (' . $inventory->stocks . ' remaining).', 'timestamp' => now()->toDayDateTimeString(),
                     ]));
+
+                    event(new AdminNotification([
+                        'type' => 'low_stock',
+                        'action' => $inventory->material_name . ' is low stocked (' . $inventory->stocks . ' remaining).', 'timestamp' => now()->toDayDateTimeString(),
+                    ]));
+
+
                     } elseif ($inventory->stocks >= 50){
                         event(new WarehouseNotification([
                             'type' => 'high_stock', // ✅ Define the type for handling in the event
                             'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
                             'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
                         ]));
+
+                        event(new AdminNotification([
+                            'type' => 'high_stock', // ✅ Define the type for handling in the event
+                            'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
+                            'timestamp' => now()->toDateTimeString(), // ✅ Use consistent format
+                        ]));
                     }
 
+                    $inventoryMaterials = Inventory::all(); // get updated invnetory data
+                    $extraInfo = [ 
+                        'updated_by' => auth()->user()->name?? 'system',
+                        'timestamp' => now()->toDateTimeString(),
+                        'original_data' => $original, 
+
+                    ];
+
+                // calll the function to braodcast low stock materials
+                    $this->broadcastLowStock();
+                // calll the function to braodcast High stock materials
+                    $this->broadcastHighStock();
+                // calll the function to braodcast out stock materials
+                    $this->broadcasOutStock();
+                    event(new BarGraphUpdated($inventoryMaterials, $extraInfo));
+                    event(new LineGraph($inventoryMaterials, $extraInfo));
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Inventory item updated successfully',
@@ -285,4 +366,73 @@ class InventoryController extends Controller
                 return response()->json(['message' => 'Failed to delete material', 'error' => $e->getMessage()], 500);
             }
         }
+
+
+        public function broadcastLowStock(){
+            $lowStockThreshhold = 20;
+
+            // get all low stock materials
+            $lowStockMaterials =  Inventory::where('stocks', '<=', $lowStockThreshhold)->get();
+            $totalLowStock = $lowStockMaterials->count();
+
+           $extraInfo = [];
+           foreach($lowStockMaterials as $material){
+            $extraInfo[] = [
+                'type' => 'lowStock_materials ',
+                'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
+                'timestamp' => $material->updated_at->toDateTimeString(),
+            ];
+           }
+           broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
+        }
+
+        public function broadcastHighStock()
+        {
+            // Define the high stock threshold
+            $highStockThreshold = 50;
+        
+            // Get all high stock materials
+            $highStock = Inventory::where('stocks', '>=', $highStockThreshold)->get();
+            $totalMaterials = $highStock->count();
+        
+            // Prepare additional info for broadcasting
+            $extraInfo = [];
+            foreach ($highStock as $material) { // Iterate over $highStock, not $totalMaterials
+                $extraInfo[] = [
+                    'type' => 'highStock_materials',
+                    'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
+                    'timestamp' => $material->updated_at->toDateTimeString(),
+                ];
+            }
+                                                                                
+            // Broadcasting the event
+            broadcast(new highStockUpdated($highStock, $totalMaterials, $extraInfo));
+        }
+
+        public function broadcasOutStock()
+        {
+            // Define the out stock threshold
+            $outStockThreshold = 0;
+        
+            // Get all out stock materials
+            $outOfStock = Inventory::where('stocks', '=', $outStockThreshold)->get();
+            $totalOutStock = $outOfStock->count();
+        
+            // Prepare additional info for broadcasting
+            $extraInfo = [];
+            foreach ($outOfStock as $material) { // Iterate over $out not $totalMaterials
+                $extraInfo[] = [
+                    'type' => 'outStock_materials',
+                    'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
+                    'timestamp' => $material->updated_at->toDateTimeString(),
+                ];
+            }
+                                                                                
+            // Broadcasting the event
+            broadcast(new outOfStockUpdated($outOfStock, $totalOutStock, $extraInfo));
+        }
+
+
+
+
 }

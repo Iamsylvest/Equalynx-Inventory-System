@@ -1,17 +1,23 @@
 <template>
+        <!-- Modal Overlay -->
     <div v-if="isVisible" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50 font-roboto">
       <div class="bg-white p-8 rounded-md w-96">
         <h2 class="text-xl font-semibold mb-4">Edit User</h2>
         <form @submit.prevent="submitForm">
           <div class="mb-4">
+            <label for="first_name" class="block text-sm font-medium text-gray-700">Email</label>
+            <!-- Make the first_name input read-only -->
+            <input type="text" id="first_name" v-model="localUser.email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"/>
+          </div>
+          <div class="mb-4">
             <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
             <!-- Make the first_name input read-only -->
-            <input type="text" id="first_name" v-model="localUser.first_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" readonly />
+            <input type="text" id="first_name" v-model="localUser.first_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"  />
           </div>
           <div class="mb-4">
             <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
             <!-- Make the last_name input read-only -->
-            <input type="text" id="last_name" v-model="localUser.last_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" readonly />
+            <input type="text" id="last_name" v-model="localUser.last_name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"  />
           </div>
           <div class="mb-4">
             <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
