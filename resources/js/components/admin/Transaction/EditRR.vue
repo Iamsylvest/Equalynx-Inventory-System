@@ -5,7 +5,7 @@
   
         <div class="relative bg-white shadow-lg rounded-md w-full [max-width:95rem] mx-auto mt-10 mb-10">
           <!-- Header -->
-          <div class="sticky top-0 bg-custom-blue p-4 rounded-t-md z-10 flex items-center justify-between">
+          <div class="sticky top-0 dark:bg-custom-table bg-custom-blue p-4 rounded-t-md z-10 flex items-center justify-between">
             <h1 class="text-lg text-white font-semibold flex m-auto" >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -23,36 +23,36 @@
           </div>
   
           <!-- Editable Form -->
-          <div class="p-8 space-y-8">
+          <div class="p-8 space-y-8 dark:bg-custom-main">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
               <!-- General Information -->
-              <div class="bg-gray-100 p-6 rounded-md shadow-lg">
-                <h2 class="font-medium text-gray-700 mb-6">General Information</h2>
+              <div class="bg-gray-100 dark:bg-custom-table p-6 rounded-md shadow-lg">
+                <h2 class="font-medium text-gray-700 mb-6 dark:text-custom-white">General Information</h2>
                 <div class="space-y-6">
                   <div>
-                    <label class="text-sm text-gray-600">Name:</label>
+                    <label class="text-sm text-gray-600  dark:text-custom-white ">Name:</label>
                     <input 
                       v-model="item.name" 
                       :disabled="!(userRole === 'warehouse_staff' || userRole === 'manager')" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                       :class="!(userRole === 'warehouse_staff' || userRole === 'manager') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"
                     />
                   </div>
                   <div>
-                    <label class="text-sm text-gray-600">Project Name:</label>
+                    <label class="text-sm text-gray-600 le dark:text-custom-white">Project Name:</label>
                     <input v-model="item.project_name" 
                     :disabled="userRole !== 'warehouse_staff'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                   </div>
                   <div>
-                  <label for="status" class="text-sm text-gray-600">Status:</label>
+                  <label for="status" class="text-sm text-gray-600   dark:text-custom-white">Status:</label>
                   <select 
                           id="status" 
                           v-model="item.status" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
                           :disabled="userRole !== 'manager'"
-                           class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300"
+                           class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300  dark:bg-custom-table dark:text-custom-white"
                         >
                           <option value="pending">pending</option>
                           <option value="approved">approved</option>
@@ -60,7 +60,7 @@
                         </select>
                 </div>
   
-                <div class="w-full bg-white rounded-md p-3 ">
+                <div class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md cursor-pointer text-blue-600 underline dark:bg-custom-table">
                         <!-- Hidden File Input -->
                         <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" class="hidden" />
                         
@@ -98,7 +98,7 @@
                     <label class="text-sm text-gray-600">Return remarks:</label>
                     <textarea v-model="item.remarks" 
                     :disabled="userRole !== 'warehouse_staff'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" >
                 </textarea>
                   </div>
@@ -106,29 +106,29 @@
               </div>
   
               <!-- Material Details -->
-              <div class="bg-gray-100 p-6 rounded-md shadow-lg">
-                <h2 class="font-medium text-gray-700 mb-6">Material Details</h2>
-                <div v-if="selectedReturnMaterials.length === 0" class="text-gray-500 text-sm">No materials available.</div>
+              <div class="bg-gray-100 dark:bg-custom-table p-6 rounded-md shadow-lg">
+                <h2 class="font-medium text-gray-700 mb-6 dark:text-custom-white">Material Details</h2>
+                <div v-if="selectedReturnMaterials.length === 0" class="text-gray-500 text-sm dark:text-custom-white">No materials available.</div>
                 <div v-for="(material, index) in selectedReturnMaterials" :key="index" class="flex space-x-6 mt-6">
                     <div class="flex-1 ">
-                      <label class="text-sm text-gray-600">Material:</label>
+                      <label class="text-sm text-gray-600 dark:text-custom-white">Material:</label>
                       <input v-model="material.material_name"   
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full"/>
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"/>
                     </div>
   
                     <div class="flex-1">
-                    <label :for="'measurement_' + index" class="text-sm text-gray-600">Measurement:</label>
+                    <label :for="'measurement_' + index" class="text-sm text-gray-600  dark:text-custom-white">Measurement:</label>
                     <input :id="'measurement_' + index" v-model="material.measurement"  placeholder="Enter unit (e.g., 24 meters, 10 kg)"   
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full" />
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white" />
                     </div>
   
                     <div class="flex-1">
-                    <label :for="'unit' + index" class="text-sm text-gray-600">Unit:</label>
+                    <label :for="'unit' + index" class="text-sm text-gray-600dark:text-custom-white">Unit:</label>
                         <select 
                           :id="'unit_' + index" 
                           v-model="material.unit" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
-                          class="text-xs p-2 border border-gray-300 rounded-md w-full">
+                          class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white">
                             
                           <option value="" disabled>Select unit</option>
                           <option value="pcs">Pcs</option>
@@ -144,9 +144,9 @@
                         </select>
                   </div>
                     <div class="flex-1" >
-                      <label class="text-sm text-gray-600">Quantity:</label>
+                      <label class="text-sm text-gray-600  dark:text-custom-white">Quantity:</label>
                       <input v-model="material.material_quantity"  
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full">
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white">
                     </div>
                   </div>
                 <div  class="flex mt-5"  v-if="userRole === 'warehouse_staff'">
@@ -162,28 +162,28 @@
               </div>
   
               <!-- Location Details -->
-              <div class="bg-gray-100 p-6 rounded-md shadow-lg">
-                <h2 class="font-medium text-gray-700 mb-6">Location Details</h2>
+              <div class="bg-gray-100 dark:bg-custom-table p-6 rounded-md shadow-lg">
+                <h2 class="font-medium text-gray-700 mb-6  dark:text-custom-white">Location Details</h2>
                 <div>
-                  <label class="text-sm text-gray-600">Location:</label>
+                  <label class="text-sm text-gray-600  dark:text-custom-white">Location:</label>
                   <input v-model="item.location"   
                   :disabled="!(userRole === 'warehouse_staff' || userRole === 'manager')" 
-                  class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                  class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                   :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                 </div>
                 <div class="flex justify-between mt-6">
                   <div class="w-1/2 pr-3">
-                    <label class="text-sm text-gray-600">Latitude:</label>
+                    <label class="text-sm text-gray-600  dark:text-custom-white">Latitude:</label>
                     <input v-model="item.latitude" 
                     :disabled="userRole !== 'procurement'" 
-                    class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                    class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                     :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                   </div>
                   <div class="w-1/2 pl-3">
-                    <label class="text-sm text-gray-600">Longitude:</label>
+                    <label class="text-sm text-gray-600 dark:text-custom-white">Longitude:</label>
                     <input v-model="item.longitude" 
                     :disabled="userRole !== 'procurement'" 
-                     class="text-xs p-2 border border-gray-300 rounded-md w-full"
+                     class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                     :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"  />
                   </div>
                 </div>
@@ -198,7 +198,7 @@
   
             <!-- Buttons -->
             <div class="flex justify-center mt-8 space-x-4" >
-              <button  @click="updateEditReturn" class="px-32 py-2 rounded-lg bg-custom-blue text-white">
+              <button  @click="updateEditReturn" class="px-32 py-2 rounded-lg bg-custom-blue text-white dark:bg-custom-table">
                 Save Return Receipt
               </button>
             </div>

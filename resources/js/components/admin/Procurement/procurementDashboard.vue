@@ -13,7 +13,7 @@
                     :showLowStockModal="showLowStockModal"
                     @openLowStockModal="openLowStockModal"
                     @lowStockcloseModal="closeLowStockModal"
-                    class="flex items-center justify-center bg-white shadow-md rounded-xl p-4"
+                    class="flex items-center justify-center bg-white dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
 
                 <!-- High Stock Modal -->
@@ -21,7 +21,7 @@
                     :showHighStockModal="showHighStockModal"
                     @openHighStockModal="openHighStockModal"
                     @closeHighStockModal="closeHighStockModal"
-                    class="flex items-center justify-center bg-white shadow-md rounded-xl p-4"
+                    class="flex items-center justify-center bg-white  dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
 
                 <!-- Out of Stock Modal -->
@@ -29,7 +29,7 @@
                     :showOutStockModal="showOutStockModal"
                     @openOutStockModal="openOutStockModal"
                     @outStockcloseModal="closeOutStockModal"
-                    class="flex items-center justify-center bg-white shadow-md rounded-xl p-4"
+                    class="flex items-center justify-center bg-white dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
 
                 <!-- Slow Moving Modal -->
@@ -37,16 +37,16 @@
                     :showSlowMovingModal="showSlowMovingModal"
                     @openSlowMovingModal="openSlowMovingModal"
                     @closeSlowMovingkModal="closeSlowMovingModal"
-                    class="flex items-center justify-center bg-white shadow-md rounded-xl p-4"
+                    class="flex items-center justify-center bg-white  dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
 
                 <!-- Bar Graph -->
-                <div class="col-span-2 bg-white shadow-md rounded-xl p-4">
+                <div class="col-span-2 bg-white shadow-md rounded-xl p-4  dark:bg-custom-table">
                     <BarGraph />
                 </div>
 
                 <!-- Line Graph -->
-                <div class="col-span-2 bg-white shadow-md rounded-xl p-4">
+                <div class="col-span-2 bg-white shadow-md rounded-xl p-4  dark:bg-custom-table ">
                     <LineGraph />
                 </div>
                 </div>

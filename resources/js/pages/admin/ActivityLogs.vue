@@ -1,6 +1,6 @@
 <template>
    
-    <div class="p-8 ">
+    <div  class="p-8 dark:text-custom-white ">
      <header class="flex flex-row justify-between items-center">
          <h1 class="text-2xl  whitespace-nowrap">Activity Logs</h1>
          <div class="flex items-end justify-end">
@@ -18,10 +18,10 @@
     <table class="table-auto w-full border-collapse mt-5 shadow-lg">
       <thead class="h-14">
         <tr class="bg-custom-blue text-white">
-          <th class="px-4 py-2 border-0 text-center font-bold">User</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Date Added</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Time</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Description</th>
+          <th class="px-4 py-2 text-center font-bold  dark:bg-custom-table">User</th>
+          <th class="px-4 py-2  text-center font-bold  dark:bg-custom-table">Date Added</th>
+          <th class="px-4 py-2  text-center font-bold  dark:bg-custom-table">Time</th>
+          <th class="px-4 py-2 text-center font-bold  dark:bg-custom-table">Description</th>
         </tr>
       </thead>
       <tbody>
@@ -48,13 +48,13 @@
         </tr>
       </tbody>
     </table>
-    <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+    <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50 dark:bg-custom-table">
         <!-- Previous Button -->
      <!-- First Button -->
           <button 
             @click="fetchLogs(1)" 
             :disabled="currentPage === 1" 
-            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-custom-hover"
           >
             « 
           </button>
@@ -68,7 +68,7 @@
             :key="page"
             @click="fetchLogs(page)"
             class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
-            :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
+            :class="{'bg-blue-500 text-white dark:bg-custom-table': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
           >
             {{ page }}
           </span>
@@ -80,7 +80,7 @@
           <button 
             @click="fetchLogs(lastPage)" 
             :disabled="currentPage === lastPage" 
-            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            class="text-lg px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-100  dark:hover:bg-custom-hover"
           >
            »
           </button>

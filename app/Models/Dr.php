@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dr extends Model
 {
+    use SoftDeletes; // Enables soft deletes functionaility
     use HasFactory;
 
     protected $table = 'drs';     // ✅ Specify the table name to ensure Laravel maps it correctly
@@ -35,6 +37,8 @@ class Dr extends Model
     return $this->belongsTo(User::class, 'approved_by');
    }
 
+
+
  // ✅ Define the fillable attributes for mass assignment
     protected $fillable = [
         'dr_number',            
@@ -54,6 +58,7 @@ class Dr extends Model
         'latitude' => 'decimal:12',
         'longitude' => 'decimal:12',
         'approved_by' =>'integer', // ✅ Cast as integer
+        'deleted_at' => 'datetime' // cast deleted_at to datetime for convenience
     ];
 
 

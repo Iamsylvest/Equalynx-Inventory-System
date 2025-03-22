@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white drop-shadow-lg h-[300px] sm:col-span-2">
+    <div class="bg-white drop-shadow-lg h-[300px] sm:col-span-2 dark:bg-custom-table">
       <!-- Render the chart only after data is available -->
       <LineGraph 
         v-if="!loading && chartData.labels.length > 0" 
@@ -27,48 +27,74 @@
   ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
   
   export default {
-    name: 'Linechart',
-    components: { LineGraph: Line },
-    data() {
-      return {
-        chartData: {
-          labels: ['Loading...'],
-          datasets: [
-            {
-              label: 'Stock Levels',
-              data: [], // y-axis → stock levels
-              backgroundColor: 'rgba(75, 192, 192, 0.2)', // Light green
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 2,
-              tension: 0.4, // Smooth curve
-              pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-              pointBorderColor: '#fff'
-            }
-          ]
-        },
-        chartOptions: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Stock Level'
-              }
+  name: 'Linechart',
+  components: { LineGraph: Line },
+  data() {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const defaultTextColor ='#000';
+    const customWhite = getComputedStyle(document.documentElement)
+      .getPropertyValue('--custom-white')
+      .trim() || '#E5E7EB'; // Fallback color
+    
+    return {
+      chartData: {
+        labels: ['Loading...'],
+        datasets: [
+          {
+            label: 'Stock Levels',
+            data: [], // y-axis → stock levels
+            backgroundColor: 'rgba(75, 192, 192, 0.2)', // Light green
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 2,
+            tension: 0.4, // Smooth curve
+            pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+            pointBorderColor: '#fff'
+          }
+        ]
+      },
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Stock Level',
+              color: isDarkMode ? customWhite : defaultTextColor, // Axis title color
             },
-            x: {
-              title: {
-                display: true,
-                text: 'Materials'
-              }
+            ticks: {
+              color: isDarkMode ? customWhite : defaultTextColor, // Axis title color
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Materials',
+              color: isDarkMode ? customWhite : defaultTextColor, // Axis title color
+            },
+            ticks: {
+              color: isDarkMode ? customWhite : defaultTextColor, // X-axis label color
             }
           }
         },
-        inventoryMaterials: [],
-        loading: true,
-      };
-    },
+        plugins: {
+          legend: {
+            labels: {
+              ccolor: isDarkMode ? customWhite : defaultTextColor, // Legend label color
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            }
+          }
+        }
+      },
+      inventoryMaterials: [],
+      loading: true,
+    };
+  },
+
     mounted() {
       console.log('Mounted lifecycle hook');
       this.loadFromLocalStorage();

@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div >
     <!-- Modal Button -->
     <button
       @click="resetCount"
       :class="{
-        'bg-custom-blue': isClicked,
-        'hover:bg-custom-blue ': !isClicked,
+        'bg-custom-blue dark:bg-custom-hover': isClicked,
+        'hover:bg-custom-blue  hover:dark:bg-custom-hover ': !isClicked,
         'text-white': isClicked,
         'hover:text-white': !isClicked,
         'active:bg-custom-blue': isClicked
@@ -32,7 +32,7 @@
 
       <!-- Modal Content -->
       <div
-        class="bg-white border-1 shadow-lg rounded-md px-4 py-20 z-20 mx-4 w-full max-w-sm h-[550px] absolute top-20 right-16 "
+        class="bg-white dark:bg-custom-table border-1 shadow-lg rounded-md px-4 py-20 z-20 mx-4 w-full max-w-sm h-[550px] absolute top-20 right-16 "
       >
         <!-- Notif Content -->
         <div class="relative top-[-30px] space-y-6">
@@ -48,7 +48,7 @@
             <table v-if="notif.length" class="border-gray-300">
               <tbody>
                 <tr v-for="(notification, index) in paginateNotif" :key="index" class="border-b border-gray-200">
-                  <td class="p-2 px-4 rounded-lg flex flex-col hover:bg-gray-100">
+                  <td class="p-2 px-4 rounded-lg flex flex-col hover:bg-gray-100 dark:hover:bg-custom-hover">
                     {{ notification.action }}
                     <span class="text-blue-400 text-sm">
                       {{ timeAgo(notification.timestamp) }}

@@ -1,6 +1,6 @@
 <template>
    
-    <div class="p-8 ">
+    <div class="p-8  dark:text-custom-white">
      <header class="flex flex-row justify-between items-center">
          <h1 class="text-2xl  whitespace-nowrap">Notification</h1>
          <div class="hidden sm:flex md:flex lg:flexitems-end justify-end">
@@ -9,7 +9,7 @@
          </div>
      </header>
  
-        <div class="w-auto h-[500px] bg-white drop-shadow-md mt-10">
+        <div class="w-auto h-[500px] bg-white dark:bg-custom-table drop-shadow-md mt-10">
             <div class="mx-5 py-5 w-auto h-full">
               <NotificationPage/>
             </div>

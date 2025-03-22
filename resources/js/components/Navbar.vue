@@ -3,9 +3,9 @@
      <!-- Sidebar -->
      <div
      v-bind:style="{ width: isSidebarWide ? '220px' : '100px' }"
-     class="flex flex-col items-center justify-between bg-white shadow h-full "
+     class="flex flex-col items-center justify-between shadow h-full "
    >
-     <div class="relative">
+     <div class="relative dark:text-white">
   
              <!-- Logo -->
                <div class="flex justify-center py-5">
@@ -21,8 +21,8 @@
            to="/procurement" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Procurement')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Procurement',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Procurement'
+                      'bg-custom-blue text-white dark:bg-custom-main': activeLink === 'Procurement',
+                      'hover:bg-custom-blue hover:text-white hover:dark:bg-custom-main': activeLink !== 'Procurement'
                    }"
                  >
                  <svg xmlns="http://www.w3.org/2000/svg" 
@@ -34,14 +34,17 @@
                 </svg>
                <span v-if="isSidebarWide" class="ml-2 text-[12px]">Procurement</span> <!-- Only visible when wide -->
            </router-link>
+
+           
                
                <router-link v-if="userRole === 'admin'"
                    to="/UserManagement"
                    class="flex items-center mb-2 lg:px-8 p-4 text-md cursor-pointer hover:text-white hover:bg-custom-blue focus:outline-none"
                    @click="activeLink = ('UserManagement')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'UserManagement',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'UserManagement'
+                     'bg-custom-blue text-white dark:bg-custom-main': activeLink === 'UserManagement',
+                     'hover:bg-custom-blue hover:text-white hover:dark:bg-custom-main': activeLink !== 'UserManagement',
+            
                    }"
                  >
                    <svg
@@ -69,8 +72,9 @@
            to="/AdminInventory" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                    @click="activeLink = ('Inventory')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Inventory',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Inventory'
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Inventory',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Inventory',
+                 
                    }"
                  >
                <svg 
@@ -94,8 +98,8 @@
              to="/AdminTransaction" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
              @click="activeLink = ('Transaction')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Transaction',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Transaction'
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Transaction',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Transaction'
                    }"
                  >
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 ml-6 lg:ml-2">
@@ -111,8 +115,8 @@
              to="/ActivityLogs" class="flex items-center mb-2  lg:px-8 p-4 text-md cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
                   @click="activeLink = ('Activity')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Activity',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Activity'
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Activity',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Activity'
                    }"
                  >
                <svg 
@@ -136,8 +140,8 @@
            to="/Notification" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Notification')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Notification',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Notification'
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Notification',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Notification'
                    }"
                  >
                <svg 
@@ -155,14 +159,31 @@
                <span v-if="isSidebarWide" class="ml-2 text-[12px]">Notification</span> <!-- Only visible when wide -->
   
            </router-link>
+
+
+           <router-link
+           v-if="userRole === 'procurement' || userRole === 'warehouse_staff'"
+           to="/Archived" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
+           @click="activeLink = ('Archived')"
+                   :class="{
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Archived',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Archived'
+                   }"
+                 >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"    class="size-6 ml-6 lg:ml-2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                </svg>
+
+               <span v-if="isSidebarWide" class="ml-2 text-[12px]">Archived</span> <!-- Only visible when wide -->
+           </router-link>
   
            <router-link
            v-if="userRole === 'admin' || userRole === 'manager' || userRole === 'warehouse_staff' || userRole === 'procurement'"
            to="/Settings" class="flex items-center mb-2  lg:px-8 p-4 text-md  cursor-pointer hover:text-white-600 hover:bg-custom-blue  hover:text-white focus:outline-none"
            @click="activeLink = ('Settings')"
                    :class="{
-                     'bg-custom-blue text-white': activeLink === 'Settings',
-                     'hover:bg-custom-blue hover:text-white': activeLink !== 'Settings'
+                     'bg-custom-blue text-white  dark:bg-custom-main': activeLink === 'Settings',
+                     'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-main': activeLink !== 'Settings'
                    }"
                  >
                <svg 
@@ -192,7 +213,7 @@
          <!-- Fullscreen toggle button -->
          <button
            @click="wideSidebar"  
-           class="bg-custom-blue text-white px-4 py-2 rounded flex items-center justify-center m-auto relative"
+           class="bg-custom-blue text-white px-4 py-2 rounded flex items-center justify-center m-auto relative dark:bg-custom-table"
          >
            <svg
              xmlns="http://www.w3.org/2000/svg"

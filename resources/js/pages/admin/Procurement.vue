@@ -1,6 +1,6 @@
 <template>
    
-    <div class="p-8 ">
+    <div class="p-8 dark:text-custom-white">
      <header class="flex flex-row justify-between items-center">
          <h1 class="text-2xl whitespace-nowrap">Dashboard</h1>
          <div class="hidden sm:flex md:flex lg:flex items-end justify-end">

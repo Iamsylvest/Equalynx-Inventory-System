@@ -61,7 +61,7 @@
         v-model="tempSearchQuery"
         type="text"
         placeholder="Search by name..."
-        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
+        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 w-40"
       />
       </div>
 
@@ -70,7 +70,7 @@
           id="threshold"
           v-model="selectedStocks"
           @change="applyFilters"
-          class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32"
+          class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2  dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32"
         >
           <option value="">All Stock Level</option>
           <option value="Low">Low</option>
@@ -79,28 +79,34 @@
         </select>
       </div>
 
-      <div class="col-span-2 w-[250px]">
-        <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0">
-          <label for="date_added" class="text-sm text-gray-700 w-full">Date Added</label>
+      <div class="col-span-2">
+        <div class="flex items-center gap-2">
+          <label for="date_added" class="text-sm text-gray-700 dark:text-white w-full">
+            Date Added
+          </label>
           <input
             id="date_added"
             type="date"
             v-model="selectedDateAdded"
             @change="applyFilters"
-            class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 md:w-36"
+            class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
+                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
+                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
           />
         </div>
       </div>
 
       <div class="grid-col-span-2 w-[250px]">
         <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0 ">
-          <label for="last_update" class="text-sm text-gray-700 ">Last Update</label>
+          <label for="last_update" class="text-sm text-gray-700 dark:text-white ">Last Update</label>
           <input
             id="last_update"
             type="date"
             v-model="selectedLastUpdate"
             @change="applyFilters"
-            class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 md:w-36"
+            class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
+                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
+                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
           />
         </div>
       </div>

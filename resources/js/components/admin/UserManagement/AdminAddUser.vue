@@ -3,7 +3,7 @@
     <!-- Add User Button -->
     <button 
         @click="showModal = true" 
-        class="ml-[-25px] w-[240px] md:w-full lg:w-full sm:ml-[-25px] md:ml-0 lg:ml-0 px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-[#73EC8B] text-white drop-shadow-md whitespace-nowrap">
+        class="ml-[-25px] w-[240px] md:w-full lg:w-full sm:ml-[-25px] md:ml-0 lg:ml-0 px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-green-500  dark:bg-green-700 dark:text-green-300 text-white drop-shadow-md whitespace-nowrap">
         <span>Add User</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 relative left-1">
           <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />
@@ -15,11 +15,11 @@
       <div @click="showModal = false" class="absolute inset-0 z-10 bg-gray-800 opacity-50"></div>
 
       <!-- Modal Content -->
-      <div class="bg-white shadow rounded-md px-6 py-6 z-20 max-w-md w-full mx-6">
+      <div class="bg-white dark:bg-custom-main shadow rounded-md px-6 py-6 z-20 max-w-md w-full mx-6">
         <!-- Modal Header -->
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-lg font-semibold">User Management > Add User</h1>
-          <button @click="showModal = false" class="flex items-center justify-center p-2 hover:bg-gray-100 rounded-full">
+          <button @click="showModal = false" class="flex items-center justify-center p-2 dark:hover:bg-custom-hover hover:bg-gray-100 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -32,38 +32,38 @@
           <div class="grid grid-cols-1 gap-3">
             <div>
               <p class="text-xs">Firstname:</p>
-              <input v-model="form.first_name" type="text" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
+              <input v-model="form.first_name" type="text" class=" dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"/>
             </div>
             <div>
               <p class="text-xs">Middlename:</p>
-              <input v-model="form.middle_name" type="text" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
+              <input v-model="form.middle_name" type="text" class=" dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"/>
             </div>
             <div>
               <p class="text-xs">Lastname:</p>
-              <input v-model="form.last_name" type="text"  class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
+              <input v-model="form.last_name" type="text"  class="  dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"/>
             </div>
             <div>
               <p class="text-xs">Email:</p>
-              <input v-model="form.email" type="email" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"/>
+              <input v-model="form.email" type="email" class=" dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"/>
             </div>
             <div class="relative">
                   <p class="text-xs">Password:</p>
                   <input 
                     v-model="form.password" 
                     :type="showPassword ? 'text' : 'password'" 
-                    class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                    class=" dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"
                   />
                   <button 
                     type="button" 
                     @click="togglePasswordVisibility" 
-                    class="absolute top-10 right-3 transform -translate-y-1/2 text-sm text-blue-500 hover:text-blue-700"
+                    class="absolute top-10 right-3 transform -translate-y-1/2 text-sm text-black dark:text-custom-white"
                   >
                     {{ showPassword ? 'Hide' : 'Show' }}
                   </button>
                 </div>
-            <div>
+            <div class="relative" >
               <p class="text-xs">Role:</p>
-              <select v-model="form.role" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+              <select v-model="form.role" class="text-xs dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full">
                 <option value="" disabled selected>Select Role</option>
                 <option value="admin">Admin</option>
                 <option value="manager">Manager</option>
@@ -80,7 +80,7 @@
           <button 
             @click="addUser" 
             :disabled="loading"
-            class="w-full py-2 rounded-lg font-semibold bg-custom-blue text-white drop-shadow-md text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+            class="w-full py-2 rounded-lg font-semibold  bg-green-500 text-white dark:bg-green-700 dark:text-green-300 drop-shadow-md text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             <span v-if="!loading">Add User</span>
             <span v-else class="flex items-center justify-center">

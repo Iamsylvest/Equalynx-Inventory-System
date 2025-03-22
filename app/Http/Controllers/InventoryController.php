@@ -14,6 +14,7 @@ use App\Events\outOfStockUpdated;
 use App\Events\BarGraphUpdated;
 use App\Events\LineGraph;
 use App\Models\Material;
+use App\Helpers\SettingsHelper;
 
 class InventoryController extends Controller
 {
@@ -86,8 +87,9 @@ class InventoryController extends Controller
                     'timestamp' => now()->toDateTimeString(),
                 ]));
 
+                $threshold = (int)SettingsHelper::getThreshold();
 
-                if ($inventory->stocks >= 50) {
+                if ($inventory->stocks >=  $threshold) {
                        // Notify warehouse staff
                     event(new WarehouseNotification([
                         'type' => 'high_stock', // ✅ Define the type for handling in the event
@@ -265,8 +267,9 @@ class InventoryController extends Controller
                 ]));
                 
 
-                
-                if ($inventory->stocks <= 30 ) {
+                $threshold = (int)SettingsHelper::getThreshold();
+
+                if ($inventory->stocks <= $threshold ) {
                     event(new WarehouseNotification([
                         'type' => 'low_stock',
                         'action' => $inventory->material_name . ' is low stocked (' . $inventory->stocks . ' remaining).', 'timestamp' => now()->toDayDateTimeString(),
@@ -278,7 +281,7 @@ class InventoryController extends Controller
                     ]));
 
 
-                    } elseif ($inventory->stocks >= 50){
+                    } elseif ($inventory->stocks >= $threshold){
                         event(new WarehouseNotification([
                             'type' => 'high_stock', // ✅ Define the type for handling in the event
                             'action' => $inventory->material_name . ' is overstocked (' . $inventory->stocks . ' remaining).',
@@ -367,32 +370,36 @@ class InventoryController extends Controller
             }
         }
 
-
-        public function broadcastLowStock(){
-            $lowStockThreshhold = 20;
-
-            // get all low stock materials
-            $lowStockMaterials =  Inventory::where('stocks', '<=', $lowStockThreshhold)->get();
+        public function broadcastLowStock()
+        {
+            // Get the threshold value
+            $stockThreshold = (int) SettingsHelper::getThreshold();
+        
+            // Get all low-stock materials
+            $lowStockMaterials = Inventory::where('stocks', '<=', $stockThreshold)->get();
             $totalLowStock = $lowStockMaterials->count();
-
-           $extraInfo = [];
-           foreach($lowStockMaterials as $material){
-            $extraInfo[] = [
-                'type' => 'lowStock_materials ',
-                'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
-                'timestamp' => $material->updated_at->toDateTimeString(),
-            ];
-           }
-           broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
+        
+            // Prepare extra information
+            $extraInfo = [];
+            foreach ($lowStockMaterials as $material) {
+                $extraInfo[] = [
+                    'type' => 'lowStock_materials',
+                    'action' => "{$material->material_name} ({$material->stocks} {$material->measurement_quantity} {$material->measurement_unit})",
+                    'timestamp' => $material->updated_at->toDateTimeString(),
+                ];
+            }
+        
+            // Broadcast the event
+            broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
         }
 
         public function broadcastHighStock()
         {
             // Define the high stock threshold
-            $highStockThreshold = 50;
+            $stockThreshold = (int) SettingsHelper::getThreshold();
         
             // Get all high stock materials
-            $highStock = Inventory::where('stocks', '>=', $highStockThreshold)->get();
+            $highStock = Inventory::where('stocks', '>=', $stockThreshold)->get();
             $totalMaterials = $highStock->count();
         
             // Prepare additional info for broadcasting
@@ -412,10 +419,10 @@ class InventoryController extends Controller
         public function broadcasOutStock()
         {
             // Define the out stock threshold
-            $outStockThreshold = 0;
+            $stockThreshold = (int) SettingsHelper::getThreshold();
         
             // Get all out stock materials
-            $outOfStock = Inventory::where('stocks', '=', $outStockThreshold)->get();
+            $outOfStock = Inventory::where('stocks', '=', $stockThreshold)->get();
             $totalOutStock = $outOfStock->count();
         
             // Prepare additional info for broadcasting

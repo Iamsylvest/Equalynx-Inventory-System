@@ -13,6 +13,17 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens; // Ensure HasApiTokens is included
     public $timestamps = true; // Make sure this line is present if timestamps are not working
 
+
+    protected $appends = ['has_2fa']; // ✅ Automatically include it in API responses
+
+    /**
+     * Check if 2FA is enabled.
+     */
+    public function getHas2FAAttribute()
+    {
+        return !is_null($this->two_factor_code) && now()->lt($this->two_factor_expires_at);
+    }
+
     /**
      * The attributes that are mass assignable.
      *  
@@ -27,6 +38,11 @@ class User extends Authenticatable
         'email', // <-- Add email field
         'password',
         'role', // <-- Ensure role is included if used in seeder
+        'phone_number', // Add phone number
+        'two_factor_code', // Add OTP field
+        'two_factor_expires_at', // Add OTP expiry time
+        'is_two_factor_enabled',
+
     ];
 
     /**
@@ -46,6 +62,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_two_factor_enabled' => 'boolean' // ✅ Casts to boolean
     ];
 
     /**

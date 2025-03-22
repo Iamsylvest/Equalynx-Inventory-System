@@ -11,6 +11,8 @@ use App\Http\Controllers\DrController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\RrController;
 use App\Http\Controllers\SendResetLinkEmail;
+use App\Http\Controllers\storePasswordChangeRequest;
+use App\Http\Controllers\SettingController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -71,6 +73,9 @@ Route::get('/Dr', [DrController::class, 'index']);  // Fetch DRs
 Route::get('/Dr/{id}', [DrController::class, 'show']);
 Route::delete('/Dr/{id}', [DrController::class, 'destroy']);
 Route::patch('/Dr/{id}', [DrController::class, 'update']);
+Route::get('/drs/archived', [DrController::class, 'archived']);
+Route::patch('/drs/{id}/restore', [DrController::class, 'restore']);
+Route::delete('/drs/{id}/force-delete', [DrController::class, 'forceDelete']);
 
 
 Route::get('pdf/generate/{id}', [PDFController::class, 'generatePdf']);
@@ -81,7 +86,14 @@ Route::get('/Rr', [RrController::class, 'index']);
 Route::delete('/Rr/{id}', [RrController::class, 'destroy']);
 Route::get('/Rr/{id}', [RrController::class, 'show']);
 Route::post('/updateReturnReceipt/{id}', [RrController::class, 'update']);
-
+Route::get('/rrs/archived', [RrController::class, 'archived']);
+Route::patch('/rrs/{id}/restore', [RrController::class, 'restore']);
+Route::delete('/rrs/{id}/force-delete', [RrController::class, 'forceDelete']);
 
 
 Route::post('forgot-password', [SendResetLinkEmail::class, 'sendResetLinkEmail']);
+
+Route::patch('/password-change/{id}', [UserController::class, 'changePassword']);
+
+Route::get('/settings/threshold', [SettingController::class, 'getThreshold']);
+Route::post('/settings/threshold', [SettingController::class, 'updateThreshold']);

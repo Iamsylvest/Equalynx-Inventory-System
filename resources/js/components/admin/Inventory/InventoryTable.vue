@@ -17,15 +17,15 @@
     </div> -->
 
     <!-- Table for Materials -->
-    <table class="table-auto w-full border-collapse mt-1 shadow-lg">
-      <thead class="h-14">
+    <table class="table-auto w-full botr border-collapse mt-1 shadow-lg">
+      <thead class="h-14 bg-custom-blue text-white  dark:bg-custom-table dark:border-b ">
         <tr class="bg-custom-blue text-white">
-          <th class="px-4 py-2 border-0 text-center font-bold">Material Name</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Stocks</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Measurement</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Date Added</th>
-          <th class="px-4 py-2 border-0 text-center font-bold">Last Update</th>
-          <th class="px-4 py-2 border-0 text-center font-bold" v-if="userRole === 'warehouse_staff'" >Action</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Material Name</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Stocks</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Measurement</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Date Added</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Last Update</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table" v-if="userRole === 'warehouse_staff'" >Action</th>
         </tr>
       </thead>
       <tbody>
@@ -37,11 +37,11 @@
               :key="material.id" 
               :class="{
                 'border-b border-b-gray-400': true,   /* Always apply bottom border */
-                'bg-white hover:bg-gray-200': material.stocks > 20 && index % 2 === 0 || material.stocks > 20 && index % 2 !== 0,  /* Even rows - Gray */
-                'bg-red-200 hover:bg-red-300': material.stocks <= 20  /* Low stock - Always Red */
+                'bg-white hover:bg-gray-200': material.stocks > threshold && index % 2 === 0 || material.stocks > threshold && index % 2 !== 0,  /* Even rows - Gray */
+                'bg-red-300 hover:bg-red-400 dark:bg-red-300 dark:hover:bg-red-400 low-stock': material.stocks <= threshold  /* Low stock - Always Red */
               }"
             >
-          <td class="text-center px-4 py-2 border-0">{{ material.material_name }}</td>
+          <td class="text-center px-4 py-2 border-0 ">{{ material.material_name }}</td>
           <td class="px-4 py-4 text-center">{{ material.stocks }}</td>
           <td class="text-center px-4 py-2 border-0">{{ Math.floor(material.measurement_quantity) }} {{ material.measurement_unit }}</td>
           <td class="text-center px-4 py-2 border-0">{{ formatDate(material.created_at) }}</td>
@@ -64,12 +64,12 @@
     </table>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+    <div class="flex items-center justify-center py-2 px-4 bg-white shadow-md dark:bg-custom-table z-50">
               <!-- Previous Button -->
               <button 
                 @click="fetchMaterials(currentPage - 1)" 
                 :disabled="currentPage === 1" 
-                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 hover:dark:bg-custom-hover"
               >
                 ←
               </button>
@@ -79,7 +79,7 @@
                 v-for="page in lastPage" 
                 :key="page"
                 @click="fetchMaterials(page)"
-                class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+                class="mx-2 px-3 py-2 cursor-pointer rounded-lg  dark:bg-custom-table"
                 :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
               >
                 {{ page }}
@@ -89,7 +89,7 @@
               <button 
                 @click="fetchMaterials(currentPage + 1)" 
                 :disabled="currentPage === lastPage" 
-                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100  hover:dark:bg-custom-hover"
               >
                 →
               </button>
@@ -133,12 +133,13 @@
       selectedLastUpdate: '',
       selectedMaterial: null, // Store selected material
       isEditModalVisible: false, // To show/hide edit modal
-    
+      threshold: ''
 
     };
   },
   mounted() {
     this.fetchMaterials();
+    this.fetchThreshold();
   },
   computed: {
     ...mapGetters('auth', ['user', 'userRole']),
@@ -318,7 +319,18 @@
             month: 'short',
             day: 'numeric'
         });
-    }
+    },
+    async fetchThreshold(){
+        try{    
+                    // Fetch from API if not in local storage
+                const response = await axios.get('/api/settings/threshold');
+                console.log("Current Threshold Fetch Successfully");
+                this.threshold = response.data.threshold;
+                localThreshold.setItem('threshold', this.threshold);  // Save to local storage
+            } catch (error){
+            console.error("Error fetching current threshold", error.response?.data || error.message);
+        }          
+      } 
   }
 };
 </script>

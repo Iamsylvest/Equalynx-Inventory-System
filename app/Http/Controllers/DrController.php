@@ -33,8 +33,10 @@ class DrController extends Controller
                 'materials.*.material_quantity' => 'required|integer|min:1',
             ]);
     
-            // Generate Unique DR Number
-            $latestDr = Dr::latest()->first();
+          
+            // Get the latest DR record, including soft-deleted ones
+            $latestDr = Dr::withTrashed()->latest('id')->first();  
+          // Generate a new DR number based on the latest ID or start from DR-000001 if none exists
             $newDrNumber = $latestDr ? 'DR-' . str_pad($latestDr->id + 1, 6, '0', STR_PAD_LEFT) : 'DR-000001';
     
             // Create DR record
@@ -145,7 +147,7 @@ class DrController extends Controller
     }
 
     public function show($id) {
-        $dr = Dr::with('materials')->find($id); 
+        $dr = Dr::withTrashed()->with('materials')->find($id); 
     
         if (!$dr) {
             return response()->json(['message' => 'DR not found'], 404);
@@ -153,6 +155,7 @@ class DrController extends Controller
     
         return response()->json([
             'item' => $dr,  // This includes the materials already
+            'materials' => $dr->materials ?? [],
         ]);
     }
 
@@ -164,11 +167,11 @@ class DrController extends Controller
             // Delete the inventory item
             $dr -> delete();
 
-            Log::info("Delivery Receipt Deleted Successfully: ID {$id}");
+            Log::info("Delivery Receipt Archived Successfully: ID {$id}");
 
 
             event(new ActivityLogged([
-                'action' => $dr->dr_number. ' number ' . ' was deleted by ' . 
+                'action' => $dr->dr_number. ' number ' . ' was archived by ' . 
                             auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                             ' on ' . now()->toDayDateTimeString(),
     
@@ -179,21 +182,106 @@ class DrController extends Controller
                     
             // ✅ Write log to a file
             Log::channel('activity')->info(json_encode([
-                'action' => $dr->dr_number. ' number ' . ' was deleted by ' . 
+                'action' => $dr->dr_number. ' number ' . ' was archived by ' . 
                             auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'role' => auth()->user()->role, // ✅ Ensure role is logged
                 'timestamp' => now()->toDateTimeString(),
             ]));
 
-            return response()->json([ 'message' => 'Delivery Receipt Deleted Successfully']);
+            return response()->json([ 'message' => 'Delivery Receipt Archived Successfully']);
         } catch (\Exception $e) {
               // Log the error for debugging
                 Log::error('Error Deleting Delivery Receipt' . $e ->getMessage());
                  // Return a 500 error if something went wrong
-                 return response()->json(['message' => 'Failed to Delete Delivery Receipt', 'ERROR' => $e->getMessage()], 500);
+                 return response()->json(['message' => 'Failed to Archived Delivery Receipt', 'ERROR' => $e->getMessage()], 500);
         }
     }
+
+    public function archived(Request $request){
+        Log::info('DrController@index invoked');
+ 
+    
+         $query = Dr::onlyTrashed()->with('approver');
+
+         if ($request->has('status')) {
+             $query->where('status', $request->input('status'));
+         }
+     
+         if ($request->has('created_at')) {
+             $query->whereDate('created_at', $request->input('created_at'));
+         }
+     
+         if ($request->has('search')) {
+             $search = $request->input('search');
+             $query->where(function($q) use ($search) {
+                 $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('dr_number', 'like', "%{$search}%")
+                   ->orWhere('project_name', 'like', "%{$search}%")
+                   ->orWhereHas('approver', function($query) use ($search) {
+                     $query->where('first_name', 'like', "%{$search}%")
+                           ->orWhere('middle_name', 'like', "%{$search}%")
+                           ->orWhere('last_name', 'like', "%{$search}%");
+                 });
+                   
+             });
+         }
+        // ✅ Use pagination for better performance
+         $archivedDrs = $query->paginate(10);
+    
+         return response()->json($archivedDrs);
+    }
+    
+    public function restore($id) {
+        $dr = Dr::onlyTrashed()->findOrFail($id); // find the archived dr
+        $dr->restore(); // restore the dr
+    
+        Log::info("Delivery Receipt Restored Successfully: ID {$id}");
+    
+        // Fire the event before returning the response
+        event(new ActivityLogged([
+            'action' => $dr->dr_number . ' number ' . ' was Restored by ' . 
+                       auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                       ' on ' . now()->toDayDateTimeString(),
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, 
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+    
+        return response()->json(['message' => 'Delivery receipt restored successfully']);
+    }
+    
+
+       
+   public function forceDelete($id){
+        try{
+            $dr = Dr::withTrashed()->findOrFail($id);
+            $dr->forceDelete();
+
+
+
+            event(new ActivityLogged([
+                'action' => $dr->dr_number. ' number ' . ' was deleted permanently by ' . 
+                            auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                            ' on ' . now()->toDayDateTimeString(),
+    
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
+
+            return response()->json(['message' => 'Delivery Receipt deleted permanently']);
+
+        } catch(\Exception $e){
+            return response()->json(['message' => 'Failed to Delete Delivery Reciept', 'error' =>$e->getMessage()], 500);
+        }
+
+}
+
+
+
+
+
     public function update(Request $request, $id)
     {
         $request->validate([

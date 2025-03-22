@@ -14,6 +14,7 @@ export default {
     setUser(state, user) {
       state.user = user;
       console.log("User set in Vuex:", user); // Debugging log
+      console.log("Setting user in Vuex:", user); // Debugging
     },
     logout(state) {
       state.token = null;
@@ -58,10 +59,6 @@ export default {
               },
           },
       });
-
-
-
-
            // Return user role for redirection
         return user.role;  // ✅ FIXED: Now it returns the role
 
@@ -125,6 +122,6 @@ export default {
   getters: {
     isAuthenticated: (state) => !!state.token,
     user: (state) => state.user,
-    userRole: (state) => state.user ? state.user.data.role : '',
+    userRole: (state) => (state.user && state.user.data ? state.user.data.role : ''),
   },
 };

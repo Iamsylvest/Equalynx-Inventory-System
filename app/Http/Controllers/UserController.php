@@ -10,8 +10,35 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log; // Import Log facade
 use Illuminate\Support\Facades\File; // ✅ Import File facade
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+
+
 class UserController extends Controller
 {
+
+    public function changePassword(Request $request){
+
+        //validatre the request from the frontend in v model values
+            $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ]);
+
+            $user = Auth::user(); // get authenticated user
+
+            // verify if the current password is correct
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json(['messsage' => 'Current password is incorrect'], 400);
+            }
+
+            $user->password  = Hash::make($request->new_password);
+            /** @var \App\Models\User $user **/
+            $user->save();
+
+            return response()->json(['message' => 'Password change Successfully']);
+    }
+
+
     public function store(Request $request)
     {
         // Validate request data
@@ -287,4 +314,4 @@ class UserController extends Controller
                 'data' => $user
             ], 200);
         }
-}
+    }

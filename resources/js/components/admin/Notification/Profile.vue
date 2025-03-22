@@ -4,11 +4,11 @@
       <button
         @click="openModal"
         :class="{
-          'bg-custom-blue': isClicked,
-          'hover:bg-custom-blue ': !isClicked,
-          'text-white': isClicked,
-          'hover:text-white': !isClicked,
-          'active:bg-custom-blue': isClicked
+         'bg-custom-blue dark:bg-custom-hover': isClicked,
+        'hover:bg-custom-blue  hover:dark:bg-custom-hover ': !isClicked,
+        'text-white': isClicked,
+        'hover:text-white': !isClicked,
+        'active:bg-custom-blue': isClicked
         }"
           class="relative flex items-center justify-center w-12 h-12 cursor-pointer transition duration-300 focus:outline-none rounded-full"
       >
@@ -20,10 +20,10 @@
       <!-- Modal -->
       <div v-if="modalProfile"  class="absolute inset-0 flex items-center justify-end bg-opacity-50">
         <div @click="closeModal" class="fixed inset-0 z-10 opacity-50"></div>
-        <div class="bg-white border-1 shadow-lg rounded-md px-4 py-10 z-20 mx-4 w-full max-w-sm h-[420px] absolute  top-20 right-12">
+        <div class="bg-white dark:bg-custom-table border-1 shadow-lg rounded-md px-4 py-10 z-20 mx-4 w-full max-w-sm h-[420px] absolute  top-20 right-12">
           <div class="flex items-center justify-end mb-4 relative top-[-30px]">
             <!-- Close Button -->
-            <button @click="closeModal" class="flex items-center justify-center p-2 hover:bg-gray-100 rounded-full">
+            <button @click="closeModal" class="flex items-center justify-center p-2 hover:bg-gray-100 rounded-full dark:hover:bg-custom-hover">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>

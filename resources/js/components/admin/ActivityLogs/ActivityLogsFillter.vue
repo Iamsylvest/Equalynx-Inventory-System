@@ -54,44 +54,43 @@
      />
    </div> -->
 
-   <div class="grid grid-cols-2 grid-rows-4 sm:flex md:flex mt-3 min-w-auto h-auto gap-2">
+   <div class="grid grid-cols-2 grid-rows-4 sm:flex md:flex mt-3 min-w-auto h-auto gap-6">
 
      <div class="col-span-2 mt-5 sm:mt-0 md:mt-0 lg:mt-0 flex items-center gap-2">
-       <input
-       v-model="tempSearchQuery"
-       type="text"
-       placeholder="Search by name..."
-       class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
-     />
+      <input
+        v-model="tempSearchQuery"
+        type="text"
+        placeholder="Search by name..."
+        class="dark:bg-custom-table border dark:focus:ring-white border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[150px]"
+      />
      </div>
 
      <div class="col-span-2 ">
-       <select
-         id="threshold"
-         v-model="selectedRole"
-         @change="applyFilters"
-         class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32"
-       >
-         <option value="">All Role</option>
-         <option value="admin">Admin</option>
-         <option value="manager">Manager</option>
-         <option value="procurement">Procurement</option>
-         <option value="warehouse_staff">warehouse staff</option>
-       </select>
+      <select
+      v-model="selectedRole"
+      @change="applyFilters"
+      class="mr-5 w-[240px] md:w-[148px] mb-5 sm:mb-5 md:mb-0 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white"
+    >
+      <option value="">All Roles</option>
+      <option value="admin">Admin</option>
+      <option value="manager">Manager</option>
+      <option value="procurement">Procurement</option>
+      <option value="warehouse_staff">Warehouse Staff</option>
+    </select>
      </div>
 
      <div class="col-span-2 w-[250px]">
-       <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0">
-         <label for="date_added" class="text-sm text-gray-700 w-full">Date Added</label>
-         <input
-           id="date_added"
-           type="date"
-           v-model="selectedDate"
-           @change="applyFilters"
-           class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 md:w-36"
-         />
-       </div>
-     </div>
+  <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0">
+    <label for="date_added" class="text-sm text-gray-700 dark:text-white whitespace-nowrap w-full">Date Added</label>
+    <input
+      id="date_added"
+      type="date"
+      v-model="selectedDate"
+      @change="applyFilters"
+      class="mr-5 w-[240px] md:w-[152px] mb-5 sm:mb-5 md:mb-0 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white custom-date-input"
+    />
+  </div>
+</div>
      
    </div>
  </div> 

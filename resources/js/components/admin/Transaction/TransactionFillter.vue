@@ -47,7 +47,7 @@
         v-model="tempSearchQuery"
         type="text"
         placeholder="Search by name..."
-        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40"
+        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 dark:bg-custom-table dark:focus:ring-white"
     />
 </div>
 
@@ -56,7 +56,7 @@
       <select
         v-model="selectedStatus"
         @change="applyFilters"
-        class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32"
+        class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32  dark:bg-custom-table dark:focus:ring-white"
       >
         <option value="">All Status</option>
         <option value="approved">approved</option>
@@ -68,13 +68,13 @@
     <div class="col-span-2 w-[250px]">
       <div class="col-span-2 w-[250px]">
         <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0">
-          <label for="date_added" class="text-sm text-gray-700">Date Added</label>
+          <label for="date_added" class="text-sm text-gray-700 dark:text-custom-white">Date Added</label>
             <input
               id="date_added"
               type="date"
               v-model="selectedDateAdded"
               @change="applyFilters"
-              class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 md:w-36"
+              class="custom-date-input border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 md:w-36  dark:bg-custom-table dark:focus:ring-white"
             />
         </div>
       </div>

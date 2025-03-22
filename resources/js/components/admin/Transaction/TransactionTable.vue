@@ -8,8 +8,8 @@
             class="p-3 px-4 text-sm font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
             @click="showTable = 'delivery'"
             :class="{
-              'bg-custom-blue text-white': showTable === 'delivery',
-              'hover:bg-custom-blue hover:text-white': showTable !== 'delivery'
+              'bg-custom-blue text-white dark:bg-custom-table': showTable === 'delivery',
+              'hover:bg-custom-blue hover:text-white  hover:dark:bg-custom-hover': showTable !== 'delivery'
             }"
           >
             Delivery Receipt
@@ -19,8 +19,8 @@
             class="p-3 px-4 text-sm font-bold border-b-2 shadow-md rounded-md focus:outline-none w-full sm:w-auto"
             @click="showTable = 'return'"
             :class="{ 
-              'bg-custom-blue text-white': showTable === 'return',
-              'hover:bg-custom-blue hover:text-white': showTable !== 'return'
+              'bg-custom-blue text-white  dark:bg-custom-table': showTable === 'return',
+              'hover:bg-custom-blue hover:text-white hover:dark:bg-custom-hover': showTable !== 'return'
             }"
           >
             Return Receipt
@@ -38,20 +38,20 @@
       <div>
 
         <table v-if="showTable === 'delivery'" class="table-auto w-full border-collapse mt-1 shadow-lg">
-          <thead class="h-14 bg-gray-100">
+          <thead class="h-14 bg-custom-blue text-white  dark:bg-custom-table dark:border-b ">
             <tr class="bg-custom-blue text-white">
-              <th class="px-6 py-4 font-bold text-center">Date Added</th>
-              <th class="px-6 py-4 font-bold text-center">DR#</th>
-              <th class="px-6 py-4 font-bold text-center">Name</th>
-              <th class="px-6 py-4 font-bold text-center">Project Name</th>
-              <th class="px-6 py-4 font-bold text-center">Approved by</th>
-              <th class="px-6 py-4 font-bold text-center">Status</th>
-              <th class="px-4 py-2 border-0 font-bold text-center">Action</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Date Added</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">DR#</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Name</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Project Name</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Approved by</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Status</th>
+              <th class="px-6 py-4 font-bold text-center dark:bg-custom-table">Action</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredDR.length === 0" >
-              <td colspan="6" class="text-center py-4">No materials found</td>
+              <td colspan="6" class="text-center py-4 dark:bg-custom-table">No materials found</td>
             </tr>
             <tr v-for="(item, index) in filteredDR" :key="index" class="bg-white border-b">
               <td class="px-6 py-4 text-center">{{ formatDate(item.created_at) }}</td>
@@ -71,39 +71,49 @@
               <td class="px-6 py-4 text-center">
                 <span  class="p-2 rounded-xl text-white font-semibold"
                 :class="{
-                'bg-green-300 text-green-600': item.status === 'approved',
-                'bg-red-300 text-red-600': item.status  === 'rejected',
-                'bg-yellow-300 text-yellow-600': item.status  === 'pending'
+                'bg-green-300 text-green-600  dark:bg-green-700 dark:text-green-300': item.status === 'approved',
+                'bg-red-300 text-red-600 dark:bg-red-700 dark:text-red-300 ': item.status  === 'rejected',
+                'bg-yellow-300 text-yellow-600 dark:bg-yellow-700 dark:text-yellow-300': item.status  === 'pending'
               }">
               {{ item.status }}
                 </span>
            
               </td>
               
-              <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
-                <button @click="addRR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" v-if="userRole  === 'warehouse_staff' && item.status !== 'pending'" >
+              <td class="text-center px-4 py-4 border-0 space-x-4 flex item-center justify-center">
+                <button @click="addRR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto dark:text-custom-white" v-if="userRole  === 'warehouse_staff' && item.status === 'pending'" >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z" />
                   </svg>
 
                 </button>
 
-                <button @click="editDR(item.id)" class="text-gray-500 hover:underline w-full sm:w-auto" v-if="item.status !== 'approved' && item.status !== 'rejected'" >
+                <button @click="editDR(item.id)" class="text-gray-500 hover:underline sm:w-auto dark:text-custom-white" v-if="item.status !== 'approved' && item.status !== 'rejected'" >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
                 </button>
 
                 <button  @click="downloadPDF(item.id)" 
-                        class="text-gray-500 hover:underline w-full sm:w-auto">
+                        class="text-gray-500 hover:underline  sm:w-auto dark:text-custom-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                 </button>
-                            
+                         
+                
+                <!-- 
                 <button v-if="['procurement'].includes(userRole)" @click="deleteDr(item.id, item.dr_number)"  class="text-gray-500 hover:underline">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+
+              </button>
+                -->
+
+              <button v-if="['procurement'].includes(userRole)" @click="archiveDr(item.id, item.dr_number)"  class="text-gray-500 hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                 </svg>
               </button>
               </td>
@@ -118,16 +128,16 @@
       
       <div>
         <table v-if="showTable === 'return'" class="table-auto w-full border-collapse mt-1 shadow-lg">
-          <thead class="h-14 bg-gray-100">
+          <thead class="h-14 bg-custom-blue text-white  dark:bg-custom-table dark:border-b ">
             <tr class="bg-custom-blue text-white">
-              <th class="px-6 py-4 font-bold text-center">Date Added</th>
-              <th class="px-6 py-4 font-bold text-center">RR# </th>
-              <th class="px-6 py-4 font-bold text-center">DR#</th>
-              <th class="px-6 py-4 font-bold text-center">Name</th>
-              <th class="px-6 py-4 font-bold text-center">Project Name</th>
-              <th class="px-6 py-4 font-bold text-center">Approved by:</th>
-              <th class="px-6 py-4 font-bold text-center">Status</th>
-              <th class="px-4 py-2 border-0 font-bold text-center">Action</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">Date Added</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">RR# </th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">DR#</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">Name</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">Project Name</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">Approved by:</th>
+              <th class="px-6 py-4 font-bold text-center  dark:bg-custom-table">Status</th>
+              <th class="px-4 py-4 font-bold text-center  dark:bg-custom-table">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -165,34 +175,43 @@
                 <td class="px-6 py-4 text-center">
                   <span class="p-2 rounded-xl text-white font-semibold"
                     :class="{
-                      'bg-green-300 text-green-600': rr.status === 'approved',
-                      'bg-red-300 text-red-600': rr.status === 'rejected',
-                      'bg-yellow-300 text-yellow-600': rr.status === 'pending'
+                      'bg-green-300 text-green-600  dark:bg-green-700 dark:text-green-300': rr.status === 'approved',
+                      'bg-red-300 text-red-600 dark:bg-red-700 dark:text-red-300 ': rr.status  === 'rejected',
+                      'bg-yellow-300 text-yellow-600 dark:bg-yellow-700 dark:text-yellow-300': rr.status  === 'pending'
                     }">
                     {{ rr.status }}
                   </span>
                 </td>
-                <td class="text-center px-4 py-2 border-0 space-x-4 flex item-center justify-center mt-2">
-      
 
-                <button @click="editRR(rr.id)"  class="text-gray-500 hover:underline w-full sm:w-auto" v-if="(rr.status !== 'approved' && rr.status !== 'rejected') && ['warehouse_staff', 'manager'].includes(userRole)">
+                <td class="text-center px-4 py-4 border-0 space-x-4 flex item-center justify-center">
+
+                <button @click="editRR(rr.id)" class="text-gray-500 hover:underline w-full sm:w-auto dark:text-custom-white" v-if="(rr.status !== 'approved' && rr.status !== 'rejected') && ['warehouse_staff', 'manager'].includes(userRole)">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 18.5 2.75a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
                 </button>
 
                 <button  @click="downloadPDFrr(rr.id)" 
-                        class="text-gray-500 hover:underline w-full sm:w-auto">
+                        class="text-gray-500 hover:underline w-full sm:w-auto dark:text-custom-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                 </button>
-                            
+                           
+                  <!-- 
                 <button v-if="['warehouse_staff'].includes(userRole)" @click="deleteRr(rr.id, rr.rr_number)"  class="text-gray-500 hover:underline">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
               </button>
+              -->
+
+              <button v-if="['warehouse_staff'].includes(userRole)" @click="archiveRr(rr.id, rr.rr_number)"  class="text-gray-500 hover:underline dark:text-custom-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                </svg>
+              </button>
+
               </td>
               </tr>
             </tbody>
@@ -201,13 +220,13 @@
 
         </table>
 
-           <!-- Pagination -->
-          <div v-if="showTable === 'delivery'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+           <!-- Pagination delivery receipt -->
+          <div v-if="showTable === 'delivery'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50 dark:bg-custom-table">
                     <!-- Previous Button -->
                     <button 
                       @click="fetchDRs(currentPage - 1)" 
                       :disabled="currentPage === 1" 
-                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 hover:dark:bg-custom-hover"
                     >
                       ←
                     </button>
@@ -217,7 +236,7 @@
                       v-for="page in lastPage" 
                       :key="page"
                       @click="fetchDRs(page)"
-                      class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+                      class="mx-2 px-3 py-2 cursor-pointer rounded-lg dark:bg-custom-table"
                       :class="{'bg-blue-500 text-white': currentPage === page, 'hover:bg-gray-200': currentPage !== page}"
                     >
                       {{ page }}
@@ -227,19 +246,19 @@
                     <button 
                       @click="fetchDRs(currentPage + 1)" 
                       :disabled="currentPage === lastPage" 
-                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 hover:dark:bg-custom-hover"
                     >
                       →
                     </button>
               </div>
 
                         <!-- Pagination -->
-          <div v-if="showTable === 'return'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50">
+          <div v-if="showTable === 'return'"  class="flex items-center justify-center py-2 px-4 bg-white shadow-md z-50  dark:bg-custom-table">
                     <!-- Previous Button -->
                     <button 
                       @click="fetchRRs(currentPage_Return - 1)" 
                       :disabled="currentPage_Return === 1" 
-                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 hover:dark:bg-custom-hover"
                     >
                       ←
                     </button>
@@ -249,7 +268,7 @@
                       v-for="page in lastPage_Return" 
                       :key="page"
                       @click="fetchRRs(page)"
-                      class="mx-2 px-3 py-2 cursor-pointer rounded-lg"
+                      class="mx-2 px-3 py-2 cursor-pointer rounded-lg  dark:bg-custom-table"
                       :class="{'bg-blue-500 text-white': lastPage_Return === page, 'hover:bg-gray-200': lastPage_Return !== page}"
                     >
                       {{ page }}
@@ -259,7 +278,7 @@
                     <button 
                       @click="fetchRRs(currentPage + 1)" 
                       :disabled="currentPage_Return === lastPage_Return" 
-                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100"
+                      class="text-lg px-4 py-2 rounded-lg disabled:opacity-2 hover:bg-gray-100 hover:dark:bg-custom-hover"
                     >
                       →
                     </button>
@@ -403,6 +422,82 @@ export default {
     },
 
     methods: {
+
+      async archiveDr(id, dr_number) {
+          try {
+            Swal.fire({
+              title: `Are you sure you want to archive #${dr_number}?`,
+              text: "You can still restore it, don't worry!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Yes, archive it!"
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                // ✅ Send delete request to the backend
+                await axios.delete(`/api/Dr/${id}`);
+                
+                // ✅ Refresh the list after archiving
+                this.fetchDRs();
+
+                // ✅ Show success message
+                Swal.fire({
+                  title: "Archived!",
+                  text: `DR #${dr_number} has been archived.`,
+                  icon: "success",
+                  confirmButtonColor: "#3085d6"
+                });
+              }
+            });
+          } catch (error) {
+            console.error('Error archiving DR:', error);
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to archive DR.",
+              icon: "error",
+              confirmButtonColor: "#d33"
+            });
+          }
+        },
+
+        async archiveRr(id, rr_number) {
+          try {
+            Swal.fire({
+              title: `Are you sure you want to archive #${rr_number}?`,
+              text: "You can still restore it, don't worry!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Yes, archive it!"
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                // ✅ Send delete request to the backend
+                await axios.delete(`/api/Rr/${id}`);
+                
+                // ✅ Refresh the list after archiving
+                this.fetchRRs();
+
+                // ✅ Show success message
+                Swal.fire({
+                  title: "Archived!",
+                  text: `DR #${rr_number} has been archived.`,
+                  icon: "success",
+                  confirmButtonColor: "#3085d6"
+                });
+              }
+            });
+          } catch (error) {
+            console.error('Error archiving DR:', error);
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to archive DR.",
+              icon: "error",
+              confirmButtonColor: "#d33"
+            });
+          }
+        },
   
       async downloadPDF(id) {
         const apiUrl = `/api/pdf/generate/${id}`; // Relative URL without the full domain
@@ -473,7 +568,7 @@ export default {
         });
       },
 
-      
+/*    
     deleteDr(deliveryReceiptId, dr_number){
         Swal.fire({
           title: `Are you sure you want to delete #${dr_number}?`,
@@ -497,6 +592,9 @@ export default {
           }
         })
     },
+
+    */
+
     async viewDr(id) {
       try {
         const response = await axios.get(`/api/Dr/${id}`);
@@ -672,6 +770,7 @@ export default {
             ? `${rr.approver.first_name} ${rr.approver.middle_name ? rr.approver.middle_name + ' ' : ''}${rr.approver.last_name}`
           : 'N/A'
           }));
+          
           this.currentPage_Return = response.data.current_page;
           this.lastPage_Return = response.data.last_page;
         }catch(error){
@@ -726,7 +825,7 @@ export default {
       }
     },
 
-
+  /*   
     deleteRr(returnReceiptId, rr_number){
         Swal.fire({
           title: `Are you sure you want to delete #${rr_number}?`, // ✅ Proper string interpolation
@@ -751,6 +850,7 @@ export default {
         })
     },
 
+   */
 
   },
 

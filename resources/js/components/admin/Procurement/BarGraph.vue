@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white drop-shadow-lg h-[300px] sm:col-span-2">
+  <div class="bg-white drop-shadow-lg h-[300px] sm:col-span-2 dark:bg-custom-table">
     <!-- Render the chart only after data is available -->
     <BarGraph 
       v-if="!loading && chartData.labels.length > 0" 
@@ -29,6 +29,18 @@ export default {
 name: 'Barchart',
 components: { BarGraph: Bar },
 data() {
+  // Detect dark mode
+  const isDarkMode = document.documentElement.classList.contains('dark');
+
+  // Get dark mode color from CSS variable
+  const customWhite = getComputedStyle(document.documentElement)
+    .getPropertyValue('--custom-white')
+    .trim() || '#E5E7EB';
+
+  // Use Tailwind's default color (e.g., blue-500)
+  const defaultColor = '#365486'; // Tailwind blue-500 hex code
+  const defaultTextColor ='#000';
+
   return {
     chartData: {
       labels: ['Loading...'],
@@ -36,8 +48,8 @@ data() {
         {
           label: '20 Available Materials (overview)', 
           data: [0],
-          backgroundColor: '#365486',
-          borderColor: '#365486',
+          backgroundColor: isDarkMode ? customWhite : defaultColor,
+          borderColor: isDarkMode ? customWhite : defaultColor,
           borderWidth: 1
         }
       ]
@@ -47,7 +59,22 @@ data() {
       maintainAspectRatio: false,
       scales: {
         y: {
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: {
+            color: isDarkMode ? customWhite : defaultTextColor, // Y-axis label color
+          }
+        },
+        x: {
+          ticks: {
+            color: isDarkMode ? customWhite : defaultTextColor, // X-axis label color
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: isDarkMode ? customWhite : defaultTextColor, // Legend color
+          }
         }
       }
     },

@@ -7,6 +7,7 @@ import Transaction from '@/pages/admin/Transaction.vue';
 import ActivityLogs from '@/pages/admin/ActivityLogs.vue';
 import Notification from '@/pages/admin/Notification.vue';
 import Settings from '@/pages/admin/Settings.vue';
+import ArchivePage from '@/pages/admin/ArchivePage.vue';
 import ProcurementDashboard from '@/pages/admin/Procurement.vue';
 import store from '@/store'; // Import the store
 
@@ -20,6 +21,7 @@ const routes = [
   { path: '/AdminTransaction', component: Transaction, meta: { requiresAuth: true }},
   { path: '/ActivityLogs', component: ActivityLogs, meta: { requiresAuth: true }},
   { path: '/Notification', component: Notification, meta: { requiresAuth: true }},
+  { path: '/Archived', component: ArchivePage, meta: { requiresAuth: true }},
   { path: '/Settings', component: Settings, meta: { requiresAuth: true }},
   // Catch-all route for undefined routes
   { path: '/:pathMatch(.*)*', redirect: '/login' },

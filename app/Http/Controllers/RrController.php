@@ -103,7 +103,7 @@ class RrController extends Controller
             ]);
     
             // Generate a unique RR number by getting the latest RR record
-            $latestRr = Rr::latest()->first();
+            $latestRr = Rr::withTrashed()->latest()->first();
             $newRrNumber = $latestRr 
                 ? 'RR-' . str_pad($latestRr->id + 1, 6, '0', STR_PAD_LEFT) 
                 : 'RR-000001';
@@ -211,7 +211,7 @@ class RrController extends Controller
         public function show($id)
         {
             try {
-                $rr = Rr::with('materials')->find($id);
+                $rr = Rr::withTrashed()->with('materials')->find($id);
 
                 if (!$rr) {
                     return response()->json(['message' => 'Return Receipt Not Found'], 404);
@@ -519,10 +519,10 @@ class RrController extends Controller
     
             $rr->delete();
     
-            Log::info("Return Receipt Deleted Successfully: ID {$id}");
+            Log::info("Return Receipt Archived Successfully: ID {$id}");
 
             event(new ActivityLogged([
-                'action' => $rr->rr_number . ' number ' . ' was deleted by ' . 
+                'action' => $rr->rr_number . ' number ' . ' was archived by ' . 
                             auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
                             ' on ' . now()->toDayDateTimeString(),
     
@@ -533,19 +533,101 @@ class RrController extends Controller
                     
             // ✅ Write log to a file
             Log::channel('activity')->info(json_encode([
-                'action' => $rr->rr_number . ' number ' . ' was deleted by ' . 
+                'action' => $rr->rr_number . ' number ' . ' was archived by ' . 
                             auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
                 'role' => auth()->user()->role, // ✅ Ensure role is logged
                 'timestamp' => now()->toDateTimeString(),
             ]));
     
-            return response()->json(['message' => 'Return Receipt Deleted Successfully']);
+            return response()->json(['message' => 'Return Receipt archived Successfully']);
         } catch (\Exception $e) {
             Log::error('Error deleting Return Receipt: ' . $e->getMessage());
-            return response()->json(['message' => 'Failed to Delete Return Receipt', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to archived Return Receipt', 'error' => $e->getMessage()], 500);
         }
     }
+
+
+
+    public function archived(Request $request){
+        Log::info('RrController@index invoked');
+ 
+    
+         $query = Rr::onlyTrashed()->with('approver');
+
+         if ($request->has('status')) {
+             $query->where('status', $request->input('status'));
+         }
+     
+         if ($request->has('created_at')) {
+             $query->whereDate('created_at', $request->input('created_at'));
+         }
+     
+         if ($request->has('search')) {
+             $search = $request->input('search');
+             $query->where(function($q) use ($search) {
+                 $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('rr_number', 'like', "%{$search}%")
+                   ->orWhere('project_name', 'like', "%{$search}%")
+                   ->orWhereHas('approver', function($query) use ($search) {
+                     $query->where('first_name', 'like', "%{$search}%")
+                           ->orWhere('middle_name', 'like', "%{$search}%")
+                           ->orWhere('last_name', 'like', "%{$search}%");
+                 });
+                   
+             });
+         }
+        // ✅ Use pagination for better performance
+         $archivedRrs = $query->paginate(10);
+    
+         return response()->json($archivedRrs);
+    }
+
+    public function restore($id){
+        $rr = Rr::onlyTrashed()->findOrFail($id); // find the archived dr
+        $rr->restore(); // restore the dr
+
+        Log::info("Return Receipt Restored Successfully: ID {$id}" );
+
+        event(new ActivityLogged([
+            'action' => $rr->rr_number . ' number ' . ' was restored by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                        ' on ' . now()->toDayDateTimeString(),
+
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Include role of the performing user
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+
+        return response()->json(['message' => 'Return receipt restored successfully']);
+   }
+
+   
+   public function forceDelete($id){
+    try{
+        $rr = Rr::withTrashed()->findOrFail($id);
+        $rr->forceDelete();
+
+
+        event(new ActivityLogged([
+            'action' => $rr->rr_number . ' number ' . ' was permanently deleted by ' . 
+                        auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . 
+                        ' on ' . now()->toDayDateTimeString(),
+
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role, // ✅ Include role of the performing user
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+
+        return response()->json(['message' => 'Return Receipt deleted permanently']);
+
+    } catch(\Exception $e){
+        return response()->json(['message' => 'Failed to Delete Return Reciept', 'error' =>$e->getMessage()], 500);
+    }
+
+}
+
+
 
     public function broadcastHighStock()
     {

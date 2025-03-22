@@ -1,6 +1,6 @@
 <template>
     <div> <!-- ✅ Wrap everything in a root div -->
-      <button @click="$emit('openOutStockModal')" class="bg-white drop-shadow-lg h-[300px]">
+      <button @click="$emit('openOutStockModal')" class="bg-white drop-shadow-lg h-[300px]  dark:bg-custom-table ">
         <div class="m-5 h-[100px] text-red-500"> 
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-full"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clip-rule="evenodd" /></svg>
         </div> 
@@ -16,7 +16,7 @@
   
       <div v-if="showOutStockModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-16">
         <div @click="$emit('outStockcloseModal')" class="absolute inset-0"></div>
-        <div class=" pb-22 p-4 relative bg-white shadow-lg rounded-md w-lg w-full mt-10 mb-10">
+        <div class=" pb-22 p-4 relative bg-white shadow-lg rounded-md w-lg w-full mt-10 mb-10 dark:bg-custom-main">
           <div class="flex justify-between">
             <div class="mt-5 text-lg ">
               <h1>Out Stocks Materials</h1>
@@ -28,12 +28,12 @@
         </button>
           </div>
           <table class="table-auto w-full border-collapse shadow-lg">
-            <thead class="h-14">
+            <thead class="h-14 bg-custom-blue text-white  dark:bg-custom-table dark:border-b ">
               <tr class="bg-custom-blue text-white">
-                <th>Material Name</th>
-                <th>Stocks</th>
-                <th>Measurement</th>
-                <th>Last updated</th>
+                <th class=" dark:bg-custom-table">Material Name</th>
+                <th  class=" dark:bg-custom-table">Stocks</th>
+                <th  class=" dark:bg-custom-table">Measurement</th>
+                <th  class=" dark:bg-custom-table">Last updated</th>
               </tr>
             </thead>
             <tbody>

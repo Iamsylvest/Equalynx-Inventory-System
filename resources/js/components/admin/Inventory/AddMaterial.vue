@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Button to Open Modal -->
-    <button @click="showModal = true" class="px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-custom-blue text-white drop-shadow-md whitespace-nowrap">
+    <button @click="showModal = true" class="px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-green-500 text-white dark:bg-green-700 dark:text-green-300 text-sm drop-shadow-md whitespace-nowrap">
       <span>Add Material</span>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 relative left-1">
         <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />
@@ -13,9 +13,9 @@
       <div @click="showModal = false" class="absolute inset-0"></div>
   
       <!-- Modal Content -->
-      <div class="bg-white shadow-lg rounded-md max-w-2xl w-full mx-auto p-4 relative">
+      <div class="bg-white dark:bg-custom-main shadow-lg rounded-md max-w-2xl w-full mx-auto p-4 relative">
         <!-- Header -->
-        <div class="bg-custom-blue p-4 rounded-t-md flex justify-between items-center">
+        <div class="bg-custom-blue  dark:bg-custom-table p-4 rounded-t-md flex justify-between items-center">
           <h1 class="text-lg text-white font-semibold flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 mr-2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
@@ -30,36 +30,40 @@
         </div>
 
         <!-- Modal Body -->
-        <div class="p-4">
+        <div class="p-4 ">
           <div class="flex flex-col gap-4">
             <div>
-              <label class="block text-gray-700">Material Name:</label>
-              <input v-model="form.material_name" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
+              <label class="block text-gray-700 dark:text-custom-white">Material Name:</label>
+              <input v-model="form.material_name" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg dark:bg-custom-table">
             </div>
             <div>
-              <label class="block text-gray-700">Stocks:</label>
-              <input v-model="form.stocks" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300  rounded-lg">
+              <label class="block text-gray-700 dark:text-custom-white">Stocks:</label>
+              <input v-model="form.stocks" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
             </div>
      
 
             <div>
-              <label class="block text-gray-700">Measurement:</label>
+              <label class="block text-gray-700 dark:text-custom-white">Measurement:</label>
               <div class="flex">
                 <!-- Number Input for Quantity -->
                 <input 
                   type="number" 
                   step="1" 
                   v-model="form.measurement_quantity"
-                  class="w-1/2 border border-gray-300 px-2 py-1 rounded-l-lg focus:ring-2 focus:ring-blue-300"
+                  class="w-1/2 border border-gray-300 px-2 py-1 rounded-l-lg focus:ring-2 focus:ring-blue-300 dark:focus:ring-white dark:bg-custom-table"
                   placeholder="Enter quantity"
                   min="0"
                 />
 
                 <!-- Dropdown for Measurement Type -->
+            <!-- Dropdown for Measurement Type -->
                 <select
                   v-model="form.measurement_unit"
-                  class="w-1/2 border border-gray-300 px-2 py-1 rounded-r-lg focus:ring-2 focus:ring-blue-300"
+                  class="w-1/2 border border-gray-300 px-2 py-1 rounded-r-lg focus:ring-2 focus:ring-blue-300 dark:focus:ring-white dark:bg-custom-table"
                 >
+                  <option value="" disabled selected hidden>
+                    Select a unit
+                  </option>
                   <option value="pcs">Pieces (pcs)</option>
                   <option value="m">Meters (m)</option>
                   <option value="cm">Centimeters (cm)</option>
@@ -77,7 +81,7 @@
 
         <!-- Submit Button -->
         <div class="flex justify-end p-4">
-          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full">Submit</button>
+          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full   dark:bg-green-700 dark:text-green-300">Submit</button>
         </div>
       </div>
     </div>

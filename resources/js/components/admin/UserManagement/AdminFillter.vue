@@ -6,7 +6,7 @@
         v-model="tempSearchQuery"
         type="text"
         placeholder="Search by name..."
-        class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[150px]"
+        class="dark:bg-custom-table border dark:focus:ring-white border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[150px]"
       />
 
     </div> <br>
@@ -15,7 +15,7 @@
     <select
       v-model="selectedRole"
       @change="applyFilters"
-      class="mr-5 w-[240px] md:w-[148px] mb-5 sm:mb-5 md:mb-0 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      class="mr-5 w-[240px] md:w-[148px] mb-5 sm:mb-5 md:mb-0 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white"
     >
       <option value="">All Roles</option>
       <option value="admin">Admin</option>
@@ -27,7 +27,7 @@
     <select
       v-model="selectedStatus"
       @change="applyFilters"
-      class="w-[240px] md:w-[148px]  border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      class="w-[240px] md:w-[148px] borderborder-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white "
     >
       <option value="">All Status</option>
       <option value="active">active</option>

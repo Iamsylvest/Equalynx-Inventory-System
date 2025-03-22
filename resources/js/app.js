@@ -6,7 +6,8 @@ import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-
+// ✅ Import the CSS globally
+import '../css/main.css';
 
 dayjs.extend(relativeTime); // ✅ Extend globally
 
