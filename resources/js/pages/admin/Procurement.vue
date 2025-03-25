@@ -10,7 +10,7 @@
      </header>
  
          <div>
-             <Procurementdashboard />
+             <ProcurementDashboard />
          </div>
  
  </div>
@@ -22,11 +22,11 @@
 import { mapGetters } from 'vuex';
 import Profile from '@/components/admin/Notification/Profile.vue';
 import Notification from '@/components/admin/Notification/Notification.vue';
-import Procurementdashboard from '@/components/admin/Procurement/Procurementdashboard.vue';
+import ProcurementDashboard from '@/components/admin/Procurement/ProcurementDashboard.vue';
 
 export default {
     components :{
-        Procurementdashboard,
+        ProcurementDashboard,
         Profile,
         Notification,
 
