@@ -335,7 +335,7 @@ import Profile from '@/components/admin/Notification/Profile.vue';
 import addDR from '@/components/admin/Transaction/addDR.vue';
 import viewDr from '@/components/admin/Transaction/viewDr.vue';
 import editDR from '@/components/admin/Transaction/editDR.vue';
-import editRR from '@/components/admin/Transaction/editRR.vue';
+import editRR from '@/components/admin/Transaction/EditRR.vue';
 import viewRR from '@/components/admin/Transaction/viewRR.vue';
 import addRR from '@/components/admin/Transaction/addRR.vue';
 import TransactionFillter from '@/components/admin/Transaction/TransactionFillter.vue';
