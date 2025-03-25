@@ -55,13 +55,12 @@
     </div> -->
 
     <div class="grid grid-cols-2 grid-rows-4 sm:flex md:flex mt-5 min-w-auto h-auto gap-2">
-
       <div class="col-span-2 mt-5 sm:mt-0 md:mt-0 lg:mt-0 flex items-center gap-2">
         <input
         v-model="tempSearchQuery"
         type="text"
         placeholder="Search by name..."
-        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 w-40"
+        class="border border-gray-300 rounded-md px-3 py-1 mt-[-5px] text-sm focus:outline-none focus:ring-2 dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 w-full sm:w-[150px] md:w-[150px] h-[35px]"
       />
       </div>
 
@@ -70,7 +69,7 @@
           id="threshold"
           v-model="selectedStocks"
           @change="applyFilters"
-          class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2  dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32"
+          class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2  dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32 h-[35px]"
         >
           <option value="">All Stock Level</option>
           <option value="Low">Low</option>
@@ -78,8 +77,10 @@
           <option value="High">High</option>
         </select>
       </div>
+      
+      
 
-      <div class="col-span-2">
+      <div class="col-span-2 w-[250px]">
         <div class="flex items-center gap-2">
           <label for="date_added" class="text-sm text-gray-700 dark:text-white w-full">
             Date Added
@@ -90,7 +91,7 @@
             v-model="selectedDateAdded"
             @change="applyFilters"
             class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
-                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
+                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-[500px] h-[35px] 
                   dark:bg-custom-table dark:focus:ring-white custom-date-input"
           />
         </div>
@@ -98,61 +99,51 @@
 
       <div class="grid-col-span-2 w-[250px]">
         <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0 ">
-          <label for="last_update" class="text-sm text-gray-700 dark:text-white ">Last Update</label>
+          <label for="last_update" class="text-sm text-gray-700 dark:text-white w-[150px]">Last Update</label>
           <input
             id="last_update"
             type="date"
             v-model="selectedLastUpdate"
             @change="applyFilters"
             class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
-                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
+                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full h-[35px] 
                   dark:bg-custom-table dark:focus:ring-white custom-date-input"
           />
         </div>
       </div>
 
-      
-
-
-      
-
-      
     </div>
   </div> 
 </template>
 
 <script>
-
-
+import AddMaterial from '@/components/admin/Inventory/AddMaterial.vue';
 
 export default {
-  data () {
-    return{
-      tempSearchQuery: "",
-      selectedMaterial: "",
-      selectedStocks: "",
-      selectedDateAdded: "",
-      selectedLastUpdate: "",
-    }
-  },
-  watch:{
-      tempSearchQuery(newQuery){
-        this.$emit("search", newQuery)
-      }
-  },
-  methods: {
-    
-    applyFilters () {
-      this.$emit( "filter",{
-
-        stocks: this.selectedStocks, 
-        created_at: this.selectedDateAdded, 
-        updated_at: this.selectedLastUpdate, 
-       })
-     
-    }
-},
-
+    data() {
+        return {
+            tempSearchQuery: "",
+            selectedMaterial: "",
+            selectedStocks: "",
+            selectedDateAdded: "",
+            selectedLastUpdate: "",
+        };
+    },
+    watch: {
+        tempSearchQuery(newQuery) {
+            this.$emit("search", newQuery);
+        }
+    },
+    methods: {
+        applyFilters() {
+            this.$emit("filter", {
+                stocks: this.selectedStocks,
+                created_at: this.selectedDateAdded,
+                updated_at: this.selectedLastUpdate,
+            });
+        }
+    },
+    components: { AddMaterial }
 }
 
 </script>

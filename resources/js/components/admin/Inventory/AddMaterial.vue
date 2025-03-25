@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Button to Open Modal -->
-    <button @click="showModal = true" class="px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-green-500 text-white dark:bg-green-700 dark:text-green-300 text-sm drop-shadow-md whitespace-nowrap">
+    <button @click="showModal = true" class="relative top-[-80px] sm:static md:static lg:static w-[120px] h-[35px] rounded-lg  mt-5 flex items-center justify-center font-semibold bg-green-500 text-white dark:bg-green-700 dark:text-green-300 text-sm drop-shadow-md whitespace-nowrap">
       <span>Add Material</span>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 relative left-1">
         <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />
@@ -33,13 +33,22 @@
         <div class="p-4 ">
           <div class="flex flex-col gap-4">
             <div>
-              <label class="block text-gray-700 dark:text-custom-white">Material Name:</label>
-              <input v-model="form.material_name" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg dark:bg-custom-table">
-            </div>
+                <label class="block text-gray-700 dark:text-custom-white">Material Name:</label>
+                <input 
+                  list="materialList" 
+                  v-model="form.material_name"
+                  type="text"
+                  class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white rounded-lg dark:bg-custom-table"
+                  placeholder="Type or select a material"
+                />
+                <datalist id="materialList">
+                  <option v-for="(material, index) in materialNames" :key="index" :value="material"></option>
+                </datalist>
+              </div>
             <div>
               <label class="block text-gray-700 dark:text-custom-white">Stocks:</label>
-              <input v-model="form.stocks" type="text" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
-            </div>
+              <input v-model="form.stocks" type="text" placeholder="Type stocks" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
+              </div>
      
 
             <div>
@@ -81,7 +90,16 @@
 
         <!-- Submit Button -->
         <div class="flex justify-end p-4">
-          <button @click="addMaterial"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full   dark:bg-green-700 dark:text-green-300">Submit</button>
+          <button  @click="addMaterial" :disabled="loading"  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full   dark:bg-green-700 dark:text-green-300">
+          <span v-if="!loading">Add Material</span> 
+          <span v-else class="flex items-center justify-center">
+              <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 1 0 16 0H4z"></path>
+              </svg>
+              Loading...
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -96,17 +114,22 @@ export default {
   data() {
     return {
       showModal: false,
+      loading: false,
       form: {
         material_name: '',
         stocks: '',
         measurement_quantity: '',
         measurement_unit: '',
       },
+      materialNames: [], // Stores fetched material names
     };
   },
   
   methods: {
     async addMaterial() {
+      if (this.loading) return; // prevent multiple request
+        this.loading = true; // Start loading state
+      
       // Basic validation
       if (!this.form.material_name || !this.form.stocks || !this.form.measurement_quantity || !this.form.measurement_unit) {
         Swal.fire({
@@ -154,7 +177,27 @@ export default {
         console.error('Error adding material:', error);
         Swal.fire("Error!", "Failed to add material.", "error");
       }
+      finally{
+        this.loading = false;
+      }
+    },
+
+    async fetchMaterialName(){
+       try{
+        const response = await axios.get('/api/materials_name');
+        console.log("Fetch material name successfull", response.data);
+        this.materialNames = response.data;  // Assuming the API returns an array
+
+       } catch (error){
+            console.error("Error!", "Fetching materials name", error);
+       }
+        
+
     }
+  },
+  mounted(){
+    this.fetchMaterialName()
   }
+
 };
 </script>

@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 // No middleware on login because it handles user authentication
-Route::post('login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 
 
@@ -57,7 +57,7 @@ Route::get('/user', [UserController::class, 'getAuthUser']); // get currently lo
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::patch('/users/{id}', [UserController::class, 'update']);
 Route::get('/activity-logs', [UserController::class, 'getActivityLogs']);
-
+Route::get('/get_user_details', [UserController::class, 'getUserDetails']);
 
 
 Route::post('/inventory', [InventoryController::class, 'store']);
@@ -66,6 +66,9 @@ Route::patch('/inventory/{id}', [InventoryController::class, 'update']);
 Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
 Route::get('/inventory/check', [InventoryController::class, 'checkMaterial']);
 
+
+// fetch material names
+Route::get('/materials_name', [InventoryController::class, 'showMaterials']);
 
 
 Route::post('/Dr', [DrController::class, 'store']); // Save DR

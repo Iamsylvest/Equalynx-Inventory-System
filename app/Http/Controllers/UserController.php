@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\Auth;
 class UserController extends Controller
 {
 
+    public function getUserDetails() {
+        $user = User::select('first_name', 'middle_name', 'last_name', 'email', 'role')
+                    ->where('id', auth()->id()) // Fetch the logged-in user
+                    ->first();
+    
+        return response()->json($user);
+    }
+
     public function changePassword(Request $request){
 
         //validatre the request from the frontend in v model values
@@ -34,6 +42,19 @@ class UserController extends Controller
             $user->password  = Hash::make($request->new_password);
             /** @var \App\Models\User $user **/
             $user->save();
+
+
+            event(new AdminNotification([
+                'type' => 'change_pass',
+                'action' => 'User ' . auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' changed their password ' ,
+                'timestamp' => now()->toDateTimeLocalString(),
+            ]));
+
+            event(new ActivityLogged([
+                'action' =>  'User ' . auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' changed their password ',
+                'role' => auth()->user()->role, // ✅ Include role of the performing user
+                'timestamp' => now()->toDateTimeString(),
+            ]));
 
             return response()->json(['message' => 'Password change Successfully']);
     }

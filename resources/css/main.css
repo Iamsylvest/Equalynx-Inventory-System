@@ -39,3 +39,6 @@
 .dark tr.low-stock:hover td {
   background-color: theme('colors.red.500') !important;
 }
+
+
+/* Fix autofill background in Chrome & Edge */

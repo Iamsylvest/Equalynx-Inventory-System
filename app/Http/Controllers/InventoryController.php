@@ -18,6 +18,14 @@ use App\Helpers\SettingsHelper;
 
 class InventoryController extends Controller
 {
+    public function showMaterials(){
+        $inventory = Inventory::pluck('material_name');
+
+            return response()->json($inventory);
+    }
+
+
+
     public function store(Request $request)
     {
         // Validate incoming request with additional validation for 'measurement_unit'

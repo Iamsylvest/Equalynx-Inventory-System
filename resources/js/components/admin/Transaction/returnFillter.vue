@@ -47,7 +47,7 @@
           v-model="tempSearchQueryReturn"
           type="text"
           placeholder="Search by name..."
-          class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 dark:bg-custom-table dark:focus:ring-white"
+        class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white w-full h-[35px] sm:w-40 md:w-40"
         />
       </div>
   
@@ -56,9 +56,7 @@
         <select
           v-model="selectedStatusReturn"
           @change="applyFiltersReturn"
-          class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
-                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
-                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
+          class="w-[250px] mt-2 sm:mt-0 md:mt-0 lg:mt-0 border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer sm:w-32 md:w-32  dark:bg-custom-table dark:focus:ring-white h-[35px]"
         >
           <option value="">All Status</option>
           <option value="approved">approved</option>
@@ -76,9 +74,7 @@
                 type="date"
                 v-model="selectedDateAddedReturn"
                 @change="applyFiltersReturn"
-                class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
-                  focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
-                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
+                class="custom-date-input border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer w-full h-[35px] sm:w-36 md:w-36  dark:bg-custom-table dark:focus:ring-white"
               />
           </div>
         </div>

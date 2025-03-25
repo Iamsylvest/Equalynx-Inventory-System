@@ -68,10 +68,20 @@
             </div>
           </div>
   
-          <!-- Submit Button -->
-          <div class="flex justify-end p-4">
-            <button @click="updateMaterial" class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full dark:bg-green-700 dark:text-green-300">Save changes</button>
-          </div>
+          
+
+        
+      <!-- Submit Button -->
+              <div class="flex justify-end p-4">
+                <button 
+                  @click="updateMaterial"
+                  :disabled="loading"
+                  class="px-4 py-2 rounded-lg bg-custom-blue text-white w-full dark:bg-green-700 dark:text-green-300"
+                >
+                  <span v-if="!loading">Save Changes</span>
+                  <span v-else>Saving...</span>
+                </button>
+              </div>
         </div>
       </div>
     </div>
@@ -86,12 +96,15 @@ export default {
     type: Object,
     required: true, 
   },
+  loading: Boolean, // Accepts loading state from parent
   },
   data() {
     return {
       // Creating a local copy of the material object to avoid directly mutating the prop
       // Update local material copy when prop changes
       editedMaterial: { ...this.material },
+      
+    
     };
   },
   watch: {
@@ -105,15 +118,10 @@ export default {
     },
   },
   methods: {
-    // Function to emit the updated material data back to the parent component
     updateMaterial() {
-      this.$emit('update', this.editedMaterial);  // Emit the updated material
-      this.closeModal();  // Close the modal after saving
+      this.$emit("start-loading"); // Notify parent that saving started
+      this.$emit("update", this.editedMaterial); // Send updated material to parent
     },
-    // Function to emit an event to close the modal (handled by the parent)
-    closeModal() {
-      this.$emit('closeModal');
-    },
-  },
+  }
 };
 </script>

@@ -22,7 +22,7 @@
   
           <!-- Editable Form -->
           <div class="p-4 space-y-8 dark:bg-custom-main">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 ">
               <!-- General Information -->
               <div class="bg-gray-100  dark:bg-custom-table p-6 rounded-md shadow-lg">
                 <h2 class="font-medium text-gray-700 mb-6 dark:text-custom-white">General Information</h2>
@@ -32,7 +32,7 @@
                     <input 
                       v-model="item.name" 
                       :disabled="userRole !== 'procurement'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"
                     />
                   </div>
@@ -40,7 +40,7 @@
                     <label class="text-sm text-gray-600  dark:text-custom-white">Project Name:</label>
                     <input v-model="item.project_name" 
                     :disabled="userRole !== 'procurement'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                   </div>
                   <div>
@@ -77,17 +77,24 @@
                 <div v-for="(material, index) in selectedmaterials" :key="index" class="flex space-x-6 mt-6">
                     <div class="flex-1 ">
                       <label class="text-sm text-gray-600 dark:text-custom-white">Material:</label>
-                      <input v-model="material.material_name"   
+                      <input
+                      list="materialList" 
+                      v-model="material.material_name"   
                       :disabled="userRole !== 'procurement'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table" 
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white" 
                       :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"/>
+                      <datalist id="materialList">
+                         <option v-for="(material, index) in materialNames" :key="index" :value="material"></option>
+                      </datalist>
+
+
                     </div>
 
                     <div class="flex-1">
                     <label :for="'measurement_' + index" class="text-sm text-gray-600 dark:text-custom-white">Measurement:</label>
                     <input :id="'measurement_' + index" v-model="material.measurement"  placeholder="Enter unit (e.g., 24 meters, 10 kg)"   
                     :disabled="userRole !== 'procurement'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                     </div>
 
@@ -98,7 +105,7 @@
                           v-model="material.unit" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
                           :disabled="userRole !== 'procurement'" 
-                          class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table"
+                          class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                           :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'">
                             
                           <option value="" disabled>Select unit</option>
@@ -118,7 +125,7 @@
                       <label class="text-sm text-gray-600 dark:text-custom-white">Quantity:</label>
                       <input v-model="material.material_quantity"  
                       :disabled="userRole !== 'procurement'" 
-                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table"
+                      class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
                       :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'">
                     </div>
                   </div>
@@ -141,7 +148,7 @@
                   <label class="text-sm text-gray-600 dark:text-custom-white">Location:</label>
                   <input v-model="item.location"   
                   :disabled="userRole !== 'procurement'" 
-                  class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table"
+                  class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                   :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                 </div>
                 <div class="flex justify-between mt-6">
@@ -149,14 +156,14 @@
                     <label class="text-sm text-gray-600 dark:text-custom-white">Latitude:</label>
                     <input v-model="item.latitude" 
                     :disabled="userRole !== 'procurement'" 
-                    class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table"
+                    class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                     :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                   </div>
                   <div class="w-1/2 pl-3">
                     <label class="text-sm text-gray-600 dark:text-custom-white">Longitude:</label>
                     <input v-model="item.longitude" 
                     :disabled="userRole !== 'procurement'" 
-                     class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table"
+                     class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                     :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"  />
                   </div>
                 </div>
@@ -207,12 +214,13 @@ import {mapGetters} from 'vuex';
       return {
         selectedmaterials: [],
         showSaveButton: true,  //✅ Keep button visible until saved
-      
+        materialNames: [],
         
       }
     },
     mounted() {
       this.initMap();
+      this.fetchMaterialName();
     },
     watch: {
     showEditDR(newVal) {
@@ -310,6 +318,17 @@ import {mapGetters} from 'vuex';
             this.map.setView([this.item.latitude, this.item.longitude]);
           }
        },
+       async fetchMaterialName(){
+       try{
+        const response = await axios.get('/api/materials_name');
+        console.log("Fetch material name successfull", response.data);
+        this.materialNames = response.data;  // Assuming the API returns an array
+
+       } catch (error){
+            console.error("Error!", "Fetching materials name", error);
+       }
+      
+    }
          
       
     },

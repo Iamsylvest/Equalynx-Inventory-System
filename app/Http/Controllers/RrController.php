@@ -15,6 +15,8 @@ use App\Events\ProcurementNotification;
 use App\Events\ManagerNotification;
 use App\Events\highStockUpdated;
 use App\Events\BarGraphUpdated;
+use App\Helpers\SettingsHelper;
+
 class RrController extends Controller
 
 {
@@ -63,22 +65,7 @@ class RrController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+   
     public function store(Request $request)
     {
         // Log the incoming request data for debugging
@@ -202,12 +189,7 @@ class RrController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
         public function show($id)
         {
             try {
@@ -231,24 +213,7 @@ class RrController extends Controller
                 return response()->json(['message' => 'Server Error Occurred'], 500);
             }
         }
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
 {
     $request->validate([
@@ -501,12 +466,7 @@ class RrController extends Controller
         ], 500);
     }
 }
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+  
     public function destroy($id)
     {
         try {
@@ -632,7 +592,7 @@ class RrController extends Controller
     public function broadcastHighStock()
     {
         // Define the high stock threshold
-        $highStockThreshold = 50;
+        $highStockThreshold = (int)SettingsHelper::getThreshold();
     
         // Get all high stock materials
         $highStock = Inventory::where('stocks', '>=', $highStockThreshold)->get();

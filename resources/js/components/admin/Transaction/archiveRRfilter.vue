@@ -41,24 +41,24 @@
       </div>
     </div> -->
   
-    <div class="grid grid-cols-2 grid-rows-4 sm:flex md:flex mt-5 min-w-auto h-auto gap-2">
+    <div class="grid grid-cols-2 grid-rows-3 sm:flex mt-5 w-[550px] h-auto gap-2">
       <div class="col-span-2 mt-5 sm:mt-0 md:mt-0 lg:mt-0 flex items-center gap-2">
-      <input
-          v-model="tempSearchQuery"
-          type="text"
-          placeholder="Search by name..."
-          class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 dark:bg-custom-table dark:focus:ring-white"
-      />
-  </div>
+        <input
+            v-model="tempSearchQuery"
+            type="text"
+            placeholder="Search by name..."
+            class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white w-[250px] sm:w-40 md:w-40 h-[35px]" 
+        />
+      </div>
   
-      <div class="col-span-2 ">
+      <div class="col-span-2 w-[250px]">
         <!-- Status Filter  -->
         <select
           v-model="selectedStatus"
           @change="applyFilters"
-          class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
+          class="border border-gray-300 rounded-md mt-2 sm:mt-0 md:mt-0  text-sm focus:outline-none 
                   focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
-                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
+                  dark:bg-custom-table dark:focus:ring-white custom-date-input h-[35px]"
         >
           <option value="">All Status</option>
           <option value="approved">approved</option>
@@ -68,22 +68,22 @@
       </div>
   
       <div class="col-span-2 w-[250px]">
-        <div class="col-span-2 w-[250px]">
+        <div class="col-span-2">
           <div class="flex items-center gap-2 sm:mt-0 md:mt-0 lg:mt-0">
-            <label for="date_added" class="text-sm text-gray-700 dark:text-custom-white">Date Added</label>
+            <label for="date_added" class="text-sm w-[75px] text-gray-700 dark:text-custom-white">Date Added</label>
               <input
                 id="date_added"
                 type="date"
                 v-model="selectedDateAdded"
                 @change="applyFilters"
-                class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none 
+                class="border border-gray-300 rounded-md text-sm focus:outline-none 
                   focus:ring-2 focus:ring-blue-500 cursor-pointer w-full sm:w-36 
-                  dark:bg-custom-table dark:focus:ring-white custom-date-input"
+                  dark:bg-custom-table dark:focus:ring-white custom-date-input h-[35px]"
               />
           </div>
         </div>
       </div>
-  
+    
     </div>
   </template>
   

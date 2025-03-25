@@ -35,7 +35,7 @@ class WarehouseNotification implements ShouldBroadcast
     {
         // List of allowed types
         $allowedTypes = [
-            'low_stock', 'high_stock', 'edit', 'rr_created', 'approved', 'new_material'
+            'low_stock', 'high_stock', 'edit', 'rr_created', 'approved', 'new_material', 'Threshold_Updated'
         ];
         
         // Check if the notification type is in the allowed types

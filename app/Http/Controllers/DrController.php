@@ -12,6 +12,7 @@ use App\Events\AdminNotification;
 use App\Events\ProcurementNotification;
 use App\Events\ManagerNotification;
 use App\Events\LowstockUpdated;
+use App\Helpers\SettingsHelper;
 
 class DrController extends Controller
 {
@@ -496,7 +497,7 @@ class DrController extends Controller
     
 
     public function broadcastLowStock(){
-        $lowStockThreshhold = 20;
+        $lowStockThreshhold = (int)SettingsHelper::getThreshold();
 
         // get all low stock materials
         $lowStockMaterials =  Inventory::where('stocks', '<=', $lowStockThreshhold)->get();

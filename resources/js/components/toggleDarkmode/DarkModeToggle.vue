@@ -2,8 +2,8 @@
   <div >
     <div class=" flex flex-row ">
       <div class=" flex flex-row">
-        <p class="text-lg whitespace-nowrap p-2 px-8">Dark Mode</p>
-        <button @click="toggleDarkMode" class=" text-sm toggle-btn font-roboto dark:bg-custom-table cursor:pointer px-12 border border-black dark:border-white rounded-xl ">
+        <p class="text-lg whitespace-nowrap p-2">Dark Mode</p>
+        <button @click="toggleDarkMode" class=" text-sm toggle-btn font-roboto bg-custom-blue text-custom-white dark:bg-custom-table cursor:pointer px-5 border border-black dark:border-white rounded-xl ">
           {{ isDarkMode ? ' Off' : ' On' }}
         </button>
       </div>

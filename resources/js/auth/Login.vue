@@ -8,12 +8,12 @@
           </div>
 
           <div class="flex flex-col mb-4">
-            <label for="email" class="text-sm font-medium text-gray-700">Email:</label>
+            <label for="email" class="text-sm font-medium text-gray-700 ">Email:</label>
             <input
               type="email"
               id="email"
               v-model="email"
-              class="mt-1 p-3 border border-gray-300 rounded-md"
+              class="mt-1 p-3 border border-gray-300 rounded-md "
               required
             />
           </div>
@@ -138,7 +138,7 @@ async handleLogin() {
   // General error handling for other issues (e.g., network errors)
   Swal.fire({
     title: 'Login Failed!',
-    text: 'Invalid email or password. Please try again.', // Same message as 401 error
+    text: 'Invalid email or password. Too many failed attempts will lock your login for 60 seconds.',
     icon: 'error',
     confirmButtonText: 'OK'
   });

@@ -9,36 +9,46 @@
         </header>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 w-full h-auto">
                 <!-- Low Stock Modal -->
-                <LowStockModal
+           
+                <div class="col-span-2 sm:col-span-1">
+                    <LowStockModal
                     :showLowStockModal="showLowStockModal"
                     @openLowStockModal="openLowStockModal"
                     @lowStockcloseModal="closeLowStockModal"
                     class="flex items-center justify-center bg-white dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
+                </div>
+            
 
                 <!-- High Stock Modal -->
-                <HighStockModal
+                <div class="col-span-2 sm:col-span-1">
+                    <HighStockModal
                     :showHighStockModal="showHighStockModal"
                     @openHighStockModal="openHighStockModal"
                     @closeHighStockModal="closeHighStockModal"
                     class="flex items-center justify-center bg-white  dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
+                </div>
 
                 <!-- Out of Stock Modal -->
-                <OutStockModal
+                <div class="col-span-2 sm:col-span-1">
+                    <OutStockModal
                     :showOutStockModal="showOutStockModal"
                     @openOutStockModal="openOutStockModal"
                     @outStockcloseModal="closeOutStockModal"
                     class="flex items-center justify-center bg-white dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
+                </div>
 
                 <!-- Slow Moving Modal -->
-                <SlowMovingModal
+                <div class="col-span-2 sm:col-span-1">
+                    <SlowMovingModal
                     :showSlowMovingModal="showSlowMovingModal"
                     @openSlowMovingModal="openSlowMovingModal"
                     @closeSlowMovingkModal="closeSlowMovingModal"
                     class="flex items-center justify-center bg-white  dark:bg-custom-table shadow-md rounded-xl p-4"
                 />
+                </div>
 
                 <!-- Bar Graph -->
                 <div class="col-span-2 bg-white shadow-md rounded-xl p-4  dark:bg-custom-table">

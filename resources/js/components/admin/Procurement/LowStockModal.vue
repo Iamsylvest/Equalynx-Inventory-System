@@ -1,6 +1,6 @@
 <template>
     <div> <!-- ✅ Wrap everything in a root div -->
-      <button @click="$emit('openLowStockModal')" class="bg-white drop-shadow-lg h-[300px] dark:bg-custom-table" >
+      <button @click="$emit('openLowStockModal')" class="bg-white drop-shadow-lg h-full w-full dark:bg-custom-table" >
         <div class="m-5 h-[100px] text-red-500"> 
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-full animate-customPulse"> 
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -10,14 +10,14 @@
         <div class="h-[160px] text-center   ">
           <p>Low stock Materials</p><br>
           <p>{{ totalLowStock }}</p>
-          <div class="border-t-4  border-[#F7F7FD] m-5 col-span-2 flex pt-5 p-32 ">      
+          <div class="border-t-4  border-[#F7F7FD] m-5 col-span-2 flex pt-5">      
           </div>
         </div>
       </button>
   
-      <div v-if="showLowStockModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-16">
+      <div v-if="showLowStockModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 w-full z-50 overflow-y-auto p-5">
         <div @click="$emit('lowStockcloseModal')" class="absolute inset-0"></div>
-        <div class=" pb-22 p-4 relative bg-white shadow-lg rounded-md w-lg w-full mt-10 mb-10 dark:bg-custom-main">
+        <div class="pb-22 p-4 relative bg-white shadow-lg rounded-md  min-w-[350px] mt-10 mb-10 dark:bg-custom-main"> <!--MODAL-->
           <div class="flex justify-between">
             <div class="mt-5 text-lg ">
               <h1>Low Stocks Materials</h1>

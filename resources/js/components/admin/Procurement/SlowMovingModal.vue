@@ -1,6 +1,6 @@
 <template>
     <div> <!-- ✅ Wrap everything in a root div -->
-      <button @click="$emit('openSlowMovingModal')" class="bg-white drop-shadow-lg h-[300px] dark:bg-custom-table">
+      <button @click="$emit('openSlowMovingModal')" class="bg-white drop-shadow-lg h-full w-full dark:bg-custom-table">
           
         <div class="m-5 h-[100px]"> 
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-full"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" /></svg>
@@ -9,13 +9,13 @@
         <div class="h-[160px] text-center">
           <p>Slow Moving Materials</p><br>
           <p>{{ totalSlowMoving }}</p>
-          <div class="border-t-4 border-[#F7F7FD] m-5 col-span-2 flex pt-5 p-32">      
+          <div class="border-t-4 border-[#F7F7FD] m-5 col-span-2 flex pt-5">      
           </div>
         </div>
       </button>
 
   
-      <div v-if="showSlowMovingModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-16">
+      <div v-if="showSlowMovingModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-5">
         <div @click="$emit('closeSlowMovingkModal')" class="absolute inset-0"></div>
         <div class=" pb-22 p-4 relative bg-white shadow-lg rounded-md w-lg w-full mt-10 mb-10 dark:bg-custom-main">
           <div class="flex justify-between">

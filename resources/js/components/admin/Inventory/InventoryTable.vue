@@ -1,20 +1,15 @@
 <template>
   <div class="mt-10 font-roboto">
     <!-- Add User Component -->
-    <div class="flex flex-row justify-between items-center flex-wrap relative top-[-10px] mb-3">
+    <div class="flex flex-row justify-between items-center flex-wrap mb-3">
       <h1 class="text-lg">Materials ( <span> {{ total }} </span> )</h1>
-      <div class="flex items-center justify-end space-x-6">
+      <div class="static flex items-center justify-end space-x-6">
         <InventoryFillter @search="updateSearch" @filter="updateFilter"/>
         <AddMaterial v-if="userRole === 'warehouse_staff'" @materialAdded="handleMaterialAdded"/>
       </div>
     </div>
 
-    <!-- <div class="grid cols-2 w-auto h-[250px] sm:h-[50px] bg-red-500 mb-5">
-        <div class="grid-cols-1 w-[50%] bg-blue-500"> 1 </div>
-        <div> 2 </div>
-        <div> 3 </div>
-        <div> 4 </div>
-    </div> -->
+    
 
     <!-- Table for Materials -->
     <table class="table-auto w-full botr border-collapse mt-1 shadow-lg">
@@ -102,6 +97,8 @@
             :material="selectedMaterial"
             @update="updateMaterial"
             @closeModal="closeEditModal"
+            @start-loading="loading = true"
+            :loading="loading"
           />
     
 
@@ -133,7 +130,8 @@
       selectedLastUpdate: '',
       selectedMaterial: null, // Store selected material
       isEditModalVisible: false, // To show/hide edit modal
-      threshold: ''
+      threshold: '',
+      loading: false,
 
     };
   },
@@ -226,7 +224,7 @@
     
     // Handle the update event from the EditMaterial component
     updateMaterial(updatedMaterial) {
-    
+      this.loading = true; // Start loading
       axios.patch(`/api/inventory/${updatedMaterial.id}`, updatedMaterial)
         .then(() => {
           // Find the index of the updated material in the array
@@ -251,6 +249,9 @@
           console.error("Error updating material:", error.response.data);
           Swal.fire("Error!", `Failed to update material: ${error.response.data.message}`, "error");
         })
+        .finally(() => {
+          this.loading = false; // Stop loading in both success & error cases
+        });
     },
 
     // Add the 'isStockLevelMatch' method

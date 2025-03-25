@@ -3,7 +3,7 @@
     <!-- Add User Button -->
     <button 
         @click="showModal = true" 
-        class="ml-[-25px] w-[240px] md:w-full lg:w-full sm:ml-[-25px] md:ml-0 lg:ml-0 px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-green-500  dark:bg-green-700 dark:text-green-300 text-white drop-shadow-md whitespace-nowrap">
+        class="ml-[-25px] w-[250px] md:w-full lg:w-full sm:ml-[-25px] md:ml-0 lg:ml-0 px-4 py-2 rounded-lg flex items-center justify-center font-semibold bg-green-500  dark:bg-green-700 dark:text-green-300 text-white drop-shadow-md whitespace-nowrap">
         <span>Add User</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 relative left-1">
           <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />

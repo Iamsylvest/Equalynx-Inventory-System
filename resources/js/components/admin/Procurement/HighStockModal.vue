@@ -1,6 +1,6 @@
 <template>
     <div> <!-- ✅ Wrap everything in a root div -->
-      <button @click="$emit('openHighStockModal')" class="bg-white drop-shadow-lg h-[300px]  dark:bg-custom-table">
+      <button @click="$emit('openHighStockModal')" class="bg-white drop-shadow-lg h-full w-full dark:bg-custom-table">
           
 <div class="m-5 h-[100px] text-[#73EC8B]"> 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-full"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" /></svg>
@@ -9,13 +9,13 @@
         <div class="h-[160px] text-center">
           <p>High stock Materials</p><br>
           <p>{{ totalHighStocks }}</p>
-          <div class="border-t-4 border-[#F7F7FD] m-5 col-span-2 flex pt-5 p-32">      
+          <div class="border-t-4 border-[#F7F7FD] m-5 col-span-2 flex pt-5">      
           </div>
         </div>
       </button>
 
   
-      <div v-if="showHighStockModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-16">
+      <div v-if="showHighStockModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 z-50 overflow-y-auto p-5">
         <div @click="$emit('closeHighStockModal')" class="absolute inset-0"></div>
         <div class=" pb-22 p-4 relative bg-white shadow-lg rounded-md w-lg w-full mt-10 mb-10  dark:bg-custom-main">
           <div class="flex justify-between">

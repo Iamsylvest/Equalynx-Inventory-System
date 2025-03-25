@@ -15,7 +15,7 @@
     </div>
 
  <!-- Activity Logs Table -->
-    <table class="table-auto w-full border-collapse mt-5 shadow-lg">
+    <table class="table-auto w-full border-collapse mt-5  shadow-lg">
       <thead class="h-14">
         <tr class="bg-custom-blue text-white">
           <th class="px-4 py-2 text-center font-bold  dark:bg-custom-table">User</th>
@@ -26,10 +26,10 @@
       </thead>
       <tbody>
         <tr v-if="filteredLogs.length === 0" >
-              <td colspan="6" class="text-center py-4">No Activity Logs found</td>
+              <td colspan="7" class="text-center py-4">No Activity Logs found</td>
             </tr>
-        <tr v-for="(log, index) in filteredLogs" :key="index" class="text-center border border-l-0 border-r-0  ">
-            <td class="px-4 py-2 flex flex-col justify-center ">
+        <tr v-for="(log, index) in filteredLogs" :key="index" class="text-center border border-l-0 border-r-0 h-full ">
+            <td class="px-4 py-2 flex flex-col justify-center h-[150px] sm:h-full md:h-full">
               <span class="font-semibold"> {{ log.performed_by }} </span>
               <span 
               class="font-semibold"
@@ -39,7 +39,7 @@
                 ' text-red-600': log.role === 'procurement',
                 ' text-yellow-600': log.role === 'warehouse_staff'
                   
-              }"
+              } "
               >{{ log.role }}</span>
             </td>
           <td class="px-4 py-2 ">{{ formatDate(log.timestamp) }}</td>

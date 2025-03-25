@@ -112,8 +112,11 @@
                 <div v-for="(material, index) in selectedReturnMaterials" :key="index" class="flex space-x-6 mt-6">
                     <div class="flex-1 ">
                       <label class="text-sm text-gray-600 dark:text-custom-white">Material:</label>
-                      <input v-model="material.material_name"   
+                      <input list="materialList" v-model="material.material_name"   
                       class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"/>
+                      <datalist id="materialList">
+                          <option v-for="(material, index) in materialName" :key="index" :value="material"></option>
+                      </datalist>
                     </div>
   
                     <div class="flex-1">
@@ -236,6 +239,7 @@
              isFullScreen: false,          // Controls full screen view
              mapKey: 0,                     // Key to force map refresh
              map: null,             // Store Leaflet map instance
+             materialName: [],
         
 
          };
@@ -273,6 +277,7 @@
      },
      mounted() {
          this.initMap();
+         this.fetchMaterialName();
      },
      methods: {
          initMap() {
@@ -401,8 +406,16 @@
                 if (filePath.startsWith('http')) return filePath;
                 // Handle relative path from database (like return_proofs/...)
                 return `/storage/${filePath}`;
+            },
+            async fetchMaterialName(){
+              try{
+                const response = await axios.get('/api/materials_name');
+              console.log("Fetch Material names success", console.log);
+              this.materialName = response.data;
+              } catch(error){
+                console.error("Error fetching material names", error);
+              }
             }
-
      }
  };
  </script>

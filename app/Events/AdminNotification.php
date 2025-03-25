@@ -35,7 +35,7 @@ class AdminNotification implements ShouldBroadcast
     public function broadcastWith()
     {
         // Check if the notification type exists in the allowed types
-        $allowedTypes = ['user_created', 'edit_user', 'new_material', 'low_stock', 'high_stock', 'new_dr', 'approved_dr', 'access_invalid', 'approved_rr'];
+        $allowedTypes = ['user_created', 'edit_user', 'new_material', 'low_stock', 'high_stock', 'new_dr', 'approved_dr', 'access_invalid', 'approved_rr', 'Threshold_Updated', 'change_pass'];
         
         // If the type is one of the allowed types, return the notification structure
         if (in_array($this->notif['type'], $allowedTypes)) {

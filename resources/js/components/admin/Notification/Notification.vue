@@ -38,7 +38,10 @@
         <div class="relative top-[-30px] space-y-6">
           <div class="flex justify-between">
             <h1 class="font-bold text-2xl">Notification</h1>
-            <p class="relative top-1 cursor-pointer hover:text-blue-500">See all</p>
+            <router-link 
+            to="/Notification">
+               <p class="relative top-1 cursor-pointer hover:text-blue-500">See all</p>
+            </router-link>
           </div>
 
           <div
