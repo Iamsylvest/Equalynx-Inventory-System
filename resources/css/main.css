@@ -11,18 +11,18 @@
 }
 
 .dark body {
-  background-color: var(--bg-color);
-
-
+  background-color: #121212;
 }
+
 .dark tr td {
-  background-color: theme('colors.custom-table');
-  color: theme('colors.custom-white');
+  background-color:#1F1F1F; /* Custom table color */
+  color: #E5E7EB; /* Custom white color */
 }
 
 .dark tr:hover td {
-  background-color: theme('colors.custom-hover');
+  background-color: #374151; /* Custom hover color */
 }
+
 .custom-date-input::-webkit-calendar-picker-indicator {
   background-color: white; /* Change the background of the calendar icon */
   border-radius: 50%; /* Optionally round the icon */

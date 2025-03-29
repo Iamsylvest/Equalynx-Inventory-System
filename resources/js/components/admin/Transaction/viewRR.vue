@@ -112,12 +112,12 @@
                     </div>
                     </div>
 
-                    <!-- Leaflet Map (Only show when lat/lng exist) -->
                     <div v-if="!showProofModal && item.latitude && item.longitude" id="map" class="h-64 w-full mt-4"></div>
+                        <div v-else>
+                            <p class="text-sm text-gray-500">Loading location details...</p>
+                        </div>
                 </div>
-                <div v-else>
-                    <p class="text-sm text-gray-500">Loading location details...</p>
-                </div>
+              
                 </div>
                     </div>
                 </div>
@@ -151,7 +151,6 @@ export default {
     watch: {
         item: {
             handler(newItem) {
-
                 this.selectedmaterials = newItem?.materials || [];
                 this.loadMap(); // Load map when item updates
             },
@@ -159,40 +158,46 @@ export default {
             immediate: true
         }
     },
-    methods:{
+    methods: {
         loadMap() {
             if (this.showProofModal) return; // Don't load map if proof modal is open
 
             if (this.item.latitude && this.item.longitude) {
+                // Ensure map is initialized only after the DOM is updated
                 this.$nextTick(() => {
                     if (this.map) {
                         this.map.remove(); // Remove old map instance
                         this.map = null; // Reset map instance
                     }
 
+                    // Initialize map with latitude and longitude
                     this.map = L.map("map").setView(
                         [this.item.latitude, this.item.longitude],
                         15
                     );
 
+                    // Add tile layer to the map
                     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                         attribution: "&copy; OpenStreetMap contributors"
                     }).addTo(this.map);
 
+                    // Add marker at the given location
                     L.marker([this.item.latitude, this.item.longitude]).addTo(this.map).openPopup();
                 });
             }
         },
-    showProof() {
-        this.proofImageUrl = this.item.return_proof;
-        this.showProofModal = true;
-    },
-    closeProof() {
-    this.showProofModal = false;
-    this.$nextTick(() => {
-        this.loadMap(); // Reload the map when proof modal closes
-    });
-}
+
+        showProof() {
+            this.proofImageUrl = this.item.return_proof;
+            this.showProofModal = true;
+        },
+
+        closeProof() {
+            this.showProofModal = false;
+            this.$nextTick(() => {
+                this.loadMap(); // Reload the map when proof modal closes
+            });
+        }
     }
 };
 </script>

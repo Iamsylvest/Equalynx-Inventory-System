@@ -14,10 +14,10 @@
         <changePassword />
 
         <thresholdUpdate v-if="userRole === 'admin'" />
+      
      </div>
 
               
- 
  </div>
  
  
@@ -32,6 +32,7 @@ import DarkModeToggle from '@/components/toggleDarkmode/DarkModeToggle.vue';
 import changePassword from '@/auth/changePassword.vue';
 import thresholdUpdate from '@/components/Settings/thresholdUpdate.vue';
 
+
 export default {
     components:
     {
@@ -40,6 +41,7 @@ export default {
         DarkModeToggle,
         changePassword,
         thresholdUpdate,
+      
       
     },
     computed:{
