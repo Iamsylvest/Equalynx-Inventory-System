@@ -47,9 +47,13 @@
               </div>
             <div>
               <label class="block text-gray-700 dark:text-custom-white">Stocks:</label>
-              <input v-model="form.stocks" type="text" placeholder="Type stocks" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
+              <input v-model="form.stocks" type="text" placeholder="Enter number of stocks" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
               </div>
      
+              <div>
+              <label class="block text-gray-700 dark:text-custom-white">Threshold:</label>
+              <input v-model="form.threshold" type="number" placeholder="Enter threshold" class="w-full border border-gray-300 px-2 py-1 focus:ring-2 focus:ring-blue-300 dark:focus:ring-white  rounded-lg  dark:bg-custom-table">
+              </div>
 
             <div>
               <label class="block text-gray-700 dark:text-custom-white">Measurement:</label>
@@ -118,6 +122,7 @@ export default {
       form: {
         material_name: '',
         stocks: '',
+        threshold: '',
         measurement_quantity: '',
         measurement_unit: '',
       },
@@ -131,7 +136,7 @@ export default {
         this.loading = true; // Start loading state
       
       // Basic validation
-      if (!this.form.material_name || !this.form.stocks || !this.form.measurement_quantity || !this.form.measurement_unit) {
+      if (!this.form.material_name || !this.form.stocks || !this.form.threshold || !this.form.measurement_quantity || !this.form.measurement_unit) {
         Swal.fire({
                 title: 'Warning!',
                 text: 'Please fill in all the required fields before submitting.',

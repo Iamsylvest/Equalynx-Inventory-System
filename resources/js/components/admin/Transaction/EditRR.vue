@@ -46,13 +46,13 @@
                       :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                   </div>
                   <div>
-                  <label for="status" class="text-sm text-gray-600   dark:text-custom-white">Status:</label>
+                  <label for="status" class="text-sm text-gray-600  dark:text-custom-white">Status:</label>
                   <select 
                           id="status" 
                           v-model="item.status" 
                           placeholder="Enter unit (e.g., 24 meters, 10 kg)"  
                           :disabled="userRole !== 'manager'"
-                           class="w-full p-2 text-xs border border-gray-200 rounded-md bg-gray-200  focus:ring-2 focus:ring-blue-300  dark:bg-custom-table dark:text-custom-white"
+                           class="w-full p-2 text-xs border bg-gray-300 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-300  dark:bg-custom-table dark:text-custom-white"
                         >
                           <option value="pending">pending</option>
                           <option value="approved">approved</option>
@@ -60,7 +60,7 @@
                         </select>
                 </div>
   
-                <div class="text-xs bg-gray-100 p-2 border border-gray-300 rounded-md cursor-pointer text-blue-600 underline dark:bg-custom-table">
+                <div class="text-xs p-2 border bg-white rounded-md cursor-pointer text-blue-600 underline dark:bg-custom-table">
                         <!-- Hidden File Input -->
                         <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" class="hidden" />
                         
@@ -169,33 +169,15 @@
                 <h2 class="font-medium text-gray-700 mb-6  dark:text-custom-white">Location Details</h2>
                 <div>
                   <label class="text-sm text-gray-600  dark:text-custom-white">Location:</label>
-                  <input v-model="item.location"   
+                  <input v-model="item.location"  
+                   readonly 
                   :disabled="!(userRole === 'warehouse_staff' || userRole === 'manager')" 
-                  class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
+                  class="text-xs p-2 border border-gray-300 bg-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white  text-gray-500 "
                   :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
                 </div>
-                <div class="flex justify-between mt-6">
-                  <div class="w-1/2 pr-3">
-                    <label class="text-sm text-gray-600  dark:text-custom-white">Latitude:</label>
-                    <input v-model="item.latitude" 
-                    :disabled="userRole !== 'procurement'" 
-                    class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
-                    :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
-                  </div>
-                  <div class="w-1/2 pl-3">
-                    <label class="text-sm text-gray-600 dark:text-custom-white">Longitude:</label>
-                    <input v-model="item.longitude" 
-                    :disabled="userRole !== 'procurement'" 
-                     class="text-xs p-2 border border-gray-300 rounded-md w-full dark:bg-custom-table dark:text-custom-white"
-                    :class="userRole !== 'warehouse_staff' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"  />
-                  </div>
-                </div>
-  
+
                 <!-- Leaflet Map (Only show when lat/lng exist) -->
-                <div v-if="item.latitude && item.longitude"  v-show="!isFullScreen"  id="map"  :key="mapKey"  class="h-64 w-full mt-4"></div>
-                <div v-else>
-                  <p class="text-sm text-gray-500">Loading location details...</p>
-                </div>
+                <div v-if="showMap"  v-show="!isFullScreen"  id="map"  :key="mapKey" style="height: 400px; width: 100%;"  class="h-64 w-full mt-4"></div>
               </div>
             </div>
   
@@ -216,6 +198,9 @@
  import "leaflet/dist/leaflet.css";
  import Swal from 'sweetalert2';
  import axios from 'axios';
+ import "leaflet-control-geocoder/dist/Control.Geocoder.css";
+import "leaflet-control-geocoder";
+
  
  export default {
      props: {
@@ -238,9 +223,12 @@
              imagePreview: null,           // Image preview for fullscreen
              isFullScreen: false,          // Controls full screen view
              mapKey: 0,                     // Key to force map refresh
-             map: null,             // Store Leaflet map instance
+             map: null,       
+             marker:null,
+             latitude: null,    // 👈 ADD THIS
+             longitude:null,    // 👈 AND THIS      // Store Leaflet map instance
              materialName: [],
-        
+             showMap: true,
 
          };
      },
@@ -258,9 +246,8 @@
                             this.imagePreview = `/storage/${newItem.returnproof}`;  // Correct path for image preview
                         }
 
-                     if (newItem.latitude && newItem.longitude) {
-                         this.updateMapMarker();
-                     }
+        
+                     
                  }
              },
              deep: true,
@@ -268,7 +255,7 @@
          },
          showEditReturn(newVal) {
              if (newVal) {
-                 this.initMap();
+                 this.initLeafletMap();
              }
          }
      },
@@ -276,23 +263,59 @@
          ...mapGetters("auth", ["user", "userRole"]),
      },
      mounted() {
-         this.initMap();
+         this.initLeafletMap();
          this.fetchMaterialName();
      },
      methods: {
-         initMap() {
-             if (this.item.latitude && this.item.longitude) {
-                 this.map = L.map("map").setView([this.item.latitude, this.item.longitude], 15);
-                 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(this.map);
-                 this.marker = L.marker([this.item.latitude, this.item.longitude]).addTo(this.map);
-             }
-         },
-         updateMapMarker() {
-             if (this.map && this.marker) {
-                 this.marker.setLatLng([this.item.latitude, this.item.longitude]);
-                 this.map.setView([this.item.latitude, this.item.longitude]);
-             }
-         },
+      async initLeafletMap() {
+        if (!this.item.location) {
+          console.log("No location provided");
+          return;  // Exit early if no location
+        }
+
+        // Use OpenCage Geocoding API to get the coordinates from the address
+        const address = this.item.location;
+        const apiKey = 'aabf9bb2902248e99c7f4e2709bd7cff'; // Replace with your actual API key
+        const url = `https://api.opencagedata.com/geocode/v1/json?key=${apiKey}&q=${encodeURIComponent(address)}&limit=1`;
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.results && data.results.length) {
+            // Extract the latitude and longitude from the API response
+            const location = data.results[0].geometry;
+            this.latitude = location.lat;
+            this.longitude = location.lng;
+
+            this.$nextTick(() => {
+              const mapContainer = document.getElementById("map");
+
+              if (mapContainer) {
+                if (this.map) {
+                  this.map.remove(); // Destroy existing map if it exists
+                }
+
+                // Initialize the map with the retrieved latitude and longitude
+                this.map = L.map(mapContainer).setView([this.latitude, this.longitude], 20); // Default zoom level
+
+                // Add OpenStreetMap tile layer (base map)
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                  attribution: "© OpenStreetMap contributors",
+                }).addTo(this.map);
+
+                // Add a marker at the location (if exists)
+                this.marker = L.marker([this.latitude, this.longitude]).addTo(this.map);
+              }
+            });
+          } else {
+            console.error("Location not found for the address");
+          }
+        } catch (error) {
+          console.error("Failed to fetch location coordinates:", error);
+        }
+      },
+
          addMaterialInput() {
              this.selectedReturnMaterials.push({ 
                  id: Date.now(),
@@ -385,7 +408,7 @@
              this.isFullScreen = false;
              this.mapKey++;
              setTimeout(() => {
-                 this.initMap();
+                 this.initLeafletMap();
              }, 100);
          },
          removeFile() {

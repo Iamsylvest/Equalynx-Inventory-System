@@ -101,18 +101,9 @@
                     <label class="text-sm text-gray-600  dark:text-custom-white">Location:</label>
                     <p class="text-xs bg-white p-2 border border-gray-300 rounded-md dark:bg-custom-table">{{ item.location ?? 'N/A' }}</p>
                     </div>
-                    <div class="flex justify-between">
-                    <div class="w-1/2 pr-3">
-                        <label class="text-sm text-gray-600  dark:text-custom-white">Latitude:</label>
-                        <p class="text-xs bg-white p-2 border border-gray-300 rounded-md dark:bg-custom-table">{{ item.latitude ?? 'N/A' }}</p>
-                    </div>
-                    <div class="w-1/2 pl-3">
-                        <label class="text-sm text-gray-600  dark:text-custom-white">Longitude:</label>
-                        <p class="text-xs bg-white p-2 border border-gray-300 rounded-md dark:bg-custom-table">{{ item.longitude ?? 'N/A' }}</p>
-                    </div>
-                    </div>
 
-                    <div v-if="!showProofModal && item.latitude && item.longitude" id="map" class="h-64 w-full mt-4"></div>
+
+                    <div v-if="!showProofModal && item.location" id="map" class="h-64 w-full mt-4"  style="height: 400px; width: 100%;"></div>
                         <div v-else>
                             <p class="text-sm text-gray-500">Loading location details...</p>
                         </div>
@@ -128,6 +119,11 @@
 </template>
 
 <script>
+import "leaflet/dist/leaflet.css";
+import L from 'leaflet'; // Ensure you import Leaflet
+import "leaflet-control-geocoder/dist/Control.Geocoder.css";
+import "leaflet-control-geocoder";
+
 export default {
     props: {
         viewReturn: Boolean,
@@ -145,47 +141,71 @@ export default {
             selectedmaterials: [],
             showProofModal: false,
             proofImageUrl: '',
-            map: null // Store Leaflet map instance
+            map: null, // Store Leaflet map instance
+            marker:null,
+            latitude: null,    // 👈 ADD THIS
+            longitude:null,    // 👈 AND THIS
         };
     },
     watch: {
         item: {
             handler(newItem) {
                 this.selectedmaterials = newItem?.materials || [];
-                this.loadMap(); // Load map when item updates
+                this.initLeafletMap(); // Load map when item updates
             },
             deep: true,
             immediate: true
         }
     },
     methods: {
-        loadMap() {
-            if (this.showProofModal) return; // Don't load map if proof modal is open
+        async initLeafletMap() {
+      if (!this.item.location) {
+        console.log("No location provided");
+        return;  // Exit early if no location
+      }
 
-            if (this.item.latitude && this.item.longitude) {
-                // Ensure map is initialized only after the DOM is updated
-                this.$nextTick(() => {
-                    if (this.map) {
-                        this.map.remove(); // Remove old map instance
-                        this.map = null; // Reset map instance
-                    }
+      // Use OpenCage Geocoding API to get the coordinates from the address
+      const address = this.item.location;
+      const apiKey = 'aabf9bb2902248e99c7f4e2709bd7cff'; // Replace with your actual API key
+      const url = `https://api.opencagedata.com/geocode/v1/json?key=${apiKey}&q=${encodeURIComponent(address)}&limit=1`;
 
-                    // Initialize map with latitude and longitude
-                    this.map = L.map("map").setView(
-                        [this.item.latitude, this.item.longitude],
-                        15
-                    );
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-                    // Add tile layer to the map
-                    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                        attribution: "&copy; OpenStreetMap contributors"
-                    }).addTo(this.map);
+        if (data.results && data.results.length) {
+          // Extract the latitude and longitude from the API response
+          const location = data.results[0].geometry;
+          this.latitude = location.lat;
+          this.longitude = location.lng;
 
-                    // Add marker at the given location
-                    L.marker([this.item.latitude, this.item.longitude]).addTo(this.map).openPopup();
-                });
+          this.$nextTick(() => {
+            const mapContainer = document.getElementById("map");
+
+            if (mapContainer) {
+              if (this.map) {
+                this.map.remove(); // Destroy existing map if it exists
+              }
+
+              // Initialize the map with the retrieved latitude and longitude
+              this.map = L.map(mapContainer).setView([this.latitude, this.longitude], 20); // Default zoom level
+
+              // Add OpenStreetMap tile layer (base map)
+              L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+              }).addTo(this.map);
+
+              // Add a marker at the location (if exists)
+              this.marker = L.marker([this.latitude, this.longitude]).addTo(this.map);
             }
-        },
+          });
+        } else {
+          console.error("Location not found for the address");
+        }
+      } catch (error) {
+        console.error("Failed to fetch location coordinates:", error);
+      }
+    },
 
         showProof() {
             this.proofImageUrl = this.item.return_proof;
@@ -195,7 +215,7 @@ export default {
         closeProof() {
             this.showProofModal = false;
             this.$nextTick(() => {
-                this.loadMap(); // Reload the map when proof modal closes
+                this.initLeafletMap(); // Reload the map when proof modal closes
             });
         }
     }

@@ -37,6 +37,11 @@
               </div>
              
               <div>
+                <label class="block text-gray-700  dark:text-custom-white">Threshold:</label>
+                <input v-model="editedMaterial.threshold" type="text" class=" dark:bg-custom-table dark:text-custom-white w-full border border-gray-300 px-2 py-1 focus:ring-2 dark:focus:ring-white focus:ring-blue-300  rounded-lg">
+              </div>
+
+              <div>
                 <label class="block text-gray-700  dark:text-custom-white">Measurement:</label>
                 <div class="flex">
                   <!-- Number Input for Quantity -->

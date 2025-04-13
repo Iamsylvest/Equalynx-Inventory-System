@@ -33,6 +33,7 @@ window.Echo = new Echo({
 });
 
 
+
 // Listen for the popstate event (back button navigation)
 window.addEventListener('popstate', () => {
   const currentPath = window.location.pathname;

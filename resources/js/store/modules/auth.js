@@ -25,48 +25,86 @@ export default {
     async login({ commit }, credentials) {
       try {
         const response = await axios.post('/api/login', credentials);
-        const token = response.data.token;
         const user = response.data.user;
+    
+        commit('setUser', user); // Just save the user if needed
+        // ✅ Store email in localStorage for OTP verification
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('pendingUser', JSON.stringify(user)); // Optional
 
-        commit('setUser', user); // Store user with role
-        commit('setToken', token); // Save token in Vuex state and localStorage
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser', JSON.stringify(user));
-
-        const userResponse = await axios.get('/api/user', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        commit('setUser', userResponse.data);
-        localStorage.setItem('authUser', JSON.stringify(userResponse.data));
-
-        // ✅ Initialize Pusher after login with new token
-        if (window.Echo) {
-          window.Echo.disconnect(); // Ensure old connection is closed
-          window.Echo = null;
-      }
-
-      window.Pusher = Pusher;
-      window.Echo = new Echo({
-          broadcaster: 'pusher',
-          key: 'your-app-key',
-          cluster: 'your-cluster',
-          forceTLS: true,
-          authEndpoint: '/broadcasting/auth',
-          auth: {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              },
-          },
-      });
-           // Return user role for redirection
-        return user.role;  // ✅ FIXED: Now it returns the role
-
+        return { message: 'OTP sent', success: true };
       } catch (error) {
-        console.error('Login failed:', error);
-        throw new Error(error.response?.data?.message || 'Login failed');
+        return { message: error.response?.data?.message || 'Login failed', success: false };
       }
     },
+
+    async resendOtp({ commit }, { email }) {
+      try {
+        const response = await axios.post('/api/resend-otp', { email });
+  
+        if (response.status === 200) {
+          return { success: true };
+        } else {
+          return { success: false, message: response.data.message };
+        }
+      } catch (error) {
+        console.error(error);
+        return { success: false, message: error.response?.data?.message || 'An error occurred.' };
+      }
+    },
+    
+   async verifyOtp({ commit }, { email, otp }) {
+        try {
+          // Making API call to verify OTP
+          console.log('Sending OTP payload:', { email, otp });
+          const response = await axios.post('/api/verify-otp', { email, otp });
+
+          // Assuming the backend sends back 'token' and 'user' on successful verification
+          const token = response.data.token;
+          const user = response.data.user;
+
+          // Commit token and user to Vuex store
+          commit('setToken', token);
+          commit('setUser', user);
+
+          // Storing token and user data in localStorage for persistence
+          localStorage.setItem('authToken', token);
+          localStorage.setItem('authUser', JSON.stringify(user));
+
+          // Setting Axios default header for Authorization
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+          // Initialize Echo for real-time broadcasting (if needed)
+          if (window.Echo) {
+            window.Echo.disconnect(); // Clean up previous Echo instance
+          }
+
+          window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: import.meta.env.VITE_PUSHER_APP_KEY,
+            cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+            encrypted: true,
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth',
+            auth: {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          });
+
+          // Return success message and user role information (if any)
+          return { message: 'OTP verification successful!', success: true, userRole: user.role };
+
+        } catch (error) {
+          // Return a friendly error message in case of failure
+          return {
+            message: error.response?.data?.message || 'OTP verification failed. Please try again.',
+            success: false,
+          };
+        }
+      },
+
     restoreSession({ commit }) {
       const token = localStorage.getItem('authToken');
       let user = null;
@@ -108,6 +146,8 @@ export default {
       commit("setUser", null);
       localStorage.removeItem("authToken");
       localStorage.removeItem("authUser");
+      localStorage.removeItem("userEmail"); // <- Important for OTP-based login
+      localStorage.removeItem("otp");       // <- If you're storing OTP temporarily
   
       // Clear Laravel session cookies manually (important for session-based auth)
       document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -122,6 +162,6 @@ export default {
   getters: {
     isAuthenticated: (state) => !!state.token,
     user: (state) => state.user,
-    userRole: (state) => (state.user && state.user.data ? state.user.data.role : ''),
+    userRole: (state) => (state.user ? state.user.role : ''),
   },
 };

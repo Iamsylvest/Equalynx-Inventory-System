@@ -15,7 +15,8 @@ use App\Events\ProcurementNotification;
 use App\Events\ManagerNotification;
 use App\Events\highStockUpdated;
 use App\Events\BarGraphUpdated;
-use App\Helpers\SettingsHelper;
+use App\Models\TransactionLog;
+
 
 class RrController extends Controller
 
@@ -25,6 +26,128 @@ class RrController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+     
+     public function getTransactionLogs(Request $request)
+     {
+         try {
+             $logs = TransactionLog::latest()->paginate(10);
+             return response()->json($logs);
+         } catch (\Exception $e) {
+             return response()->json(['error' => $e->getMessage()], 500);
+         }
+     }
+
+    public function logTransaction($rr)
+    {
+        TransactionLog::create([
+            'action' => 'New ' . $rr->rr_number . ' was created by ' . auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' for project ' . $rr->project_name . ' at ' . $rr->location . ' on ' . now()->toDayDateTimeString(),
+            'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+            'role' => auth()->user()->role,
+            'timestamp' => now()->toDateTimeString(),
+            'transaction_details' => json_encode([
+                'return_receipt' => [
+                    'rr_number' => $rr->rr_number,
+                    'status' => $rr->status,
+                    'remarks' => $rr->remarks,
+                    'location' => $rr->location,
+                ],
+                'materials' => $rr->materials->map(function ($material) {
+                    return [
+                        'material_name' => $material->material_name,
+                        'measurement' => $material->measurement,
+                        'unit' => $material->unit,
+                        'quantity' => $material->material_quantity,
+                    ];
+                }),
+            ]),
+        ]);
+    }
+
+     public function logEditTransaction($oldRr, $newRr)
+     {
+         $user = auth()->user();
+         $fullName = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
+         
+         $changes = [];
+     
+         // Compare top-level RR fields
+         $fieldsToCheck = ['rr_number', 'project_name', 'status', 'remarks', 'location'];
+         foreach ($fieldsToCheck as $field) {
+             if ($oldRr->$field !== $newRr->$field) {
+                 $changes[] = "$field changed from '{$oldRr->$field}' to '{$newRr->$field}'";
+             }
+         }
+     
+         // Load materials for comparison
+         $oldMaterials = $oldRr->materials->keyBy('id');
+         $newMaterials = $newRr->materials->keyBy('id');
+     
+         // Detect added or modified materials
+         foreach ($newMaterials as $id => $material) {
+            if (!isset($oldMaterials[$id])) {
+                $changes[] = "added new material '{$material->material_name}' with quantity {$material->material_quantity}";
+                continue;
+            }
+        
+            $oldMaterial = $oldMaterials[$id];
+        
+            if ($oldMaterial->material_name !== $material->material_name) {
+                $changes[] = "material name changed from '{$oldMaterial->material_name}' to '{$material->material_name}'";
+            }
+            if ($oldMaterial->measurement !== $material->measurement) {
+                $changes[] = "measurement of '{$oldMaterial->material_name}' changed from '{$oldMaterial->measurement}' to '{$material->measurement}'";
+            }
+            if ($oldMaterial->unit !== $material->unit) {
+                $changes[] = "unit of '{$oldMaterial->material_name}' changed from '{$oldMaterial->unit}' to '{$material->unit}'";
+            }
+            if ($oldMaterial->material_quantity !== $material->material_quantity) {
+                $changes[] = "quantity of '{$oldMaterial->material_name}' changed from {$material->material_quantity} to {$oldMaterial->material_quantity}";
+            }
+        }
+     
+         // Detect removed materials
+         foreach ($oldMaterials as $id => $material) {
+             if (!isset($newMaterials[$id])) {
+                 $changes[] = "removed material '{$material->material_name}'";
+             }
+         }
+     
+         // Generate action description
+         $action = $changes
+             ? "{$newRr->rr_number} was edited by $fullName — " . implode(', ', $changes)
+             : "{$newRr->rr_number} was edited by $fullName but no major changes were made";
+     
+         // Save to transaction log
+         TransactionLog::create([
+             'action' => $action,
+             'performed_by' => $fullName,
+             'role' => $user->role,
+             'timestamp' => now()->toDateTimeString(),
+             'transaction_details' => json_encode([
+                 'return_receipt' => [
+                     'rr_number' => $newRr->rr_number,
+                     'status' => $newRr->status,
+                     'remarks' => $newRr->remarks,
+                     'location' => $newRr->location,
+                 ],
+                 'materials' => $newRr->materials->map(function ($m) {
+                     return [
+                         'material_name' => $m->material_name,
+                         'measurement' => $m->measurement,
+                         'unit' => $m->unit,
+                         'quantity' => $m->material_quantity,
+                     ];
+                 }),
+             ]),
+         ]);
+     }
+
+
+
+
+
+
     public function index(Request $request)
     {
 
@@ -80,8 +203,6 @@ class RrController extends Controller
                 'status' => 'required|string',
                 'remarks' => 'nullable|string',
                 'location' => 'required|string',
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
                 'return_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048', // Validate file upload
                 'materials.*.material_name' => 'required|string',
                 'materials.*.measurement' => 'required|integer|min:1',
@@ -116,8 +237,6 @@ class RrController extends Controller
                 'project_name' => $request->project_name,
                 'status' => $request->status,
                 'location' => $request->location,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
                 'remarks' => $request->remarks,
                 'return_proof' => $returnProofPath, // Store file path
                 'return_proof_original_name' => $returnProofOriginalName, // Store original file name
@@ -139,6 +258,9 @@ class RrController extends Controller
                 ]);
             }
     
+        $this->logTransaction($rr);
+
+
         event(new WarehouseNotification([
                 'type' => 'rr_created', // ✅ Define the type for handling in the event
                 'action' => $rr->rr_number . ' was created by ' . auth()->user()->first_name . ' ' . auth()->user()->last_name,
@@ -222,8 +344,6 @@ class RrController extends Controller
         'status' => 'required|string',
         'remarks' => 'nullable|string',
         'location' => 'required|string',
-        'latitude' => 'required|numeric',
-        'longitude' => 'required|numeric',
         'return_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         'materials.*.material_name' => 'required|string',
         'materials.*.measurement' => 'required|integer|min:1',
@@ -233,6 +353,8 @@ class RrController extends Controller
 
     try {
         $rr = Rr::findOrFail($id);
+        $originalRr = Rr::with('materials')->find($rr->id);
+        // Save approver when approved
         $newStatus = $request->status;
 
 
@@ -289,7 +411,6 @@ class RrController extends Controller
                 Log::info("Stock updated for {$inventoryItem->material_name}, New Stock: {$inventoryItem->stocks}");
             }
 
-            // Save approver when approved
             $rr->approved_by = auth()->id();
             $rr->save();  //  This ensures the value is stored in the database
 
@@ -325,8 +446,6 @@ class RrController extends Controller
             'project_name' => $request->project_name,
             'status' => $request->status,
             'location' => $request->location,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
             'remarks' => $request->remarks,
         ]);
 
@@ -360,6 +479,8 @@ class RrController extends Controller
             }
         }
 
+              // ✅ Call logTransaction to save to transaction_logs table
+        $this->logEditTransaction($rr, $originalRr);
         // Delete removed materials
         $materialsToDelete = array_diff($existingMaterialIds, $newMaterialIds);
         ReturnMaterial::destroy($materialsToDelete);
@@ -588,28 +709,24 @@ class RrController extends Controller
 }
 
 
+public function broadcastHighStock()
+{
+    // Get all high stock materials based on their threshold
+    $highStock = Inventory::whereRaw('stocks >= threshold')->get();
+    $totalMaterials = $highStock->count();
 
-    public function broadcastHighStock()
-    {
-        // Define the high stock threshold
-        $highStockThreshold = (int)SettingsHelper::getThreshold();
-    
-        // Get all high stock materials
-        $highStock = Inventory::where('stocks', '>=', $highStockThreshold)->get();
-        $totalMaterials = $highStock->count();
-    
-        // Prepare additional info for broadcasting
-        $extraInfo = [];
-        foreach ($highStock as $material) { // Iterate over $highStock, not $totalMaterials
-            $extraInfo[] = [
-                'type' => 'highStock_materials',
-                'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
-                'timestamp' => $material->updated_at->toDateTimeString(),
-            ];
-        }
-                                                                            
-        // Broadcasting the event
-        broadcast(new highStockUpdated($highStock, $totalMaterials, $extraInfo));
+    // Prepare additional info for broadcasting
+    $extraInfo = [];
+    foreach ($highStock as $material) { // Iterate over $highStock, not $totalMaterials
+        $extraInfo[] = [
+            'type' => 'highStock_materials',
+            'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->measurement_quantity . ' ' . $material->measurement_unit,
+            'timestamp' => $material->updated_at->toDateTimeString(),
+        ];
     }
+    
+    // Broadcasting the event
+    broadcast(new HighStockUpdated($highStock, $totalMaterials, $extraInfo));
+}
 
 }

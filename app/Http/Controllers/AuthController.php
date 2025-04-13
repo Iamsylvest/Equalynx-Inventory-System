@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Log; // Import Log facade
 use App\Events\AdminNotification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
+use App\Mail\SendOtpMail;
+use App\Models\User;
 class AuthController extends Controller
 {
    
@@ -34,10 +37,17 @@ class AuthController extends Controller
                 // ✅ Authentication successful
                 $user = Auth::user();
                 $user->status = 'active';
+                
                 /** @var \App\Models\User $user **/
+                // ✅ Generate OTP
+                $otp = random_int(100000, 999999);
+                $user->email_otp = $otp;
+                $user->email_otp_expires_at = now()->addMinutes(5); // Expires in 5 minutes
+    
                 $user->save();
                 
-                $token = $user->createToken('YourAppName_Token_' . Str::random(40))->plainTextToken;
+                // ✅ Send OTP email
+                Mail::to($user->email)->send(new SendOtpMail($otp));
     
                 event(new ActivityLogged([
                     'action' => $user->first_name . ' ' . ($user->middle_name ?? '') . ' ' . $user->last_name . ' login',
@@ -55,33 +65,110 @@ class AuthController extends Controller
     
                 RateLimiter::clear($key); // ✅ Reset failed attempts on successful login
     
+                // ✅ Return the response as JSON, no view rendering needed
                 return response()->json([
-                    'token' => $token,
                     'user' => new UserResource($user),
+                    'message' => 'Login successful. Please check your email for the OTP.'
                 ]);
-            } 
+            }
     
-            // ❌ Failed login: Increase attempt count AFTER checking credentials
-            RateLimiter::hit($key, 60); // Lock for 60 seconds after 5 attempts
-    
-            Log::warning('Unauthorized login attempt with email: ' . $request->email);
-    
-            event(new AdminNotification([
-                'type' => 'access_invalid',
-                'action' => 'Unauthorized login attempt with email ' . $request->email,
-                'timestamp' => now()->toDateTimeLocalString(),
-            ]));
-    
-            return response()->json(['message' => 'Invalid email or password. Please try again.'], 401);
-    
+            // If authentication fails, return an error
+            return response()->json([
+                'error' => 'Unauthorized. Invalid credentials.'
+            ], 401);
         } catch (\Exception $e) {
-            Log::error('Login error: ' . $e->getMessage()); // Log any server error
-    
+            // Log the exception and return a generic error response
+            Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'An unexpected error occurred. Please try again later.'
             ], 500);
         }
     }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|digits:6',
+        ]);
+    
+        $user = \App\Models\User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+    
+        // Debugging logs
+        Log::debug('User OTP:', ['email' => $user->email, 'otp' => $user->email_otp, 'requested_otp' => $request->otp]);
+    
+        if (
+            $user->email_otp !== $request->otp ||
+            !$user->email_otp_expires_at ||
+            now()->greaterThan(Carbon::parse($user->email_otp_expires_at))
+        ) {
+            return response()->json(['message' => 'Invalid or expired OTP.'], 401);
+        }
+    
+        // OTP is valid
+        $user->email_otp = null;
+        $user->email_otp_expires_at = null;
+        $user->status = 'active';
+        $user->save();
+    
+        Auth::login($user); // Optional if needed for session
+    
+        $token = $user->createToken('YourAppName_Token_' . Str::random(40))->plainTextToken;
+    
+        // Optional: Log successful login
+        Log::channel('activity')->info(json_encode([
+            'action' => $user->first_name . ' ' . ($user->middle_name ?? '') . ' ' . $user->last_name . ' verified OTP and logged in',
+            'performed_by' => $user->first_name . ' ' . ($user->middle_name ?? '') . ' ' . $user->last_name,
+            'role' => $user->role,
+            'timestamp' => now()->toDateTimeString(),
+        ]));
+    
+        return response()->json([
+            'message' => 'OTP verified. Login successful.',
+            'token' => $token,
+            'user' => new UserResource($user),
+        ]);
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+    
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+    
+        // Check if OTP was sent within the last 30 seconds (or any time limit you prefer)
+        $timeDifference = now()->diffInSeconds($user->last_otp_sent_at);
+    
+        if ($user->last_otp_sent_at && $timeDifference < 30) {
+            return response()->json(['message' => 'Please wait before requesting another OTP.'], 400);
+        }
+    
+        $otp = rand(100000, 999999);
+        $user->email_otp = $otp;
+        $user->email_otp_expires_at = now()->addMinutes(5);
+        $user->last_otp_sent_at = now(); // Update the last sent time
+        $user->save();
+    
+        // Send OTP email
+        try {
+            Mail::to($user->email)->send(new SendOtpMail($otp));
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to send OTP email.'], 500);
+        }
+    
+        return response()->json(['message' => 'OTP resent successfully.']);
+    }
+
     public function logout(Request $request)
     {
         // Ensure the logged-in user is fetched correctly

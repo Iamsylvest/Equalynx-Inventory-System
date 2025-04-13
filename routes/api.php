@@ -46,8 +46,8 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 // No middleware on login because it handles user authentication
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-
-
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 
 
 
@@ -79,10 +79,13 @@ Route::patch('/Dr/{id}', [DrController::class, 'update']);
 Route::get('/drs/archived', [DrController::class, 'archived']);
 Route::patch('/drs/{id}/restore', [DrController::class, 'restore']);
 Route::delete('/drs/{id}/force-delete', [DrController::class, 'forceDelete']);
+Route::get('/transaction-logs', [DrController::class, 'getTransactionLogs']);
+Route::get('/rrtransaction-logs', [RrController::class, 'getTransactionLogs']);
+Route::delete('/transaction-logs/{id}', [DrController::class, 'destroyTransactionlog']);
 
 
 Route::get('pdf/generate/{id}', [PDFController::class, 'generatePdf']);
-Route::get('pdf/generate/{id}', [PDFController::class, 'generatePDFrr']);
+Route::get('pdf/generate-rr/{id}', [PDFController::class, 'generatePDFrr']);
 
 Route::post('/update-dr-Rr', [RrController::class, 'store']); // Save Return
 Route::get('/Rr', [RrController::class, 'index']);
@@ -97,6 +100,3 @@ Route::delete('/rrs/{id}/force-delete', [RrController::class, 'forceDelete']);
 Route::post('forgot-password', [SendResetLinkEmail::class, 'sendResetLinkEmail']);
 
 Route::patch('/password-change/{id}', [UserController::class, 'changePassword']);
-
-Route::get('/settings/threshold', [SettingController::class, 'getThreshold']);
-Route::post('/settings/threshold', [SettingController::class, 'updateThreshold']);

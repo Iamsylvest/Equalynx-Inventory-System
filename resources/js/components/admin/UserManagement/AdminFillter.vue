@@ -21,13 +21,13 @@
       <option value="admin">Admin</option>
       <option value="manager">Manager</option>
       <option value="procurement">Procurement</option>
-      <option value="warehouse_staff">Warehouse Staff</option>
++
     </select>
     <!-- Status Filter -->
     <select
       v-model="selectedStatus"
       @change="applyFilters"
-      class="w-[250px] md:w-[148px] borderborder-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white "
+      class="mr-5 w-[250px] md:w-[148px] sm:mb-5 md:mb-0 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-custom-table dark:focus:ring-white"
     >
       <option value="">All Status</option>
       <option value="active">active</option>

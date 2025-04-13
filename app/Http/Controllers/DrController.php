@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TransactionLog;
 use App\Models\Dr;
 use App\Models\Inventory;
 use Illuminate\Http\Request;
@@ -12,10 +13,142 @@ use App\Events\AdminNotification;
 use App\Events\ProcurementNotification;
 use App\Events\ManagerNotification;
 use App\Events\LowstockUpdated;
-use App\Helpers\SettingsHelper;
+
 
 class DrController extends Controller
+
 {
+    public function destroyTransactionlog($id)
+    {
+        try {
+            // Find the log by ID
+            $log = TransactionLog::findOrFail($id);
+            
+            // Delete the log
+            $log->delete();
+            
+            return response()->json(['message' => 'Log deleted successfully'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error deleting transaction log: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to delete log'], 500);
+        }
+    }
+
+
+    public function logTransaction($dr)
+        {
+            TransactionLog::create([
+                'action' => 'New ' . $dr->dr_number . ' was created by ' . auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name . ' for project ' . $dr->project_name . ' at ' . $dr->location . ' on ' . now()->toDayDateTimeString(),
+                'performed_by' => auth()->user()->first_name . ' ' . (auth()->user()->middle_name ?? '') . ' ' . auth()->user()->last_name,
+                'role' => auth()->user()->role,
+                'timestamp' => now()->toDateTimeString(),
+                'transaction_details' => json_encode([
+                    'delivery_receipt' => [
+                        'dr_number' => $dr->dr_number,
+                        'status' => $dr->status,
+                        'remarks' => $dr->remarks,
+                        'location' => $dr->location,
+                    ],
+                    'materials' => $dr->materials->map(function ($material) {
+                        return [
+                            'material_name' => $material->material_name,
+                            'measurement' => $material->measurement,
+                            'unit' => $material->unit,
+                            'quantity' => $material->material_quantity,
+                        ];
+                    }),
+                ]),
+            ]);
+        }
+        
+        public function logEditTransaction($oldDr, $newDr)
+        {
+            $user = auth()->user();
+            $fullName = trim("{$user->first_name} {$user->middle_name} {$user->last_name}");
+        
+            $changes = [];
+        
+            // Compare top-level DR fields
+            $fieldsToCheck = ['name', 'project_name', 'status', 'remarks', 'location'];
+            foreach ($fieldsToCheck as $field) {
+                if ($oldDr->$field !== $newDr->$field) {
+                    $changes[] = "$field changed from '{$oldDr->$field}' to '{$newDr->$field}'";
+                }
+            }
+        
+            // Load materials for comparison
+            $oldMaterials = $oldDr->materials->keyBy('id');
+            $newMaterials = $newDr->materials->keyBy('id');
+        
+            // Detect added or modified materials
+            foreach ($newMaterials as $id => $material) {
+                if (!isset($oldMaterials[$id])) {
+                    $changes[] = "added new material '{$material->material_name}' with quantity {$material->material_quantity}";
+                    continue;
+                }
+        
+                $oldMaterial = $oldMaterials[$id];
+                if ($oldMaterial->material_name !== $material->material_name) {
+                    $changes[] = "material name changed from '{$oldMaterial->material_name}' to '{$material->material_name}'";
+                }
+                if ($oldMaterial->measurement !== $material->measurement) {
+                    $changes[] = "measurement of '{$material->material_name}' changed from '{$oldMaterial->measurement}' to '{$material->measurement}'";
+                }
+                if ($oldMaterial->unit !== $material->unit) {
+                    $changes[] = "unit of '{$material->material_name}' changed from '{$oldMaterial->unit}' to '{$material->unit}'";
+                }
+                if ($oldMaterial->material_quantity !== $material->material_quantity) {
+                    $changes[] = "quantity of '{$material->material_name}' changed from {$oldMaterial->material_quantity} to {$material->material_quantity}";
+                }
+            }
+        
+            // Detect removed materials
+            foreach ($oldMaterials as $id => $material) {
+                if (!isset($newMaterials[$id])) {
+                    $changes[] = "removed material '{$material->material_name}'";
+                }
+            }
+        
+            // Generate action description
+            $action = $changes
+                ? "{$newDr->dr_number} was edited by $fullName — " . implode(', ', $changes)
+                : "{$newDr->dr_number} was edited by $fullName but no major changes were made";
+        
+            // Save to transaction log
+            TransactionLog::create([
+                'action' => $action,
+                'performed_by' => $fullName,
+                'role' => $user->role,
+                'timestamp' => now()->toDateTimeString(),
+                'transaction_details' => json_encode([
+                    'delivery_receipt' => [
+                        'dr_number' => $newDr->dr_number,
+                        'status' => $newDr->status,
+                        'remarks' => $newDr->remarks,
+                        'location' => $newDr->location,
+                    ],
+                    'materials' => $newDr->materials->map(function ($m) {
+                        return [
+                            'material_name' => $m->material_name,
+                            'measurement' => $m->measurement,
+                            'unit' => $m->unit,
+                            'quantity' => $m->material_quantity,
+                        ];
+                    }),
+                ]),
+            ]);
+        }
+
+        public function getTransactionLogs(Request $request)
+        {
+            try {
+                $logs = TransactionLog::latest()->paginate(10);
+                return response()->json($logs);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        }
+
     public function store(Request $request) {
         try {
             // Validate input
@@ -25,8 +158,6 @@ class DrController extends Controller
                 'status' => 'required|string',
                 'remarks' => 'nullable|string',
                 'location' => 'required|string',
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
                 'materials' => 'required|array|min:1',
                 'materials.*.material_name' => 'required|string',
                 'materials.*.measurement' => 'required|integer|min:1', // Changed measurement_unit to measurement (integer)
@@ -48,8 +179,6 @@ class DrController extends Controller
                 'status' => $request->status,
                 'remarks' => $request->remarks,
                 'location' => $request->location,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
             ]);
     
                     // Insert materials linked to this DR
@@ -62,6 +191,9 @@ class DrController extends Controller
                     'material_quantity' => $material['material_quantity'],
                 ]);
             }
+
+                // ✅ Call logTransaction to save to transaction_logs table
+            $this->logTransaction($dr);
 
             event(new ActivityLogged([
                 'action' => 'New ' . $dr->dr_number . ' was created by ' . 
@@ -95,6 +227,8 @@ class DrController extends Controller
                 . ' ' . ' status ' . $dr->status . '.',
                 'timestamp' => now()->toDateTimeLocalString(),
             ]));
+
+
     
                 
             return response()->json([
@@ -291,8 +425,6 @@ class DrController extends Controller
             'status' => 'required|string',
             'remarks' => 'nullable|string',
             'location' => 'required|string',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
             'materials' => 'required|array|min:1',
             'materials.*.material_name' => 'required|string',
             'materials.*.measurement' => 'required|integer|min:1', // Changed measurement_unit to measurement (integer)
@@ -362,7 +494,7 @@ class DrController extends Controller
             // calll the function to braodcast low stock materials
             $this->broadcastLowStock();
 
-
+            $originalDr = Dr::with('materials')->find($dr->id); // get full original data with materials
             // Update the DR item status
             $dr->approved_by = auth()->id();  // Save user ID
             $dr->status = $newStatus;
@@ -374,8 +506,6 @@ class DrController extends Controller
                 'project_name' => $request->project_name,
                 'remarks' => $request->remarks,
                 'location' => $request->location,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
             ]);
     
             // Get the current materials in the database for this DR
@@ -408,6 +538,10 @@ class DrController extends Controller
 
             // Fetch the name of the user who approved the DR (if any)
             $dr = Dr::with('approver')->where('id', $id)->first();
+
+
+          // ✅ Call logTransaction to save to transaction_logs table
+            $this->logEditTransaction($dr, $originalDr);
 
 
                 if ($dr->status === 'approved' ||  $dr->status === 'rejected') {
@@ -497,23 +631,21 @@ class DrController extends Controller
     
 
     public function broadcastLowStock(){
-        $lowStockThreshhold = (int)SettingsHelper::getThreshold();
-
-        // get all low stock materials
-        $lowStockMaterials =  Inventory::where('stocks', '<=', $lowStockThreshhold)->get();
+        // Get all materials with low stock based on their threshold
+        $lowStockMaterials = Inventory::whereRaw('stocks <= threshold')->get();
         $totalLowStock = $lowStockMaterials->count();
-
-       $extraInfo = [];
-       foreach($lowStockMaterials as $material){
-        $extraInfo[] = [
-            'type' => 'lowStock_materials ',
-            'action' => $material->material_name . ' ' . $material->stocks . ' ',
-            'timestamp' => $material->updated_at->toDateTimeString(),
-        ];
-       }
-       broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
+    
+        $extraInfo = [];
+        foreach ($lowStockMaterials as $material) {
+            $extraInfo[] = [
+                'type' => 'lowStock_materials',
+                'action' => $material->material_name . ' ' . $material->stocks . ' ' . $material->unit,
+                'timestamp' => $material->updated_at->toDateTimeString(),
+            ];
+        }
+    
+        broadcast(new LowstockUpdated($totalLowStock, $lowStockMaterials, $extraInfo));
     }
-
   
 }
 

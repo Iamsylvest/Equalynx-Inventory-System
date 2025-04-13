@@ -38,10 +38,9 @@ class User extends Authenticatable
         'email', // <-- Add email field
         'password',
         'role', // <-- Ensure role is included if used in seeder
-        'phone_number', // Add phone number
-        'two_factor_code', // Add OTP field
-        'two_factor_expires_at', // Add OTP expiry time
-        'is_two_factor_enabled',
+        'email_otp', // Add phone number
+        'email_otp_expires_at',
+        'last_otp_sent_at',
 
     ];
 

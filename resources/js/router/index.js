@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/auth/Login.vue';
+
 import ResetPassword from '@/auth/ResetPassword.vue';
 import UserManagement from '@/pages/admin/UserManagement.vue'; 
 import Inventory from '@/pages/admin/Inventory.vue';
+import TransactionTrail from '@/pages/admin/TransactionTrail.vue';
 import Transaction from '@/pages/admin/Transaction.vue';
 import ActivityLogs from '@/pages/admin/ActivityLogs.vue';
 import Notification from '@/pages/admin/Notification.vue';
@@ -16,6 +18,7 @@ const routes = [
   { path: '/login', component: Login },
   { path: '/reset-password', component: ResetPassword },
   { path: '/UserManagement', component: UserManagement, meta: { requiresAuth: true }},
+  { path: '/TransactionTrail', component: TransactionTrail, meta: { requiresAuth: true }},
   { path: '/procurement', component: ProcurementDashboard, meta: { requiresAuth: true } },
   { path: '/AdminInventory', component: Inventory, meta: { requiresAuth: true }},
   { path: '/AdminTransaction', component: Transaction, meta: { requiresAuth: true }},

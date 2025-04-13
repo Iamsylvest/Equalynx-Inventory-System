@@ -20,6 +20,7 @@ class Inventory extends Model
         'stocks',
         'measurement_quantity',
         'measurement_unit',
+        'threshold', 
     ];
 
 }

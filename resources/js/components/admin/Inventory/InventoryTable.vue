@@ -5,7 +5,30 @@
       <h1 class="text-lg">Materials ( <span> {{ total }} </span> )</h1>
       <div class="static flex items-center justify-end space-x-6">
         <InventoryFillter @search="updateSearch" @filter="updateFilter"/>
-        <AddMaterial v-if="userRole === 'warehouse_staff'" @materialAdded="handleMaterialAdded"/>
+            <!-- Sorting Dropdown -->
+            <div class="flex items-center gap-2 mt-5">
+              <select 
+                v-model="sortKey" 
+                @change="sortBy(sortKey)"
+                class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500 w-full sm:w-[150px] md:w-[150px] h-[35px]"
+              >
+                <option disabled value="">Sort by:</option>
+                <option value="material_name">Item</option>
+                <option value="created_at">Date Added</option>
+                <option value="updated_at">Last update</option>
+                <option value="stocks">Stocks</option>
+              </select>
+
+              <!-- Sort Order Toggle (Asc/Desc) -->
+              <button
+                @click="toggleSortOrder"
+                class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 dark:bg-custom-table dark:focus:ring-white focus:ring-blue-500"
+              >
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </button>
+            </div>
+
+            <AddMaterial v-if="userRole === 'warehouse_staff'" @materialAdded="handleMaterialAdded"/>
       </div>
     </div>
 
@@ -18,6 +41,7 @@
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Material Name</th>
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Stocks</th>
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Measurement</th>
+          <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Threshold</th>
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Date Added</th>
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table">Last Update</th>
           <th class="px-4 py-2 border-0 text-center font-bold dark:bg-custom-table" v-if="userRole === 'warehouse_staff'" >Action</th>
@@ -31,14 +55,15 @@
               v-for="(material, index) in filteredMaterials" 
               :key="material.id" 
               :class="{
-                'border-b border-b-gray-400': true,   /* Always apply bottom border */
-                'bg-white hover:bg-gray-200': material.stocks > threshold && index % 2 === 0 || material.stocks > threshold && index % 2 !== 0,  /* Even rows - Gray */
-                'bg-red-300 hover:bg-red-400 dark:bg-red-300 dark:hover:bg-red-400 low-stock': material.stocks <= threshold  /* Low stock - Always Red */
+                'border-b border-b-gray-400': true,
+                'bg-white hover:bg-gray-200': material.stocks > material.threshold,  // Apply white background if stock > threshold
+                'bg-red-300 hover:bg-red-400 dark:bg-red-300 dark:hover:bg-red-400 low-stock': material.stocks <= material.threshold,  // Apply red background if stock <= threshold
               }"
             >
           <td class="text-center px-4 py-2 border-0 ">{{ material.material_name }}</td>
           <td class="px-4 py-4 text-center">{{ material.stocks }}</td>
           <td class="text-center px-4 py-2 border-0">{{ Math.floor(material.measurement_quantity) }} {{ material.measurement_unit }}</td>
+          <td class="px-4 py-4 text-center">{{ material.threshold }}</td>
           <td class="text-center px-4 py-2 border-0">{{ formatDate(material.created_at) }}</td>
           <td class="text-center px-4 py-2 border-0">{{ formatDate(material.updated_at) }}</td>
           <td class="text-center px-4 py-2 border-0 space-x-3 " v-if="userRole === 'warehouse_staff'" >
@@ -100,8 +125,6 @@
             @start-loading="loading = true"
             :loading="loading"
           />
-    
-
 
   </div>
 </template>
@@ -133,18 +156,22 @@
       threshold: '',
       loading: false,
 
+          // Sorting
+      sortKey: '',
+      sortOrder: 'asc',
     };
   },
   mounted() {
     this.fetchMaterials();
-    this.fetchThreshold();
+
   },
   computed: {
     ...mapGetters('auth', ['user', 'userRole']),
     filteredMaterials() {
       if (!this.materials) return []; // Prevent null reference error
 
-      return this.materials.filter(material => {
+      // Filter the materials based on the search query, stocks, and date filters
+      let results = this.materials.filter(material => {
         if (!material || !material.material_name) return false; // Ensure material is valid
 
         const materialName = material.material_name.toLowerCase();
@@ -158,19 +185,84 @@
         const createdAt = material.created_at ? material.created_at.split('T')[0] : null;
         const updatedAt = material.updated_at ? material.updated_at.split('T')[0] : null;
 
-          const matchesDateAdded = this.selectedDateAdded
-              ? createdAt === this.selectedDateAdded
-              : true;
+        const matchesDateAdded = this.selectedDateAdded
+          ? createdAt === this.selectedDateAdded
+          : true;
 
-          const matchesLastUpdate = this.selectedLastUpdate
-              ? updatedAt === this.selectedLastUpdate
-              : true;
+        const matchesLastUpdate = this.selectedLastUpdate
+          ? updatedAt === this.selectedLastUpdate
+          : true;
 
         return matchesMaterialName && matchesStocks && matchesDateAdded && matchesLastUpdate;
       });
+
+      // Apply sorting if sortKey is set
+      if (this.sortKey) {
+        results.sort((a, b) => {
+          let modifier = this.sortOrder === 'asc' ? 1 : -1;
+
+          // Handle sorting by date fields (created_at, updated_at)
+          if (this.sortKey === 'created_at' || this.sortKey === 'updated_at') {
+            return (new Date(a[this.sortKey]) - new Date(b[this.sortKey])) * modifier;
+          }
+
+          // Handle sorting by numeric fields like stocks
+          if (typeof a[this.sortKey] === 'number') {
+            return (a[this.sortKey] - b[this.sortKey]) * modifier;
+          }
+
+          // Handle sorting by string fields (e.g., material_name)
+          return a[this.sortKey]?.localeCompare(b[this.sortKey]) * modifier;
+        });
+      }
+
+      return results;
     },
   },
   methods: {
+
+    sortBy(key) {
+  if (this.sortKey === key) {
+    // If the same key is clicked again, toggle the sort order (asc/desc)
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+  } else {
+    // If a new key is clicked, set it as the sort key and set order to ascending
+    this.sortKey = key;
+    this.sortOrder = 'asc';
+  }
+  // After updating the sortKey and sortOrder, sort the materials
+  this.sortMaterials();
+},
+
+sortMaterials() {
+  this.materials.sort((a, b) => {
+    let valueA = a[this.sortKey];
+    let valueB = b[this.sortKey];
+
+    // If sorting by 'created_at', convert to Date objects
+    if (this.sortKey === 'created_at') {
+      valueA = new Date(a[this.sortKey]);
+      valueB = new Date(b[this.sortKey]);
+    }
+
+    // String comparison for alphabetic sorting (e.g., material_name)
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      return valueA.localeCompare(valueB) * (this.sortOrder === 'asc' ? 1 : -1);
+    }
+
+    // Numeric comparison (e.g., for stocks, quantities)
+    if (typeof valueA === 'number' && typeof valueB === 'number') {
+      return (valueA - valueB) * (this.sortOrder === 'asc' ? 1 : -1);
+    }
+
+    // Default comparison if types are different or unsupported
+    if (valueA < valueB) return this.sortOrder === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+},
+
+
 
     handleMaterialAdded(newMaterial) {
     this.materials.push(newMaterial);
@@ -321,17 +413,7 @@
             day: 'numeric'
         });
     },
-    async fetchThreshold(){
-        try{    
-                    // Fetch from API if not in local storage
-                const response = await axios.get('/api/settings/threshold');
-                console.log("Current Threshold Fetch Successfully");
-                this.threshold = response.data.threshold;
-                localThreshold.setItem('threshold', this.threshold);  // Save to local storage
-            } catch (error){
-            console.error("Error fetching current threshold", error.response?.data || error.message);
-        }          
-      } 
+   
   }
 };
 </script>

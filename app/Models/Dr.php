@@ -46,17 +46,13 @@ class Dr extends Model
         'project_name',          
         'approved_by',          
         'status',               
-        'location',              
-        'latitude',              
-        'longitude',             
+        'location',                          
         'remarks',    
         'created_at'           
     ];
 
   // ✅ Cast latitude and longitude to decimal format for precision
     protected $casts = [
-        'latitude' => 'decimal:12',
-        'longitude' => 'decimal:12',
         'approved_by' =>'integer', // ✅ Cast as integer
         'deleted_at' => 'datetime' // cast deleted_at to datetime for convenience
     ];

@@ -55,12 +55,27 @@
                   />
                   <button 
                     type="button" 
-                    @click="togglePasswordVisibility" 
+                    @click="togglePasswordVisibility('password')" 
                     class="absolute top-10 right-3 transform -translate-y-1/2 text-sm text-black dark:text-custom-white"
                   >
                     {{ showPassword ? 'Hide' : 'Show' }}
                   </button>
-                </div>
+            </div>
+            <div class="relative">
+                  <p class="text-xs">Confirm Password:</p>
+                  <input 
+                    v-model="form.confirm_password" 
+                    :type="showConfirmPassword ? 'text' : 'password'" 
+                    class=" dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full"
+                  />
+                  <button 
+                    type="button" 
+                    @click="togglePasswordVisibility('confirm')" 
+                    class="absolute top-10 right-3 transform -translate-y-1/2 text-sm text-black dark:text-custom-white"
+                  >
+                    {{ showConfirmPassword ? 'Hide' : 'Show' }}
+                  </button>
+            </div>
             <div class="relative" >
               <p class="text-xs">Role:</p>
               <select v-model="form.role" class="text-xs dark:bg-custom-table border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-white w-full">
@@ -106,6 +121,7 @@ export default {
       showModal: false,
       loading: false, // Added loading state
       showPassword: false,
+      showConfirmPassword: false,
       form: {
         first_name: '',
         middle_name: '',
@@ -113,6 +129,7 @@ export default {
         email: '',
         role: '',
         password: '',
+        confirm_password: '',
       }
     };
   }, 
@@ -120,6 +137,22 @@ export default {
     async addUser() {
       if (this.loading) return; // Prevent multiple requests
       this.loading = true; // Start loading state
+      
+      
+            // 1. Check if passwords match
+      if (this.form.password !== this.form.confirm_password) {
+        Swal.fire({
+          title: 'Password Mismatch!',
+          text: 'Password and Confirm Password do not match.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+        this.loading = false;
+        return;
+      }
+      
+      
+      
       try {
         const response = await axios.post('/api/users', this.form);
         this.$emit('userAdded', response.data.user);
@@ -134,20 +167,34 @@ export default {
         });
 
       } catch (error) {
-        console.error('Error adding user:', error);
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to add user. Please try again.',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-      }
+          // 2. Handle backend validation error for duplicate email
+          if (error.response && error.response.data.errors?.email) {
+            Swal.fire({
+              title: 'Duplicate Email!',
+              text: error.response.data.errors.email[0],
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: 'Failed to add user. Please try again.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+          console.error('Error adding user:', error);
+        }
       finally {
         this.loading = false; // End loading state
       }
     },
-    togglePasswordVisibility() {
-      this.showPassword = !this.showPassword;
+    togglePasswordVisibility(type) {
+      if (type === 'password') {
+        this.showPassword = !this.showPassword;
+      } else if (type === 'confirm') {
+          this.showConfirmPassword = !this.showConfirmPassword;
+      }
     }
   }
 };

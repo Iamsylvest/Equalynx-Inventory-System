@@ -490,7 +490,7 @@ export default {
             });
           }
         },
-  
+  /*
       async downloadPDF(id) {
         const apiUrl = `/api/pdf/generate/${id}`; // Relative URL without the full domain
         console.log('Requesting PDF with ID:', id);
@@ -517,7 +517,7 @@ export default {
         }
       },
       async downloadPDFrr(id) {
-        const apiUrl = `/api/pdf/generate/${id}`; // Relative URL without the full domain
+        const apiUrl = `/api/pdf/generate-rr/${id}`; // Relative URL without the full domain
         console.log('Requesting PDF with ID:', id);
         
         try {
@@ -542,7 +542,15 @@ export default {
         }
       },
 
-  
+  */
+        downloadPDF(id) {
+          window.open(`/api/pdf/generate/${id}`, '_blank'); // Opens the PDF in a new tab
+      },
+
+      downloadPDFrr(id) {
+          window.open(`/api/pdf/generate-rr/${id}`, '_blank'); // Opens the PDF in a new tab
+      },
+
    han1eDRadded(newDr) {
             this.drs.push(newDr);
             this.fetchDRs(); // Refetch all DRs to ensure consistency

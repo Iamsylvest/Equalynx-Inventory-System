@@ -27,8 +27,7 @@ class Rr extends Model
         'return_proof',
         'return_proof_original_name',  // Add this
         'location',
-        'latitude',
-        'longitude',
+     
     ];
     protected $attributes = [
         'approved_by' => null, // or 'System' if you want a default user

@@ -8,18 +8,31 @@
             <Profile/>
          </div>
      </header>
+
      <div class=" flex flex-col space-y-5 font-roboto p-8 mt-16  border  shadow-lg  dark:border-none rounded-lg dark:bg-custom-table">
         <p>Mange your account setting and preferences</p> 
         <DarkModeToggle />
         <changePassword />
 
-        <thresholdUpdate v-if="userRole === 'admin'" />
-      
-     </div>
 
-              
+        <!-- Log Out Button -->
+            <div class="bg-custom-blue w-[200px] rounded-md text-white  flex p-2 dark:bg-custom-table cursor:pointer px-5 border border-black dark:border-white ">
+              <div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                  <path fill-rule="evenodd" d="M16.5 3.75a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V15a.75.75 0 0 0-1.5 0v3.75a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-6a3 3 0 0 0-3 3V9A.75.75 0 1 0 9 9V5.25a1.5 1.5 0 0 1 1.5-1.5h6ZM5.78 8.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 0 0 1.06-1.06l-1.72-1.72H15a.75.75 0 0 0 0-1.5H4.06l1.72-1.72a.75.75 0 0 0 0-1.06Z" clip-rule="evenodd" />
+                </svg>
+              </div>
+
+              <div>
+                <button @click="logout" class="">
+                    <h1 class="font-bold">Log out</h1>
+                </button>
+              </div>
+            </div>
+     </div>
  </div>
- 
+             
+
  
 
  </template>
@@ -30,7 +43,7 @@ import Notification from '@/components/admin/Notification/Notification.vue';
 import Profile from '@/components/admin/Notification/Profile.vue';
 import DarkModeToggle from '@/components/toggleDarkmode/DarkModeToggle.vue';
 import changePassword from '@/auth/changePassword.vue';
-import thresholdUpdate from '@/components/Settings/thresholdUpdate.vue';
+
 
 
 export default {
@@ -40,7 +53,7 @@ export default {
         Profile,
         DarkModeToggle,
         changePassword,
-        thresholdUpdate,
+       
       
       
     },
@@ -129,7 +142,15 @@ export default {
                 });
             }
         }
-    }
+    },
+
+    logout() {
+        // Call Vuex action to clear the session
+        this.$store.dispatch('auth/logout');
+
+        // Redirect the user to the login page
+        this.$router.push('/login');
+      },
 
   }
 

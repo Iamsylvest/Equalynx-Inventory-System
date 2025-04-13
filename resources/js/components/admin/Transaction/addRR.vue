@@ -170,28 +170,12 @@
                 class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
                 :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
               </div>
-              <div class="flex justify-between mt-6">
-                <div class="w-1/2 pr-3">
-                  <label class="text-sm text-gray-600  dark:bg-custom-table dark:text-custom-white">Latitude:</label>
-                  <input v-model="item.latitude" 
-                  :disabled="userRole !== 'procurement'" 
-                  class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
-                  :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'" />
-                </div>
-                <div class="w-1/2 pl-3">
-                  <label class="text-sm text-gray-600  dark:bg-custom-table dark:text-custom-white">Longitude:</label>
-                  <input v-model="item.longitude" 
-                  :disabled="userRole !== 'procurement'" 
-                   class="text-xs p-2 border border-gray-300 rounded-md w-full  dark:bg-custom-table dark:text-custom-white"
-                  :class="userRole !== 'procurement' ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-black'"  />
-                </div>
-              </div>
 
               <!-- Leaflet Map (Only show when lat/lng exist) -->
-              <div v-if="item.latitude && item.longitude"  v-show="!isFullScreen"  id="map"  :key="mapKey"  class="h-64 w-full mt-4"></div>
-              <div v-else>
-                <p class="text-sm text-gray-500">Loading location details...</p>
-              </div>
+           <!-- Leaflet Map (Only show when lat/lng exist) -->
+           <div v-if="showMap" class="mt-4 relative z-10" v-show="!isFullScreen"  id="map"  :key="mapKey" >
+                    <div id="map" style="height: 400px; width: 100%;"></div>
+            </div>
             </div>
           </div>
 
@@ -212,6 +196,8 @@ import "leaflet/dist/leaflet.css";
 import Swal from "sweetalert2";
 import L from "leaflet";
 import { mapGetters } from "vuex";
+import "leaflet-control-geocoder/dist/Control.Geocoder.css";
+import "leaflet-control-geocoder";
 
 export default {
 props: {
@@ -236,17 +222,19 @@ data() {
     fileName: "", // Display file name
     previewUrl: null, // Store preview URL
     imagePreview: null, // Image preview for fullscreen
+    map: null,
+    marker: null,
+    showMap: true, // Control to show map
+    materialName: [],
     isFullScreen: false, // Controls full screen view
     mapKey: 0, // Key to force map refresh
-    map: null, // Store Leaflet map instance
-    materialName: [],
     
   };
 },
 watch: {
   showEditDR_Return(newVal) {
     if (newVal) {
-      this.initMap(); // Initialize map only when modal opens
+      this.initLeafletMap(); // Initialize map only when modal opens
     }
   },
   item: {
@@ -260,7 +248,7 @@ watch: {
 },
 mounted() {
   if (this.showEditDR_Return) {
-    this.initMap();
+    this.initLeafletMap(); // Initialize map only when modal opens
   }
 
   this.fetchMaterialName();
@@ -280,22 +268,55 @@ methods: {
             this.selectedmaterials.pop(index, 1); // Properly remove the material from the array
         }
     },
-  initMap() {
-    if (this.map) {
-      this.map.remove(); // Remove old map instance
-    }
-    if (this.item.latitude && this.item.longitude) {
-      this.map = L.map("map").setView([this.item.latitude, this.item.longitude], 15);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(this.map);
-      this.marker = L.marker([this.item.latitude, this.item.longitude]).addTo(this.map);
-    }
-  },
-  updateMapMarker() {
-    if (this.map && this.marker) {
-      this.marker.setLatLng([this.item.latitude, this.item.longitude]);
-      this.map.setView([this.item.latitude, this.item.longitude]);
-    }
-  },
+    async initLeafletMap() {
+      if (!this.item.location) {
+        console.log("No location provided");
+        return;  // Exit early if no location
+      }
+
+      // Use OpenCage Geocoding API to get the coordinates from the address
+      const address = this.item.location;
+      const apiKey = 'aabf9bb2902248e99c7f4e2709bd7cff'; // Replace with your actual API key
+      const url = `https://api.opencagedata.com/geocode/v1/json?key=${apiKey}&q=${encodeURIComponent(address)}&limit=1`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.results && data.results.length) {
+          // Extract the latitude and longitude from the API response
+          const location = data.results[0].geometry;
+          this.latitude = location.lat;
+          this.longitude = location.lng;
+
+          this.$nextTick(() => {
+            const mapContainer = document.getElementById("map");
+
+            if (mapContainer) {
+              if (this.map) {
+                this.map.remove(); // Destroy existing map if it exists
+              }
+
+              // Initialize the map with the retrieved latitude and longitude
+              this.map = L.map(mapContainer).setView([this.latitude, this.longitude], 20); // Default zoom level
+
+              // Add OpenStreetMap tile layer (base map)
+              L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors",
+              }).addTo(this.map);
+
+              // Add a marker at the location (if exists)
+              this.marker = L.marker([this.latitude, this.longitude]).addTo(this.map);
+            }
+          });
+        } else {
+          console.error("Location not found for the address");
+        }
+      } catch (error) {
+        console.error("Failed to fetch location coordinates:", error);
+      }
+    },
+
   triggerFileInput() {
     this.$refs.fileInput.click(); // Simulate file input click
   },
@@ -316,7 +337,7 @@ methods: {
     this.isFullScreen = false;
     this.mapKey++; // Change key to force map refresh
     setTimeout(() => {
-      this.initMap(); // Ensure map is reinitialized
+      this.initLeafletMap(); // Ensure map is reinitialized
     }, 100);
   },
   removeFile() {
